@@ -1,0 +1,10 @@
+@import "tailwindcss";
+
+/* Point the design-system's font tokens at the fonts loaded via next/font
+   (tokens.css sets these as static Google Fonts names; this override must
+   load after tokens.css to win the cascade). */
+:root {
+  --font-display: var(--font-fredoka-loaded), ui-rounded, "Segoe UI", sans-serif;
+  --font-body: var(--font-inter-loaded), -apple-system, "Segoe UI", sans-serif;
+  --font-mono: var(--font-jetbrains-mono-loaded), ui-monospace, "SF Mono", monospace;
+}

@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pascom Design System — Paróquia N. Sra. da Visitação</title>
+<meta name="description" content="Sistema de design oficial da Pascom Brasil: fundamentos, tokens e componentes de UI.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- Sprite de ícones — símbolos reutilizados via <use href="#icon-nome"> -->
+<svg style="display:none" aria-hidden="true">
+  <defs>
+    <g id="icon-defs">
+      <symbol id="icon-star" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2.5 15.1 9 22 9.9 17 14.7 18.3 21.5 12 18.1 5.7 21.5 7 14.7 2 9.9 8.9 9"/></symbol>
+      <symbol id="icon-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 12.5 9.5 18 20 6"/></symbol>
+      <symbol id="icon-check-circle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.2"/><polyline points="7.5 12.3 10.5 15.3 16.5 8.7"/></symbol>
+      <symbol id="icon-alert-triangle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5 L21.5 20 H2.5 Z" stroke-linejoin="round"/><line x1="12" y1="9.5" x2="12" y2="14"/><circle cx="12" cy="17.2" r="0.15" stroke-width="2.4"/></symbol>
+      <symbol id="icon-info" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.2"/><line x1="12" y1="11" x2="12" y2="16.5"/><circle cx="12" cy="7.6" r="0.15" stroke-width="2.4"/></symbol>
+      <symbol id="icon-x-circle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.2"/><line x1="9" y1="9" x2="15" y2="15"/><line x1="15" y1="9" x2="9" y2="15"/></symbol>
+      <symbol id="icon-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 10.5c0-4 2.5-6.5 6-6.5s6 2.5 6 6.5c0 4.5 1.5 6 2.5 7H3.5c1-1 2.5-2.5 2.5-7Z"/><path d="M9.8 20.5a2.3 2.3 0 0 0 4.4 0"/></symbol>
+      <symbol id="icon-calendar" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><line x1="3.5" y1="9.5" x2="20.5" y2="9.5"/><line x1="8" y1="2.7" x2="8" y2="6.3"/><line x1="16" y1="2.7" x2="16" y2="6.3"/></symbol>
+      <symbol id="icon-heart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20.2S3 14.8 3 8.9C3 5.9 5.2 4 7.8 4c1.7 0 3.3.9 4.2 2.4C12.9 4.9 14.5 4 16.2 4 18.8 4 21 5.9 21 8.9c0 5.9-9 11.3-9 11.3Z" stroke-linejoin="round"/></symbol>
+      <symbol id="icon-users" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.3"/><path d="M2.8 20c0-3.6 2.8-6 6.2-6s6.2 2.4 6.2 6"/><circle cx="17" cy="8.5" r="2.6"/><path d="M15.2 14.2c2.6.3 4.6 2.4 4.6 5.8"/></symbol>
+      <symbol id="icon-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="10.8" cy="10.8" r="6.8"/><line x1="15.8" y1="15.8" x2="21" y2="21"/></symbol>
+      <symbol id="icon-mail" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2.8" y="5.5" width="18.4" height="13" rx="2"/><polyline points="3.5 6.5 12 13 20.5 6.5"/></symbol>
+      <symbol id="icon-chevron-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 9 12 16 19 9"/></symbol>
+      <symbol id="icon-chevron-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 5 16 12 9 19"/></symbol>
+      <symbol id="icon-arrow-right" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></symbol>
+      <symbol id="icon-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.8"/><path d="M4.5 20c0-4.1 3.4-7 7.5-7s7.5 2.9 7.5 7"/></symbol>
+      <symbol id="icon-mic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2.8" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0"/><line x1="12" y1="18" x2="12" y2="21.2"/><line x1="8.5" y1="21.2" x2="15.5" y2="21.2"/></symbol>
+      <symbol id="icon-book" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 5.2C5.5 4 8.5 4 12 5.5V19c-3.5-1.5-6.5-1.5-8.5-.3Z" stroke-linejoin="round"/><path d="M20.5 5.2c-2-1.2-5-1.2-8.5.3V19c3.5-1.5,6.5-1.5,8.5-.3Z" stroke-linejoin="round"/></symbol>
+      <symbol id="icon-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></symbol>
+      <symbol id="icon-edit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l4.2-.9L19.5 7.8a2 2 0 0 0 0-2.8l-.5-.5a2 2 0 0 0-2.8 0L4.9 15.8 4 20Z"/><line x1="14.5" y1="6" x2="18" y2="9.5"/></symbol>
+      <symbol id="icon-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7h14"/><path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/><path d="M7 7l1 13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1l1-13"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></symbol>
+      <symbol id="icon-sort" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="7 9 12 4 17 9"/><polyline points="7 15 12 20 17 15"/></symbol>
+    </g>
+  </defs>
+</svg>
+
+<div class="ds-shell">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="ds-sidebar">
+    <div class="ds-sidebar-logo">
+      <svg viewBox="150 -10 340 340" xmlns="http://www.w3.org/2000/svg">
+        <defs><style>.icon-cls-2{fill:#fff;} .icon-cls-3{fill:#fdb615;} .icon-cls-4{fill:#007cba;}</style></defs>
+        <g>
+    <g>
+      <path class="icon-cls-2" d="M194.19,243.2c26.57,44.25,75.02,73.88,130.39,73.88,52.01,0,97.89-26.13,125.29-65.97-82.51,7.07-168.06,4.4-255.69-7.91Z"/>
+      <g>
+        <path class="icon-cls-4" d="M243.02,259.84c16.74,4.69,33.68,8.49,50.8,11.14l12.86,1.87,12.93,1.19c4.3.56,8.63.53,12.96.75,4.32.1,8.66.51,12.98.28l13-.26c4.33-.19,8.63-.73,12.97-1.06l6.52-.5c2.16-.27,4.29-.68,6.44-1.02,1.61-.28,3.24-.5,4.86-.76,2.16-.5,4.31-1,6.45-1.58,18.28-4.68,36.15-10.96,53.46-18.77-82.32,7.02-167.66,4.35-255.06-7.92,7.92,3.17,15.82,6.27,23.92,8.86,8.23,2.85,16.57,5.35,24.91,7.78Z"/>
+        <path class="icon-cls-4" d="M269.52,282.22c10.63.31,21.25.47,31.87.16,10.61-.23,21.22-.8,31.77-1.84,2.78-.24,5.56-.51,8.33-.81-16.22.47-32.53-.37-48.55-3.03-17.4-2.81-34.58-6.93-51.25-12.56-16.49-5.55-32.57-12.38-47.67-20.94,8.01,13.34,18.02,25.33,29.6,35.6,4.67.56,9.35,1.04,14.03,1.42,10.61.97,21.24,1.62,31.86,2Z"/>
+        <path class="icon-cls-4" d="M397.01,274.24c-20.59,6.3-41.92,10.05-63.33,12.06-21.43,1.96-43,2.01-64.41.42-10.92-.82-21.81-2.06-32.62-3.81.42.12.84.26,1.26.38,8.45,2.34,16.93,4.52,25.51,6.24,8.56,1.8,17.18,3.25,25.86,4.23,8.66,1.1,17.37,1.78,26.09,1.93,4.36.22,8.72.07,13.09.05,4.35-.23,8.72-.31,13.07-.73,17.42-1.34,34.68-4.85,51.55-10.17-16.04,7.42-33.35,12.54-51.07,14.67-17.7,2.38-35.71,2.1-53.42,0-17.72-2.15-35.16-6.24-52.01-11.92-1.33-.45-2.64-.92-3.96-1.39,25.51,19.36,57.31,30.85,91.8,30.85,51.55,0,97.07-25.7,124.56-64.94-16.34,9.32-33.83,16.8-51.96,22.12Z"/>
+      </g>
+    </g>
+    <g>
+      <path class="icon-cls-2" d="M450.47,235.45c.72-.06,1.44-.14,2.16-.2,10.02-19.82,15.69-42.2,15.69-65.92,0-80.84-65.53-146.37-146.37-146.37s-146.37,65.53-146.37,146.37c0,19.67,3.91,38.43,10.95,55.57,7.05,1.09,14.11,2.15,21.18,3.11,80.36,11.3,161.91,13.98,242.76,7.45Z"/>
+      <g>
+        <path class="icon-cls-3" d="M440.6,210.82l-42.18,27.57c5.41-.17,10.82-.39,16.23-.65l25.95-26.92Z"/>
+        <path class="icon-cls-3" d="M461.52,197.15l-18.63,12.18-27.35,28.37c10.02-.48,20.03-1.1,30.02-1.86l17.91-36.82c-.78-.43-1.45-1.07-1.96-1.86Z"/>
+        <path class="icon-cls-3" d="M461.23,196.69c-1.37-2.69-.35-5.99,2.33-7.42,1.11-.59,2.33-.75,3.48-.56.22-1.67.41-3.35.58-5.04l-23.06,23.91,16.67-10.9Z"/>
+        <path class="icon-cls-3" d="M465.32,139.73l-29.67,9.31c.19.76.17,1.54-.05,2.26l32.69,20.66c.02-.87.03-1.75.03-2.63,0-10.14-1.03-20.04-3-29.6Z"/>
+        <path class="icon-cls-3" d="M397.51,210.38c-1.09.58-2.31.63-3.39.26l-11.62,28.14c4.96-.09,9.93-.21,14.89-.36l44.9-29.35,25.43-26.37c.09-1.03.17-2.07.25-3.1l-68.32,25.96c.47,1.86-.35,3.88-2.12,4.82Z"/>
+        <path class="icon-cls-3" d="M446.27,235.78c.42-.03.85-.07,1.27-.1l12.56-17.98c2.06-5.87,3.76-11.91,5.07-18.09-.39-.08-.77-.19-1.14-.34l-17.76,36.51Z"/>
+        <path class="icon-cls-3" d="M433.53,153.84c-1.33.71-2.85.64-4.08-.04l-31.43,49.35c.5.37.95.84,1.26,1.43.08.15.12.3.18.45l68.54-26c.14-2.14.24-4.29.28-6.46l-32.88-20.78c-.37.84-1.01,1.57-1.88,2.04Z"/>
+        <path class="icon-cls-3" d="M222.52,225.41l1.99,4.83c5.77.72,11.54,1.4,17.32,2.04l-17.31-8.42c-.55.67-1.24,1.19-2,1.56Z"/>
+        <path class="icon-cls-3" d="M269.55,234.97c-.43-.4-.81-.88-1.1-1.43-1.21-2.28-.66-5.01,1.16-6.68l-22.2-36.8c-1.31.36-2.7.07-3.75-.74l-22.15,25.22c.08.02.15.02.23.04,3.08.94,4.81,4.19,3.88,7.27-.17.54-.44,1.04-.74,1.49l18.75,9.13c8.63.93,17.27,1.77,25.92,2.5Z"/>
+        <path class="icon-cls-3" d="M218,229.4l-42.37-56.13c.49,18.24,4.33,35.64,10.89,51.62,7.05,1.09,14.11,2.15,21.18,3.11,3.43.48,6.86.94,10.3,1.39Z"/>
+        <path class="icon-cls-3" d="M391.72,208.61c-.74-1.39-.62-3.01.15-4.26l-34-24.17c-.35.44-.79.81-1.31,1.09-.18.09-.37.16-.55.23l1.68,5.71,15.25,51.7c2.99-.03,5.98-.06,8.97-.11l11.72-28.36c-.78-.38-1.46-.99-1.9-1.82Z"/>
+        <path class="icon-cls-3" d="M450.47,235.46c.72-.06,1.44-.14,2.16-.2,2.51-4.97,4.75-10.1,6.69-15.37l-11,15.74c.72-.06,1.43-.11,2.15-.17Z"/>
+        <path class="icon-cls-3" d="M278.31,228.48c1.24,2.51.42,5.52-1.87,7.06,9.43.74,18.88,1.36,28.33,1.86v-23.27l-26.46,14.35Z"/>
+        <path class="icon-cls-3" d="M342.41,229.18l14.62,9.76c5.11.03,10.23.02,15.34-.02l-10.68-36.22-6.2-21.04c-1.58.36-3.25-.2-4.27-1.48l-10.74,7.6v40.12l1.93,1.29Z"/>
+        <path class="icon-cls-3" d="M356.05,238.93l-13.79-9.2-1.79-1.19v10.18c5.19.11,10.38.18,15.58.22Z"/>
+        <path class="icon-cls-3" d="M208.46,162.53c.15-.08.31-.12.46-.19l-9.77-27.18c-1.25.42-2.59.22-3.67-.47l-.44-.31c-.41-.34-.76-.76-1.03-1.26-.1-.2-.18-.4-.25-.6l-.14-.52c-.04-.18-.06-.36-.08-.55l-13-.07c-.45,1.68-.87,3.37-1.26,5.07l28.01,26.93c.35-.32.72-.62,1.16-.85Z"/>
+        <path class="icon-cls-3" d="M340.48,187.11l10.44-7.39c-.05-.08-.11-.14-.15-.22-.71-1.33-.65-2.85.03-4.08l-10.32-6.57v18.26Z"/>
+        <polygon class="icon-cls-3" points="304.78 149.46 300.87 149.46 304.78 171.96 304.78 149.46"/>
+        <path class="icon-cls-3" d="M304.78,175.12l-4.45-25.66h-6.22l-8.67,10.98-7.52,9.52c.36.33.68.71.92,1.16.86,1.61.58,3.51-.55,4.82l14.64,14.44,11.85,11.69v-26.96Z"/>
+        <path class="icon-cls-3" d="M250.19,187.59c-.36.87-1.01,1.64-1.91,2.12-.13.07-.25.1-.38.16l22.02,36.7c.25-.19.52-.38.8-.53,2.63-1.4,5.86-.46,7.37,2.07l26.67-14.51v-6.99l-54.58-19.01Z"/>
+        <path class="icon-cls-3" d="M340.48,168.21l10.62,6.76c.36-.51.84-.95,1.43-1.26.58-.31,1.21-.46,1.83-.48l.27-13.66.2-10.1h-14.35v18.75Z"/>
+        <path class="icon-cls-3" d="M355.54,113.76l.22-11.33c-1.15-.18-2.2-.82-2.89-1.83l-12.4,9.76v3.41h15.06Z"/>
+        <path class="icon-cls-3" d="M397.56,202.86l31.43-49.36c-.51-.37-.95-.84-1.26-1.43-.06-.11-.09-.22-.14-.33l-68.94,24.57c.34,1.18.13,2.41-.49,3.42l34,24.17c.35-.43.79-.8,1.31-1.08,1.33-.71,2.85-.63,4.08.04Z"/>
+        <path class="icon-cls-3" d="M352.59,100.13c-.26-.52-.41-1.07-.45-1.62l-11.66,1.61v9.55l12.11-9.53Z"/>
+        <path class="icon-cls-3" d="M304.78,105.05l-21.8,3.01c.11,1.47-.57,2.93-1.82,3.8l1.15,1.9h22.47v-8.71Z"/>
+        <path class="icon-cls-3" d="M269.69,170.51l-25.09-13.68c-.2.24-.44.44-.73.6-.18.1-.37.16-.57.21l1.3,11.34,1.46,12.69c1.6-.08,3.19.74,3.99,2.25,0,.01.01.03.02.03l21.01-9.34c-.4-1.09-.34-2.27.13-3.28l-1.51-.82Z"/>
+        <path class="icon-cls-3" d="M413.74,112.9l-6.2-13.18c-1.2.48-2.53.39-3.61-.21l-26.54,42.18-1.62,7.77h-3.27l-15.45,24.56c.52.37.96.85,1.28,1.45.06.11.09.22.13.33l38.81-13.83,30.13-10.73c-.54-1.89.27-3.95,2.05-4.93l-15.72-33.41Z"/>
+        <path class="icon-cls-3" d="M435.29,148.05c.08.15.13.32.2.48l25.28-7.92,4.44-1.4c-1.44-6.88-3.36-13.58-5.72-20.06l-24.94,27.92c.28.29.54.6.74.98Z"/>
+        <path class="icon-cls-3" d="M288.83,187.1l-10.92-10.78c-.25.22-.53.43-.84.6-2.08,1.11-4.68.32-5.79-1.77,0,0,0-.02-.01-.03l-21.01,9.34c.32.87.36,1.78.12,2.63l54.39,18.94v-3.2l-15.95-15.73Z"/>
+        <path class="icon-cls-3" d="M241.06,157.17l-14.75,5.92,17.33,19.48c.2-.15.4-.29.62-.41.4-.22.83-.34,1.25-.41l-2.75-24.03c-.62.02-1.23-.16-1.71-.55Z"/>
+        <path class="icon-cls-3" d="M267.43,123.63l-6.68,8.77-16.1,21.13c.11.13.2.27.28.42.13.24.2.49.25.74l19.87-4.62,2.65-.62h-5.65l5.39-25.83Z"/>
+        <path class="icon-cls-3" d="M280.7,112.16c-1.43.75-3.08.59-4.34-.25l-1.4,1.84h6.72l-.97-1.6Z"/>
+        <path class="icon-cls-3" d="M215.97,164.82c.26.5.42,1.02.53,1.54l8.85-3.55-18.41-20.71-6.69-7.52c-.15.1-.28.21-.44.3-.03.02-.06.02-.09.04l9.77,27.18c2.48-.75,5.22.34,6.48,2.71Z"/>
+        <path class="icon-cls-3" d="M206.8,101.93l-7.64,25.13c1,.33,1.88,1.03,2.42,2.04.68,1.28.65,2.75.03,3.96l38.8,20.89c.16-.29.37-.56.64-.77l-31.28-51.61c-.95.5-2,.59-2.97.36Z"/>
+        <path class="icon-cls-3" d="M377.7,140.19l2.49-3.96,23.28-37.02c-.51-.37-.96-.85-1.28-1.45-.27-.5-.42-1.04-.48-1.58l-9.52.38-31.54,1.23c.17,1.68-.66,3.36-2.24,4.2-.68.36-1.4.5-2.11.48l-.22,11.29h27.14l-5.52,26.43Z"/>
+        <path class="icon-cls-3" d="M355.17,159.51l-.27,13.72c.59.05,1.17.22,1.69.5l15.27-24.27h-16.49l-.2,10.05Z"/>
+        <path class="icon-cls-3" d="M274.28,113.76l1.65-2.16c-.39-.34-.73-.73-.98-1.21-.4-.75-.55-1.58-.48-2.37l-62.51-9.34c-.22,1.03-.82,1.97-1.73,2.6l31.29,51.61c.92-.47,1.99-.33,2.76.27l23.43-30.75,1.81-8.65h4.78Z"/>
+        <path class="icon-cls-3" d="M189.91,164.62l26.98,50.65c.57-.37,1.21-.61,1.88-.77l-7.07-41.57c-2.2.25-4.42-.82-5.53-2.9-.53-.99-.72-2.07-.63-3.11l-15.64-2.31Z"/>
+        <path class="icon-cls-3" d="M223.82,230.15l-1.86-4.52c-1.13.4-2.39.46-3.62.09-3.08-.94-4.81-4.2-3.88-7.27.36-1.17,1.04-2.13,1.92-2.84l-27.22-51.09-13.42-1.97c-.1,2.25-.16,4.51-.16,6.79,0,.97.01,1.94.03,2.9l43.24,57.28c1.66.22,3.31.43,4.97.64Z"/>
+        <path class="icon-cls-3" d="M242.73,67.9c-1.6.85-3.51.57-4.8-.56l-3.91,4.01-23.06,23.58c.23.26.44.53.61.84.4.76.55,1.58.48,2.38l62.52,9.33c.17-.81.58-1.56,1.19-2.16l-9.14-10.65-23.31-27.16c-.18.13-.36.27-.56.38Z"/>
+        <path class="icon-cls-3" d="M360.18,96.2c.18.34.29.69.37,1.05l31.74-1.24,9.42-.37c.02-.79.26-1.56.69-2.22l-38.59-34.14c-.23.19-.47.36-.74.51-.72.38-1.49.52-2.25.48l-3.99,33.68c1.37.14,2.65.94,3.34,2.25Z"/>
+        <path class="icon-cls-3" d="M340.48,75.31v13.36l1.86,1.03,10.66,5.93c.37-.49.83-.9,1.4-1.21.61-.33,1.26-.47,1.9-.49l4-33.74c-1.24-.23-2.37-.98-3.01-2.18-.23-.44-.37-.9-.44-1.36l-.74.06-58.96,5.24c-.04.78-.28,1.54-.72,2.19l8.35,4.65v-.94l35.7,7.46Z"/>
+        <path class="icon-cls-3" d="M341.27,99.47l10.87-1.5c.04-.66.22-1.3.55-1.88l-12.22-6.8v10.29l.79-.11Z"/>
+        <path class="icon-cls-3" d="M296.1,64.58c-.34.38-.73.71-1.2.96-1.11.59-2.36.63-3.46.23l-11.27,38.59c.96.35,1.8,1.02,2.32,2,.2.38.32.77.4,1.16l21.89-3.02v-35.09l-8.67-4.83Z"/>
+        <path class="icon-cls-3" d="M276.7,104.59c.94-.5,1.98-.6,2.95-.38l5.44-18.62,5.85-20.02c-.75-.39-1.4-.99-1.82-1.79-.22-.4-.34-.83-.41-1.26l-43.72,1.68c-.02,1.11-.47,2.17-1.28,2.95l32.46,37.8c.17-.13.35-.26.55-.37Z"/>
+        <path class="icon-cls-3" d="M245.21,155.24c-.01.4-.11.79-.3,1.14l26.55,14.48c.38-.61.91-1.14,1.59-1.5,1.46-.78,3.16-.61,4.44.27l15.93-20.17h-23.37l-24.84,5.78Z"/>
+        <path class="icon-cls-3" d="M244.5,62.1c.27.5.42,1.03.47,1.57l43.66-1.68c-.07-1.41.55-2.79,1.73-3.65l-12.03-28.76c-6.04,1.88-11.91,4.15-17.59,6.77l-17.34,24.44c.44.35.82.79,1.1,1.32Z"/>
+        <path class="icon-cls-3" d="M290.88,57.99c.64-.34,1.32-.49,2-.49l6.57-32.82c-7.05,1.09-13.93,2.68-20.6,4.73l11.97,28.61s.04-.03.07-.04Z"/>
+        <path class="icon-cls-3" d="M293.43,57.53c.77.1,1.51.4,2.13.89l4.05-4.03,31.26-31.15c-2.95-.18-5.93-.27-8.92-.27-7.46,0-14.78.56-21.94,1.63l-2.67,13.35-3.91,19.57Z"/>
+        <path class="icon-cls-3" d="M205.76,94c1.6-.85,3.5-.58,4.8.55l22.83-23.35,4.14-4.23c-.23-.25-.43-.52-.6-.83-.21-.39-.33-.81-.41-1.22l-19.6,2.47c-7.13,7.34-13.49,15.42-18.96,24.12l6.31,3.84c.37-.54.86-1.01,1.48-1.34Z"/>
+        <path class="icon-cls-3" d="M295.94,58.8c.27.28.53.59.72.96.28.53.44,1.09.49,1.66l58.75-5.21.89-.08c-.04-1.57.77-3.1,2.25-3.89.49-.26,1.01-.41,1.53-.47l-1.17-23.96c-8.96-2.37-18.27-3.9-27.82-4.53l-21.74,21.67-13.9,13.85Z"/>
+        <path class="icon-cls-3" d="M238.7,60.34c1.39-.74,2.99-.62,4.25.14l16.8-23.68c-10.36,4.87-20.05,10.92-28.91,17.97l6.91,6.27c.28-.27.59-.52.95-.71Z"/>
+        <path class="icon-cls-3" d="M198.63,126.93l7.65-25.16c-.94-.36-1.77-1.02-2.28-1.98-.23-.43-.36-.89-.43-1.35l-.05-.54c-.02-.74.13-1.47.47-2.12l-6.3-3.84c-3.37,5.4-6.4,11.04-9.06,16.89l7.93,18.18c.68-.2,1.39-.22,2.07-.09Z"/>
+        <path class="icon-cls-3" d="M409.75,93.74c.21.39.33.81.41,1.22l35.16-4.42c-7.28-11.37-16.09-21.67-26.14-30.61l-11.51,31.92c.85.37,1.61,1.01,2.08,1.89Z"/>
+        <path class="icon-cls-3" d="M408.03,99.5l6.14,13.06,15.77,33.54c1.44-.57,3.04-.32,4.21.6l25.12-28.12c-3.59-9.71-8.18-18.93-13.64-27.54l-35.4,4.45c.1,1.61-.71,3.19-2.2,4.02Z"/>
+        <path class="icon-cls-3" d="M364.43,58.64l38.53,34.09c.29-.29.61-.55.99-.76.94-.5,1.99-.6,2.96-.38l11.62-32.24c-5.91-5.19-12.24-9.92-18.94-14.12l-34.37,9.93c.25,1.23-.05,2.49-.8,3.47Z"/>
+        <path class="icon-cls-3" d="M362.25,51.91l6.45-17.86,1.11-3.08c-3.24-1.12-6.53-2.13-9.86-3.03l1.16,23.8c.39,0,.77.05,1.14.16Z"/>
+        <path class="icon-cls-3" d="M364.82,54c.1.19.17.38.24.57l33.83-9.77c-8.93-5.53-18.5-10.13-28.57-13.65l-7.57,20.96c.86.37,1.6,1.01,2.07,1.89Z"/>
+        <path class="icon-cls-3" d="M237.38,61.44l-6.97-6.32c-4.52,3.62-8.81,7.51-12.87,11.64l18.91-2.39c-.06-1.05.27-2.1.92-2.93Z"/>
+        <path class="icon-cls-3" d="M242.61,183.77c.18-.3.38-.58.63-.83l-17.47-19.64-9.17,3.68c.11,1.27-.25,2.53-.97,3.58l26.97,13.21Z"/>
+        <path class="icon-cls-3" d="M201.32,133.51c-.18.27-.39.52-.64.75l7.24,8.14,17.96,20.2,14.74-5.91c-.08-.1-.15-.21-.22-.32-.33-.62-.38-1.31-.2-1.93l-38.89-20.93Z"/>
+        <path class="icon-cls-3" d="M220.89,214.42l22.37-25.46c-.3-.3-.57-.62-.77-1.01-.22-.41-.34-.84-.42-1.27l-.07-.54c-.02-.63.1-1.25.34-1.82l-27.08-13.25c-.44.5-.95.94-1.58,1.28-.44.24-.91.38-1.39.49l7.07,41.56c.49-.06,1.01-.04,1.52.03Z"/>
+        <path class="icon-cls-3" d="M205.66,166.33c.19-.92.59-1.78,1.22-2.51l-27.74-26.67c-.39,1.73-.75,3.48-1.07,5.23l11.5,21.58,16.1,2.37Z"/>
+        <path class="icon-cls-3" d="M177.88,143.35c-1.09,6.07-1.8,12.27-2.12,18.58l13.04,1.92-10.92-20.5Z"/>
+        <path class="icon-cls-3" d="M193.82,129.57l.21-.49c.39-.72.98-1.34,1.75-1.75.07-.04.14-.06.22-.09l-7.7-17.66c-3.05,6.8-5.59,13.88-7.58,21.19l12.83.07c.03-.44.11-.86.27-1.27Z"/>
+      </g>
+    </g>
+  </g>
+      </svg>
+    </div>
+
+    <nav>
+      <div class="ds-nav-group">
+        <div class="ds-nav-group-title">Fundamentos</div>
+        <a class="ds-nav-link" href="#visao-geral">Visão geral</a>
+        <a class="ds-nav-link" href="#metodologia">Metodologia</a>
+        <a class="ds-nav-link" href="#logotipo">Logotipo</a>
+        <a class="ds-nav-link" href="#cores">Cores</a>
+        <a class="ds-nav-link" href="#tipografia">Tipografia</a>
+        <a class="ds-nav-link" href="#espacamento">Espaçamento &amp; raio</a>
+        <a class="ds-nav-link" href="#elevacao">Elevação</a>
+        <a class="ds-nav-link" href="#icones">Ícones</a>
+      </div>
+      <div class="ds-nav-group">
+        <div class="ds-nav-group-title">Componentes</div>
+        <a class="ds-nav-link" href="#botoes">Botões</a>
+        <a class="ds-nav-link" href="#badges">Badges</a>
+        <a class="ds-nav-link" href="#cards">Cards</a>
+        <a class="ds-nav-link" href="#alertas">Alertas</a>
+        <a class="ds-nav-link" href="#campo-texto">Campo de texto</a>
+        <a class="ds-nav-link" href="#area-texto">Área de texto</a>
+        <a class="ds-nav-link" href="#checkbox">Checkbox</a>
+        <a class="ds-nav-link" href="#radio-switch">Radio &amp; Switch</a>
+        <a class="ds-nav-link" href="#select">Select</a>
+        <a class="ds-nav-link" href="#navegacao">Navegação</a>
+        <a class="ds-nav-link" href="#avatar">Avatar</a>
+        <a class="ds-nav-link" href="#tabela">Tabela</a>
+        <a class="ds-nav-link" href="#modal">Modal</a>
+        <a class="ds-nav-link" href="#tooltip">Tooltip</a>
+      </div>
+    </nav>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <main class="ds-main">
+
+    <!-- ============ HERO ============ -->
+    <header class="ds-hero" id="visao-geral">
+      <div class="ds-container">
+        <div class="ds-hero-kicker">✦ Design System · Pascom Brasil</div>
+        <img class="ds-hero-logo" src="assets/pascom-horizontal.svg" alt="Logo Pascom — Paróquia N. Sra. da Visitação">
+        <h1>Uma só voz visual para todos os canais da paróquia.</h1>
+        <p>Este documento reúne os fundamentos e componentes de interface derivados da identidade oficial da Pascom. Use-o como referência única ao criar materiais, telas ou sistemas — impresso, digital ou institucional — para manter tudo reconhecível como Pascom.</p>
+        <div class="ds-hero-meta">
+          <div class="ds-hero-meta-item"><span class="num">3</span><span class="label">Cores de marca</span></div>
+          <div class="ds-hero-meta-item"><span class="num">11</span><span class="label">Componentes de UI</span></div>
+          <div class="ds-hero-meta-item"><span class="num">120+</span><span class="label">Tokens de design</span></div>
+          <div class="ds-hero-meta-item"><span class="num">1</span><span class="label">Fonte de verdade</span></div>
+        </div>
+      </div>
+    </header>
+    <svg class="ds-wave" viewBox="0 0 1200 30" preserveAspectRatio="none"><path d="M0,10 C 200,30 400,0 600,12 C 800,24 1000,4 1200,14 L1200,30 L0,30 Z"/></svg>
+
+    <!-- ============ METODOLOGIA ============ -->
+    <section class="ds-section" id="metodologia">
+      <div class="ds-container">
+        <div class="ds-section-eyebrow">Metodologia</div>
+        <h2 class="ds-section-title">Como este sistema é organizado</h2>
+        <p class="ds-section-lede">Seguimos uma lógica de composição: peças pequenas e indivisíveis se combinam em peças cada vez maiores, até formar uma página real da paróquia. Entender essa lógica ajuda a saber onde procurar — e onde editar — quando algo precisa mudar.</p>
+
+        <div class="ds-swatch-grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap: var(--space-5);">
+          <div class="card">
+            <span class="badge badge-primary" style="margin-bottom:var(--space-4);">01 · Tokens</span>
+            <p class="card-title">Tokens</p>
+            <p class="card-desc">Os menores valores do sistema — não podem ser divididos sem perder o sentido. Ex: <code>--color-blue-500</code>, <code>--space-5</code>, <code>--radius-full</code>.</p>
+          </div>
+          <div class="card">
+            <span class="badge badge-secondary" style="margin-bottom:var(--space-4);">02 · Átomos</span>
+            <p class="card-title">Átomos</p>
+            <p class="card-desc">Elementos de interface que usam tokens diretamente. Ex: um botão, um campo de texto, um badge.</p>
+          </div>
+          <div class="card">
+            <span class="badge badge-accent" style="margin-bottom:var(--space-4);">03 · Moléculas</span>
+            <p class="card-title">Moléculas</p>
+            <p class="card-desc">Grupos de átomos que funcionam juntos. Ex: campo de busca (input + botão), card de evento (título + badge + botão).</p>
+          </div>
+          <div class="card">
+            <span class="badge badge-neutral" style="margin-bottom:var(--space-4);">04 · Organismos</span>
+            <p class="card-title">Organismos</p>
+            <p class="card-desc">Seções completas e reutilizáveis. Ex: barra de navegação, formulário de inscrição, lista de avisos.</p>
+          </div>
+          <div class="card">
+            <span class="badge badge-neutral" style="margin-bottom:var(--space-4);">05 · Templates</span>
+            <p class="card-title">Templates</p>
+            <p class="card-desc">O esqueleto de uma página, com organismos posicionados — mas ainda sem conteúdo real da paróquia.</p>
+          </div>
+          <div class="card">
+            <span class="badge badge-neutral" style="margin-bottom:var(--space-4);">06 · Páginas</span>
+            <p class="card-title">Páginas</p>
+            <p class="card-desc">O template preenchido com conteúdo real — a página de eventos publicada, pronta para o paroquiano acessar.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ LOGOTIPO ============ -->
+    <section class="ds-section" id="logotipo">
+      <div class="ds-container">
+        <div class="ds-section-eyebrow">Fundamentos</div>
+        <h2 class="ds-section-title">Logotipo</h2>
+        <p class="ds-section-lede">O símbolo representa uma rede de pontos conectados — comunicação — ancorada por uma cruz e sustentada por águas em movimento. É o elemento mais reconhecível da marca: proteja-o.</p>
+
+        <h3 class="ds-subhead">Variações</h3>
+        <div class="ds-example" style="gap: var(--space-8);">
+          <div style="flex:1; min-width:280px; text-align:center;">
+            <img src="assets/pascom-horizontal.svg" alt="Logo horizontal" style="max-height:120px; margin:0 auto var(--space-4);">
+            <span class="badge badge-neutral">Horizontal — uso padrão</span>
+          </div>
+          <div style="flex:1; min-width:200px; text-align:center;">
+            <img src="assets/pascom-vertical.svg" alt="Logo vertical" style="max-height:200px; margin:0 auto var(--space-4);">
+            <span class="badge badge-neutral">Vertical — espaços quadrados/estreitos</span>
+          </div>
+          <div style="flex:1; min-width:160px; text-align:center;">
+            <img src="assets/pascom-icon.svg" alt="Símbolo isolado" style="max-height:120px; margin:0 auto var(--space-4);">
+            <span class="badge badge-neutral">Símbolo — avatares, favicon</span>
+          </div>
+        </div>
+
+        <h3 class="ds-subhead">Área de proteção &amp; tamanho mínimo</h3>
+        <p class="ds-body-text">Mantenha ao redor do logo um espaço livre equivalente à altura do braço horizontal da cruz do símbolo (medida "X"). Nenhum texto, borda ou elemento gráfico deve invadir essa área.</p>
+        <div class="ds-example is-stacked">
+          <div style="position:relative; display:inline-block; padding:40px; border:1.5px dashed var(--color-border-strong); border-radius:var(--radius-md); margin:0 auto;">
+            <img src="assets/pascom-icon.svg" alt="Área de proteção do símbolo" style="height:90px;">
+          </div>
+        </div>
+        <table class="ds-table">
+          <thead><tr><th>Aplicação</th><th>Tamanho mínimo</th></tr></thead>
+          <tbody>
+            <tr><td>Logo horizontal · digital</td><td><code>120px</code> de largura</td></tr>
+            <tr><td>Logo horizontal · impresso</td><td><code>30mm</code> de largura</td></tr>
+            <tr><td>Símbolo isolado · digital</td><td><code>24px</code> (favicon, avatar)</td></tr>
+            <tr><td>Símbolo isolado · impresso</td><td><code>10mm</code></td></tr>
+          </tbody>
+        </table>
+
+        <h3 class="ds-subhead">O que evitar</h3>
+        <div class="ds-do-dont">
+          <div class="ds-do-dont-card is-dont">
+            <span class="tag">✕ Não distorcer</span>
+            <div class="frame"><img src="assets/pascom-icon.svg" alt="Exemplo errado: logo distorcido" style="height:70px; transform:scaleX(1.6);"></div>
+            <p>Nunca esticar ou espremer o símbolo fora de sua proporção original.</p>
+          </div>
+          <div class="ds-do-dont-card is-dont">
+            <span class="tag">✕ Não recolorir</span>
+            <div class="frame"><img src="assets/pascom-icon.svg" alt="Exemplo errado: logo recolorido" style="height:70px; filter:hue-rotate(160deg) saturate(1.4);"></div>
+            <p>As cores da marca são fixas. Não aplique outras paletas ao símbolo.</p>
+          </div>
+          <div class="ds-do-dont-card is-dont">
+            <span class="tag">✕ Não adicionar efeitos</span>
+            <div class="frame"><img src="assets/pascom-icon.svg" alt="Exemplo errado: logo com sombra" style="height:70px; filter:drop-shadow(6px 6px 0 rgba(0,0,0,0.35));"></div>
+            <p>Sem sombras, contornos, brilho ou gradientes — o símbolo já tem contraste próprio.</p>
+          </div>
+          <div class="ds-do-dont-card is-dont">
+            <span class="tag">✕ Não usar em baixo contraste</span>
+            <div class="frame" style="background:var(--color-amber-300);"><img src="assets/pascom-icon.svg" alt="Exemplo errado: logo em fundo de baixo contraste" style="height:70px;"></div>
+            <p>Evite fundos que se aproximem das cores do símbolo — ele precisa continuar legível.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CORES ============ -->
+    <section class="ds-section" id="cores">
+      <div class="ds-container">
+        <div class="ds-section-eyebrow">Fundamentos</div>
+        <h2 class="ds-section-title">Cores</h2>
+        <p class="ds-section-lede">Três cores de marca — verde, azul e âmbar — mais uma escala neutra baseada no grafite oficial. Cada cor tem 10 variações de tom (50 a 900), geradas para garantir contraste consistente em qualquer aplicação.</p>
+
+        <h3 class="ds-subhead">Papéis semânticos</h3>
+        <p class="ds-body-text">Nunca aponte direto para <code>--color-blue-500</code> dentro de um componente. Use o token semântico — ele pode ser reajustado no futuro sem quebrar nada.</p>
+        <table class="ds-table">
+          <thead><tr><th>Token</th><th>Cor de base</th><th>Uso</th></tr></thead>
+          <tbody>
+            <tr><td><code>--color-primary</code></td><td>Azul 500</td><td>Ações principais, links, foco</td></tr>
+            <tr><td><code>--color-secondary</code></td><td>Verde 500</td><td>Ações secundárias, destaques de comunidade</td></tr>
+            <tr><td><code>--color-accent</code></td><td>Âmbar 500</td><td>Chamadas de atenção pontuais, destaque editorial</td></tr>
+            <tr><td><code>--color-success</code></td><td>Verde 500</td><td>Confirmações, estado de sucesso</td></tr>
+            <tr><td><code>--color-warning</code></td><td>Âmbar 500</td><td>Avisos, atenção necessária</td></tr>
+            <tr><td><code>--color-danger</code></td><td>Vermelho 500</td><td>Erros, ações destrutivas</td></tr>
+            <tr><td><code>--color-info</code></td><td>Azul 500</td><td>Mensagens informativas</td></tr>
+          </tbody>
+        </table>
+
+        <h3 class="ds-subhead">Escala — Verde</h3>
+        <div class="ds-swatch-grid" data-scale="green"></div>
+        <h3 class="ds-subhead">Escala — Azul</h3>
+        <div class="ds-swatch-grid" data-scale="blue"></div>
+        <h3 class="ds-subhead">Escala — Âmbar</h3>
+        <div class="ds-swatch-grid" data-scale="amber"></div>
+        <h3 class="ds-subhead">Escala — Vermelho <span style="font-weight:400; font-size:var(--text-sm); color:var(--color-text-subtle);">(não está na logo — criada em harmonia, só para estados de erro)</span></h3>
+        <div class="ds-swatch-grid" data-scale="red"></div>
+        <h3 class="ds-subhead">Escala — Neutro (grafite)</h3>
+        <div class="ds-swatch-grid" data-scale="neutral"></div>
+        <p class="ds-body-text" style="font-size:var(--text-xs);">Clique em qualquer amostra para copiar o nome do token.</p>
+      </div>
+    </section>
+
+    <!-- ============ TIPOGRAFIA ============ -->
+    <section class="ds-section" id="tipografia">
+      <div class="ds-container">
+        <div class="ds-section-eyebrow">Fundamentos</div>
+        <h2 class="ds-section-title">Tipografia</h2>
+        <p class="ds-section-lede">Duas famílias fazem todo o trabalho. <strong>Fredoka</strong> — geométrica e arredondada, ecoa as formas do símbolo e do wordmark — carrega a personalidade em títulos e destaques. <strong>Inter</strong> — neutra e muito legível — cuida do texto de leitura e da interface. <strong>JetBrains Mono</strong> entra só em código e dados técnicos.</p>
+
+        <div class="ds-example is-stacked" id="type-scale"></div>
+
+        <h3 class="ds-subhead">Pesos disponíveis</h3>
+        <table class="ds-table">
+          <thead><tr><th>Token</th><th>Peso</th><th>Uso recomendado</th></tr></thead>
+          <tbody>
+            <tr><td><code>--weight-regular</code></td><td>400</td><td>Corpo de texto</td></tr>
+            <tr><td><code>--weight-medium</code></td><td>500</td><td>Rótulos, itens de navegação</td></tr>
+            <tr><td><code>--weight-semibold</code></td><td>600</td><td>Títulos, botões, ênfase</td></tr>
+            <tr><td><code>--weight-bold</code></td><td>700</td><td>Destaques pontuais</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ============ ESPAÇAMENTO & RAIO ============ -->
+    <section class="ds-section" id="espacamento">
+      <div class="ds-container">
+        <div class="ds-section-eyebrow">Fundamentos</div>
+        <h2 class="ds-section-title">Espaçamento &amp; raio</h2>
+        <p class="ds-section-lede">Espaçamento segue uma escala de 4px — todo respiro no sistema é múltiplo desse valor. Isso cria ritmo visual previsível e evita que cada tela invente sua própria margem.</p>
+
+        <div class="ds-example is-stacked" id="spacing-scale"></div>
+
+        <h3 class="ds-subhead">Raio de borda</h3>
+        <p class="ds-body-text">Cantos arredondados reforçam o tom acolhedor da marca. Use <code>radius-full</code> para pílulas (botões, badges) e <code>radius-md</code>/<code>lg</code> para cards e campos.</p>
+        <div class="radius-demo-grid" id="radius-scale"></div>
+      </div>
+    </section>
+
+    <!-- ============ ELEVAÇÃO ============ -->
+    <section class="ds-section" id="elevacao">
+      <div class="ds-container">
+        <div class="ds-section-eyebrow">Fundamentos</div>
+        <h2 class="ds-section-title">Elevação</h2>
+        <p class="ds-section-lede">Sombras suaves, tingidas de grafite (nunca preto puro), indicam camadas de profundidade — de um card em repouso a um menu flutuante.</p>
+        <div class="shadow-demo-grid" style="background:var(--color-bg-subtle); border:1px solid var(--color-border); border-radius:var(--radius-lg);">
+          <div class="shadow-demo-item"><div class="shadow-demo-box" style="box-shadow:var(--shadow-sm);"></div><span class="lbl">--shadow-sm</span></div>
+          <div class="shadow-demo-item"><div class="shadow-demo-box" style="box-shadow:var(--shadow-md);"></div><span class="lbl">--shadow-md</span></div>
+          <div class="shadow-demo-item"><div class="shadow-demo-box" style="box-shadow:var(--shadow-lg);"></div><span class="lbl">--shadow-lg</span></div>
+          <div class="shadow-demo-item"><div class="shadow-demo-box" style="box-shadow:var(--shadow-xl);"></div><span class="lbl">--shadow-xl</span></div>
+          <div class="shadow-demo-item"><div class="shadow-demo-box" style="box-shadow:var(--shadow-focus);"></div><span class="lbl">--shadow-focus</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ ÍCONES ============ -->
+    <section class="ds-section" id="icones">
+      <div class="ds-container">
+        <div class="ds-section-eyebrow">Fundamentos</div>
+        <h2 class="ds-section-title">Ícones</h2>
+        <p class="ds-section-lede">Traço de 1.8px, pontas arredondadas, grade de 24×24 — o mesmo espírito arredondado do símbolo. Use em três tamanhos: 16px (dentro de texto/badges), 20px (botões e campos) e 24px (destaques isolados).</p>
+        <div class="ds-example">
+          <div class="icon-demo-row">
+            <div class="icon-chip"><svg width="24" height="24"><use href="#icon-calendar"/></svg><span class="lbl">calendar</span></div>
+            <div class="icon-chip"><svg width="24" height="24"><use href="#icon-bell"/></svg><span class="lbl">bell</span></div>
+            <div class="icon-chip"><svg width="24" height="24"><use href="#icon-heart"/></svg><span class="lbl">heart</span></div>
+            <div class="icon-chip"><svg width="24" height="24"><use href="#icon-users"/></svg><span class="lbl">users</span></div>
+            <div class="icon-chip"><svg width="24" height="24"><use href="#icon-book"/></svg><span class="lbl">book</span></div>
+            <div class="icon-chip"><svg width="24" height="24"><use href="#icon-mic"/></svg><span class="lbl">mic</span></div>
+            <div class="icon-chip"><svg width="24" height="24"><use href="#icon-star"/></svg><span class="lbl">star</span></div>
+            <div class="icon-chip"><svg width="24" height="24"><use href="#icon-search"/></svg><span class="lbl">search</span></div>
+            <div class="icon-chip"><svg width="24" height="24"><use href="#icon-mail"/></svg><span class="lbl">mail</span></div>
+            <div class="icon-chip"><svg width="24" height="24"><use href="#icon-user"/></svg><span class="lbl">user</span></div>
+            <div class="icon-chip"><svg width="24" height="24"><use href="#icon-check-circle"/></svg><span class="lbl">check-circle</span></div>
+            <div class="icon-chip"><svg width="24" height="24"><use href="#icon-alert-triangle"/></svg><span class="lbl">alert-triangle</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ BOTÕES ============ -->
+    <section class="ds-section" id="botoes">
+      <div class="ds-container">
+        <div class="ds-section-eyebrow">Componente</div>
+        <h2 class="ds-section-title">Botões</h2>
+        <p class="ds-section-lede">Sempre em pílula (<code>radius-full</code>), três estilos de ênfase e três tamanhos. Passe o mouse para ver o hover — é CSS real, não uma captura de tela.</p>
+
+        <h3 class="ds-subhead">Ênfase</h3>
+        <div class="ds-grid-states">
+          <div class="ds-grid-states-item"><span class="ds-state-label">Filled</span><button class="btn btn-primary btn-md"><svg width="16" height="16"><use href="#icon-check"/></svg>Confirmar</button></div>
+          <div class="ds-grid-states-item"><span class="ds-state-label">Outline</span><button class="btn btn-outline btn-md">Saiba mais</button></div>
+          <div class="ds-grid-states-item"><span class="ds-state-label">Ghost</span><button class="btn btn-ghost btn-md">Cancelar</button></div>
+          <div class="ds-grid-states-item"><span class="ds-state-label">Secundário</span><button class="btn btn-secondary btn-md">Inscrever-se</button></div>
+          <div class="ds-grid-states-item"><span class="ds-state-label">Desabilitado</span><button class="btn btn-primary btn-md" disabled>Indisponível</button></div>
+        </div>
+
+        <h3 class="ds-subhead">Tamanho</h3>
+        <div class="ds-example">
+          <button class="btn btn-primary btn-lg">Botão grande</button>
+          <button class="btn btn-primary btn-md">Botão médio</button>
+          <button class="btn btn-primary btn-sm">Botão pequeno</button>
+        </div>
+
+        <div class="ds-code"><span class="tok-tag">&lt;button</span> <span class="tok-attr">class</span>=<span class="tok-str">"btn btn-primary btn-md"</span><span class="tok-tag">&gt;</span>Confirmar<span class="tok-tag">&lt;/button&gt;</span>
+<span class="tok-comment">&lt;!-- variações: btn-primary · btn-secondary · btn-outline · btn-ghost --&gt;</span>
+<span class="tok-comment">&lt;!-- tamanhos: btn-lg · btn-md · btn-sm --&gt;</span></div>
+      </div>
+    </section>
+
+    <!-- ============ BADGES ============ -->
+    <section class="ds-section" id="badges">
+      <div class="ds-container">
+        <div class="ds-section-eyebrow">Componente</div>
+        <h2 class="ds-section-title">Badges</h2>
+        <p class="ds-section-lede">Pílulas curtas para status, categorias e metadados — em listas de eventos, avisos ou etiquetas de conteúdo.</p>
+        <div class="ds-example">
+          <span class="badge badge-primary"><svg width="14" height="14"><use href="#icon-calendar"/></svg>Evento</span>
+          <span class="badge badge-secondary"><svg width="14" height="14"><use href="#icon-users"/></svg>Comunidade</span>
+          <span class="badge badge-accent"><svg width="14" height="14"><use href="#icon-star"/></svg>Destaque</span>
+          <span class="badge badge-success"><svg width="14" height="14"><use href="#icon-check-circle"/></svg>Confirmado</span>
+          <span class="badge badge-warning"><svg width="14" height="14"><use href="#icon-alert-triangle"/></svg>Pendente</span>
+          <span class="badge badge-danger"><svg width="14" height="14"><use href="#icon-x-circle"/></svg>Cancelado</span>
+          <span class="badge badge-neutral">Geral</span>
+          <span class="badge badge-solid">Novo</span>
+        </div>
+        <div class="ds-code"><span class="tok-tag">&lt;span</span> <span class="tok-attr">class</span>=<span class="tok-str">"badge badge-success"</span><span class="tok-tag">&gt;</span>
+  &lt;svg&gt;&lt;use href=<span class="tok-str">"#icon-check-circle"</span>/&gt;&lt;/svg&gt;
+  Confirmado
+<span class="tok-tag">&lt;/span&gt;</span></div>
+      </div>
+    </section>
+
+    <!-- ============ CARDS ============ -->
+    <section class="ds-section" id="cards">
+      <div class="ds-container">
+        <div class="ds-section-eyebrow">Componente</div>
+        <h2 class="ds-section-title">Cards</h2>
+        <p class="ds-section-lede">Contêiner base para agrupar conteúdo relacionado — de um aviso simples a um número de destaque.</p>
+        <div class="ds-example">
+          <div class="card" style="flex:1; min-width:220px;">
+            <span class="badge badge-primary" style="margin-bottom:var(--space-4);">Aviso</span>
+            <p class="card-title">Missa de domingo</p>
+            <p class="card-desc">Celebração às 10h e 19h, com transmissão ao vivo pelo canal da paróquia.</p>
+          </div>
+          <div class="card card-elevated" style="flex:1; min-width:180px;">
+            <span class="card-stat-label">Batismos em 2026</span>
+            <p class="card-stat-num">148</p>
+            <span class="card-stat-delta">↑ 12% vs. 2025</span>
+          </div>
+          <div class="card card-dark" style="flex:1; min-width:220px;">
+            <span class="badge badge-accent" style="margin-bottom:var(--space-4);">Comunicação</span>
+            <p class="card-title" style="color:#fff;">Pascom em números</p>
+            <p class="card-desc" style="color:var(--color-dark-text-muted);">32 voluntários ativos, 4 ministérios de mídia integrados.</p>
+          </div>
+        </div>
+        <div class="ds-code"><span class="tok-tag">&lt;div</span> <span class="tok-attr">class</span>=<span class="tok-str">"card card-elevated"</span><span class="tok-tag">&gt;</span>...<span class="tok-tag">&lt;/div&gt;</span>
+<span class="tok-comment">&lt;!-- variações: card · card-elevated · card-dark --&gt;</span></div>
+      </div>
+    </section>
+
+    <!-- ============ ALERTAS ============ -->
+    <section class="ds-section" id="alertas">
+      <div class="ds-container">
+        <div class="ds-section-eyebrow">Componente</div>
+        <h2 class="ds-section-title">Alertas</h2>
+        <p class="ds-section-lede">Mensagens de sistema, sempre com ícone + título curto + explicação de uma linha.</p>
+        <div class="ds-example is-stacked">
+          <div class="alert alert-success"><svg><use href="#icon-check-circle"/></svg><div><div class="alert-title">Inscrição confirmada</div>Você receberá um e-mail com os detalhes do encontro.</div></div>
+          <div class="alert alert-info"><svg><use href="#icon-info"/></svg><div><div class="alert-title">Horário atualizado</div>A missa das 18h passou para 19h a partir deste domingo.</div></div>
+          <div class="alert alert-warning"><svg><use href="#icon-alert-triangle"/></svg><div><div class="alert-title">Vagas limitadas</div>Restam 5 vagas para o retiro de jovens.</div></div>
+          <div class="alert alert-danger"><svg><use href="#icon-x-circle"/></svg><div><div class="alert-title">Pagamento não identificado</div>Verifique o comprovante ou entre em contato com a secretaria.</div></div>
+        </div>
+        <div class="ds-code"><span class="tok-tag">&lt;div</span> <span class="tok-attr">class</span>=<span class="tok-str">"alert alert-success"</span><span class="tok-tag">&gt;</span>
+  &lt;svg&gt;&lt;use href=<span class="tok-str">"#icon-check-circle"</span>/&gt;&lt;/svg&gt;
+  &lt;div&gt;&lt;div <span class="tok-attr">class</span>=<span class="tok-str">"alert-title"</span>&gt;Título&lt;/div&gt;Texto de apoio.&lt;/div&gt;
+<span class="tok-tag">&lt;/div&gt;</span></div>
+      </div>
+    </section>
+
+    <!-- ============ CAMPO DE TEXTO ============ -->
+    <section class="ds-section" id="campo-texto">
+      <div class="ds-container">
+        <div class="ds-section-eyebrow">Componente</div>
+        <h2 class="ds-section-title">Campo de texto</h2>
+        <p class="ds-section-lede">Estados reais — clique para ver o foco, ou confira erro/sucesso/desabilitado já aplicados abaixo.</p>
+        <div class="ds-grid-states">
+          <div class="ds-grid-states-item" style="width:100%;">
+            <span class="ds-state-label">Padrão</span>
+            <div class="field">
+              <label class="field-label">Nome completo</label>
+              <div class="input-wrap"><svg width="16" height="16"><use href="#icon-user"/></svg><input type="text" placeholder="Digite seu nome"></div>
+            </div>
+          </div>
+          <div class="ds-grid-states-item" style="width:100%;">
+            <span class="ds-state-label">Com erro</span>
+            <div class="field">
+              <label class="field-label">E-mail</label>
+              <div class="input-wrap is-error"><svg width="16" height="16"><use href="#icon-mail"/></svg><input type="text" value="nome@errado"></div>
+              <span class="field-hint is-error">Digite um e-mail válido.</span>
+            </div>
+          </div>
+          <div class="ds-grid-states-item" style="width:100%;">
+            <span class="ds-state-label">Sucesso</span>
+            <div class="field">
+              <label class="field-label">Telefone</label>
+              <div class="input-wrap is-success"><svg width="16" height="16"><use href="#icon-check-circle"/></svg><input type="text" value="(41) 99999-0000"></div>
+            </div>
+          </div>
+          <div class="ds-grid-states-item" style="width:100%;">
+            <span class="ds-state-label">Desabilitado</span>
+            <div class="field">
+              <label class="field-label">Paróquia de origem</label>
+              <div class="input-wrap is-disabled"><input type="text" value="N. Sra. da Visitação" disabled></div>
+            </div>
+          </div>
+        </div>
+        <div class="ds-code"><span class="tok-tag">&lt;div</span> <span class="tok-attr">class</span>=<span class="tok-str">"input-wrap"</span><span class="tok-tag">&gt;</span>
+  &lt;svg&gt;&lt;use href=<span class="tok-str">"#icon-user"</span>/&gt;&lt;/svg&gt;
+  &lt;input <span class="tok-attr">type</span>=<span class="tok-str">"text"</span> <span class="tok-attr">placeholder</span>=<span class="tok-str">"Digite seu nome"</span>&gt;
+<span class="tok-tag">&lt;/div&gt;</span>
+<span class="tok-comment">&lt;!-- estados: is-error · is-success · is-disabled · filled --&gt;</span></div>
+      </div>
+    </section>
+
+    <!-- ============ ÁREA DE TEXTO ============ -->
+    <section class="ds-section" id="area-texto">
+      <div class="ds-container">
+        <div class="ds-section-eyebrow">Componente</div>
+        <h2 class="ds-section-title">Área de texto</h2>
+        <p class="ds-section-lede">Mesma linguagem visual do campo de texto, para conteúdo mais longo.</p>
+        <div class="ds-example is-stacked">
+          <div class="field" style="max-width:480px;">
+            <label class="field-label">Mensagem</label>
+            <textarea class="ds-textarea" placeholder="Escreva um recado para a secretaria paroquial..."></textarea>
+            <span class="field-hint">Máximo de 500 caracteres.</span>
+          </div>
+        </div>
+        <div class="ds-code"><span class="tok-tag">&lt;textarea</span> <span class="tok-attr">class</span>=<span class="tok-str">"ds-textarea"</span> <span class="tok-attr">placeholder</span>=<span class="tok-str">"..."</span><span class="tok-tag">&gt;&lt;/textarea&gt;</span></div>
+      </div>
+    </section>
+
+    <!-- ============ CHECKBOX ============ -->
+    <section class="ds-section" id="checkbox">
+      <div class="ds-container">
+        <div class="ds-section-eyebrow">Componente</div>
+        <h2 class="ds-section-title">Checkbox</h2>
+        <p class="ds-section-lede">Seleção múltipla. Os exemplos abaixo funcionam de verdade — clique para testar.</p>
+        <div class="ds-example">
+          <label class="checkbox"><input type="checkbox"><span class="box"><svg viewBox="0 0 24 24"><use href="#icon-check"/></svg></span>Quero receber avisos</label>
+          <label class="checkbox"><input type="checkbox" checked><span class="box"><svg viewBox="0 0 24 24"><use href="#icon-check"/></svg></span>Confirmo minha presença</label>
+          <label class="checkbox"><input type="checkbox" disabled><span class="box"><svg viewBox="0 0 24 24"><use href="#icon-check"/></svg></span>Indisponível</label>
+        </div>
+        <div class="ds-code"><span class="tok-tag">&lt;label</span> <span class="tok-attr">class</span>=<span class="tok-str">"checkbox"</span><span class="tok-tag">&gt;</span>
+  &lt;input <span class="tok-attr">type</span>=<span class="tok-str">"checkbox"</span>&gt;
+  &lt;span <span class="tok-attr">class</span>=<span class="tok-str">"box"</span>&gt;&lt;svg&gt;&lt;use href=<span class="tok-str">"#icon-check"</span>/&gt;&lt;/svg&gt;&lt;/span&gt;
+  Confirmo minha presença
+<span class="tok-tag">&lt;/label&gt;</span></div>
+      </div>
+    </section>
+
+    <!-- ============ RADIO & SWITCH ============ -->
+    <section class="ds-section" id="radio-switch">
+      <div class="ds-container">
+        <div class="ds-section-eyebrow">Componente</div>
+        <h2 class="ds-section-title">Radio &amp; Switch</h2>
+        <p class="ds-section-lede">Radio para escolha única entre opções visíveis; switch para ligar/desligar uma preferência imediatamente.</p>
+
+        <h3 class="ds-subhead">Radio</h3>
+        <div class="ds-example">
+          <label class="radio"><input type="radio" name="turno" checked><span class="dot"></span>Manhã</label>
+          <label class="radio"><input type="radio" name="turno"><span class="dot"></span>Tarde</label>
+          <label class="radio"><input type="radio" name="turno"><span class="dot"></span>Noite</label>
+        </div>
+
+        <h3 class="ds-subhead">Switch</h3>
+        <div class="ds-example">
+          <label class="switch"><input type="checkbox" checked><span class="track"></span>Notificações por e-mail</label>
+          <label class="switch"><input type="checkbox"><span class="track"></span>Notificações por WhatsApp</label>
+        </div>
+
+        <div class="ds-code"><span class="tok-tag">&lt;label</span> <span class="tok-attr">class</span>=<span class="tok-str">"switch"</span><span class="tok-tag">&gt;</span>
+  &lt;input <span class="tok-attr">type</span>=<span class="tok-str">"checkbox"</span> checked&gt;
+  &lt;span <span class="tok-attr">class</span>=<span class="tok-str">"track"</span>&gt;&lt;/span&gt;
+  Notificações por e-mail
+<span class="tok-tag">&lt;/label&gt;</span></div>
+      </div>
+    </section>
+
+    <!-- ============ SELECT ============ -->
+    <section class="ds-section" id="select">
+      <div class="ds-container">
+        <div class="ds-section-eyebrow">Componente</div>
+        <h2 class="ds-section-title">Select</h2>
+        <p class="ds-section-lede">Seleção de uma opção entre uma lista predefinida — usa o <code>&lt;select&gt;</code> nativo estilizado, mantendo acessibilidade de teclado.</p>
+        <div class="ds-example">
+          <div class="field">
+            <label class="field-label">Ministério</label>
+            <div class="input-wrap select-wrap"><svg width="16" height="16"><use href="#icon-users"/></svg>
+              <select>
+                <option>Escolha um ministério</option>
+                <option>Pascom — Comunicação</option>
+                <option>Catequese</option>
+                <option>Liturgia</option>
+                <option>Pastoral da Caridade</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <h3 class="ds-subhead">Menu customizado (referência visual)</h3>
+        <div class="dropdown-menu">
+          <div class="dropdown-item"><svg width="16" height="16"><use href="#icon-mic"/></svg>Pascom — Comunicação</div>
+          <div class="dropdown-item is-selected"><svg width="16" height="16"><use href="#icon-book"/></svg>Catequese</div>
+          <div class="dropdown-item"><svg width="16" height="16"><use href="#icon-star"/></svg>Liturgia</div>
+          <div class="dropdown-item"><svg width="16" height="16"><use href="#icon-heart"/></svg>Pastoral da Caridade</div>
+        </div>
+        <div class="ds-code" style="margin-top:var(--space-6);"><span class="tok-tag">&lt;div</span> <span class="tok-attr">class</span>=<span class="tok-str">"input-wrap select-wrap"</span><span class="tok-tag">&gt;</span>
+  &lt;select&gt;&lt;option&gt;...&lt;/option&gt;&lt;/select&gt;
+<span class="tok-tag">&lt;/div&gt;</span></div>
+      </div>
+    </section>
+
+    <!-- ============ NAVEGAÇÃO ============ -->
+    <section class="ds-section" id="navegacao">
+      <div class="ds-container">
+        <div class="ds-section-eyebrow">Componente</div>
+        <h2 class="ds-section-title">Navegação</h2>
+        <p class="ds-section-lede">Barra de navegação, abas, trilha (breadcrumb) e paginação — os quatro padrões que organizam o deslocamento dentro do conteúdo.</p>
+
+        <h3 class="ds-subhead">Navbar</h3>
+        <nav class="navbar">
+          <div class="navbar-logo"><img src="assets/pascom-icon.svg" width="28" height="28" alt="">Pascom</div>
+          <ul class="navbar-links">
+            <li><a href="#" class="is-active">Início</a></li>
+            <li><a href="#">Eventos</a></li>
+            <li><a href="#">Ministérios</a></li>
+            <li><a href="#">Contato</a></li>
+          </ul>
+          <button class="btn btn-primary btn-sm">Doar</button>
+        </nav>
+
+        <h3 class="ds-subhead">Tabs</h3>
+        <div class="tabs" id="demo-tabs">
+          <div class="tab-item is-active" data-tab="1">Próximos eventos</div>
+          <div class="tab-item" data-tab="2">Avisos</div>
+          <div class="tab-item" data-tab="3">Galeria</div>
+        </div>
+
+        <h3 class="ds-subhead">Breadcrumb</h3>
+        <ul class="breadcrumb">
+          <li><a href="#">Início</a></li>
+          <li class="sep"><svg width="12" height="12"><use href="#icon-chevron-right"/></svg></li>
+          <li><a href="#">Ministérios</a></li>
+          <li class="sep"><svg width="12" height="12"><use href="#icon-chevron-right"/></svg></li>
+          <li class="current">Pascom</li>
+        </ul>
+
+        <h3 class="ds-subhead">Paginação</h3>
+        <div class="pagination" id="demo-pagination">
+          <span class="page-item is-disabled"><svg width="14" height="14"><use href="#icon-chevron-right" style="transform:rotate(180deg)"/></svg></span>
+          <span class="page-item is-active" data-page="1">1</span>
+          <span class="page-item" data-page="2">2</span>
+          <span class="page-item" data-page="3">3</span>
+          <span class="page-item"><svg width="14" height="14"><use href="#icon-chevron-right"/></svg></span>
+        </div>
+
+        <div class="ds-code" style="margin-top:var(--space-7);"><span class="tok-comment">&lt;!-- navbar · tabs · breadcrumb · pagination — classes em styles.css --&gt;</span>
+<span class="tok-tag">&lt;nav</span> <span class="tok-attr">class</span>=<span class="tok-str">"navbar"</span><span class="tok-tag">&gt;</span>...<span class="tok-tag">&lt;/nav&gt;</span></div>
+      </div>
+    </section>
+
+    <!-- ============ AVATAR ============ -->
+    <section class="ds-section" id="avatar">
+      <div class="ds-container">
+        <div class="ds-section-eyebrow">Componente</div>
+        <h2 class="ds-section-title">Avatar</h2>
+        <p class="ds-section-lede">Iniciais sobre gradiente de marca — usado para voluntários, catequistas e responsáveis por ministérios sem foto cadastrada.</p>
+        <div class="ds-example">
+          <span class="avatar avatar-lg">MC</span>
+          <span class="avatar avatar-md">JP</span>
+          <span class="avatar avatar-sm">AF</span>
+        </div>
+        <div class="ds-code"><span class="tok-tag">&lt;span</span> <span class="tok-attr">class</span>=<span class="tok-str">"avatar avatar-md"</span><span class="tok-tag">&gt;</span>JP<span class="tok-tag">&lt;/span&gt;</span></div>
+      </div>
+    </section>
+
+    <!-- ============ TABELA ============ -->
+    <section class="ds-section" id="tabela">
+      <div class="ds-container">
+        <div class="ds-section-eyebrow">Componente</div>
+        <h2 class="ds-section-title">Tabela</h2>
+        <p class="ds-section-lede">Listagem de dados — pedidos externos, membros, materiais. Cabeçalho fixo em maiúsculas, coluna de status com badge, ações de linha à direita.</p>
+
+        <div class="table-wrap">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>Solicitante</th>
+                <th>Categoria</th>
+                <th class="is-sortable is-sorted">Prazo <svg class="sort-icon"><use href="#icon-sort"/></svg></th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Pastoral da Catequese</td>
+                <td>Card redes sociais</td>
+                <td>22/08</td>
+                <td><span class="badge badge-warning">Em produção</span></td>
+                <td><div class="table-row-actions"><button class="table-icon-btn" aria-label="Editar"><svg width="16" height="16"><use href="#icon-edit"/></svg></button><button class="table-icon-btn" aria-label="Excluir"><svg width="16" height="16"><use href="#icon-trash"/></svg></button></div></td>
+              </tr>
+              <tr>
+                <td>Pastoral da Juventude</td>
+                <td>Transmissão de evento</td>
+                <td>25/08</td>
+                <td><span class="badge badge-success">Concluído</span></td>
+                <td><div class="table-row-actions"><button class="table-icon-btn" aria-label="Editar"><svg width="16" height="16"><use href="#icon-edit"/></svg></button><button class="table-icon-btn" aria-label="Excluir"><svg width="16" height="16"><use href="#icon-trash"/></svg></button></div></td>
+              </tr>
+              <tr>
+                <td>Secretaria paroquial</td>
+                <td>Texto / informativo</td>
+                <td>28/08</td>
+                <td><span class="badge badge-neutral">Recebido</span></td>
+                <td><div class="table-row-actions"><button class="table-icon-btn" aria-label="Editar"><svg width="16" height="16"><use href="#icon-edit"/></svg></button><button class="table-icon-btn" aria-label="Excluir"><svg width="16" height="16"><use href="#icon-trash"/></svg></button></div></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3 class="ds-subhead">Estado vazio</h3>
+        <div class="table-wrap">
+          <div class="table-empty">
+            <svg><use href="#icon-mail"/></svg>
+            <p>Nenhum pedido recebido até o momento.</p>
+          </div>
+        </div>
+
+        <div class="ds-code"><span class="tok-tag">&lt;div</span> <span class="tok-attr">class</span>=<span class="tok-str">"table-wrap"</span><span class="tok-tag">&gt;</span>
+  <span class="tok-tag">&lt;table</span> <span class="tok-attr">class</span>=<span class="tok-str">"table table-striped"</span><span class="tok-tag">&gt;</span>...<span class="tok-tag">&lt;/table&gt;</span>
+<span class="tok-tag">&lt;/div&gt;</span>
+<span class="tok-comment">&lt;!-- cabeçalho ordenável: th.is-sortable.is-sorted + svg.sort-icon --&gt;</span>
+<span class="tok-comment">&lt;!-- ações de linha: table-row-actions &gt; table-icon-btn --&gt;</span>
+<span class="tok-comment">&lt;!-- estado vazio: table-empty dentro de table-wrap --&gt;</span></div>
+      </div>
+    </section>
+
+    <!-- ============ MODAL ============ -->
+    <section class="ds-section" id="modal">
+      <div class="ds-container">
+        <div class="ds-section-eyebrow">Componente</div>
+        <h2 class="ds-section-title">Modal</h2>
+        <p class="ds-section-lede">Confirmações e edições rápidas sem sair da tela atual. Fecha pelo X, pelo botão Cancelar, clicando fora ou pressionando Esc.</p>
+
+        <div class="ds-example">
+          <button class="btn btn-primary btn-md" data-modal-open="demo-modal">Ver exemplo de modal</button>
+        </div>
+
+        <div class="modal-overlay" id="demo-modal">
+          <div class="modal" role="dialog" aria-modal="true" aria-labelledby="demo-modal-title">
+            <div class="modal-header">
+              <h3 class="modal-title" id="demo-modal-title">Excluir atividade?</h3>
+              <button class="modal-close" data-modal-close aria-label="Fechar"><svg width="18" height="18"><use href="#icon-x"/></svg></button>
+            </div>
+            <div class="modal-body">
+              <p>Essa ação remove "Card — Missa das 19h" do quadro de produção. Não é possível desfazer.</p>
+            </div>
+            <div class="modal-footer">
+              <button class="btn btn-outline btn-md" data-modal-close>Cancelar</button>
+              <button class="btn btn-danger btn-md" data-modal-close>Excluir</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="ds-code"><span class="tok-tag">&lt;button</span> <span class="tok-attr">data-modal-open</span>=<span class="tok-str">"id-do-modal"</span><span class="tok-tag">&gt;</span>Abrir<span class="tok-tag">&lt;/button&gt;</span>
+
+<span class="tok-tag">&lt;div</span> <span class="tok-attr">class</span>=<span class="tok-str">"modal-overlay"</span> <span class="tok-attr">id</span>=<span class="tok-str">"id-do-modal"</span><span class="tok-tag">&gt;</span>
+  <span class="tok-tag">&lt;div</span> <span class="tok-attr">class</span>=<span class="tok-str">"modal"</span><span class="tok-tag">&gt;</span>
+    <span class="tok-tag">&lt;div</span> <span class="tok-attr">class</span>=<span class="tok-str">"modal-header"</span><span class="tok-tag">&gt;</span>...<span class="tok-attr">data-modal-close</span><span class="tok-tag">&gt;</span><span class="tok-tag">&lt;/div&gt;</span>
+    <span class="tok-tag">&lt;div</span> <span class="tok-attr">class</span>=<span class="tok-str">"modal-body"</span><span class="tok-tag">&gt;</span>...<span class="tok-tag">&lt;/div&gt;</span>
+    <span class="tok-tag">&lt;div</span> <span class="tok-attr">class</span>=<span class="tok-str">"modal-footer"</span><span class="tok-tag">&gt;</span>...<span class="tok-attr">data-modal-close</span><span class="tok-tag">&gt;</span><span class="tok-tag">&lt;/div&gt;</span>
+  <span class="tok-tag">&lt;/div&gt;</span>
+<span class="tok-tag">&lt;/div&gt;</span>
+<span class="tok-comment">&lt;!-- tamanhos: modal-sm · modal (padrão) · modal-lg --&gt;</span>
+<span class="tok-comment">&lt;!-- app.js já cuida de abrir/fechar via data-modal-open / data-modal-close --&gt;</span></div>
+      </div>
+    </section>
+
+    <!-- ============ TOOLTIP ============ -->
+    <section class="ds-section" id="tooltip">
+      <div class="ds-container">
+        <div class="ds-section-eyebrow">Componente</div>
+        <h2 class="ds-section-title">Tooltip</h2>
+        <p class="ds-section-lede">Texto de apoio sob demanda para ícones, siglas e ações — 100% CSS, sem JavaScript. Funciona no hover e no foco por teclado (Tab).</p>
+
+        <div class="ds-example">
+          <span class="tooltip" data-tooltip="Coordenador de área" tabindex="0"><span class="avatar avatar-md">MC</span></span>
+          <button class="table-icon-btn tooltip" data-tooltip="Editar atividade" tabindex="0"><svg width="18" height="18"><use href="#icon-edit"/></svg></button>
+          <button class="table-icon-btn tooltip" data-tooltip="Excluir atividade" tabindex="0"><svg width="18" height="18"><use href="#icon-trash"/></svg></button>
+          <span class="badge badge-warning tooltip" data-tooltip="Aguardando aprovação da coordenação" tabindex="0">Pendente</span>
+        </div>
+
+        <h3 class="ds-subhead">Posição inferior</h3>
+        <div class="ds-example">
+          <span class="tooltip tooltip-bottom" data-tooltip="Aparece abaixo do elemento" tabindex="0"><button class="btn btn-outline btn-sm">Passe o mouse</button></span>
+        </div>
+
+        <div class="ds-code"><span class="tok-tag">&lt;span</span> <span class="tok-attr">class</span>=<span class="tok-str">"tooltip"</span> <span class="tok-attr">data-tooltip</span>=<span class="tok-str">"Texto de apoio"</span> <span class="tok-attr">tabindex</span>=<span class="tok-str">"0"</span><span class="tok-tag">&gt;</span>
+  ...conteúdo...
+<span class="tok-tag">&lt;/span&gt;</span>
+<span class="tok-comment">&lt;!-- posição: tooltip (topo, padrão) · tooltip-bottom --&gt;</span>
+<span class="tok-comment">&lt;!-- tabindex="0" é obrigatório em elementos não focáveis, p/ acessibilidade --&gt;</span></div>
+      </div>
+    </section>
+
+    <footer class="ds-footer">
+      <div class="ds-container">
+        <p><strong>Pascom Design System</strong> — Paróquia N. Sra. da Visitação</p>
+        <p>Fonte de verdade: <code style="color:#fff;">tokens.css</code> · <code style="color:#fff;">tokens.json</code> · <code style="color:#fff;">styles.css</code></p>
+      </div>
+    </footer>
+
+  </main>
+</div>
+
+<script src="tokens.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
