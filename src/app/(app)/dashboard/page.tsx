@@ -63,6 +63,7 @@ export default async function DashboardPage() {
               alt={displayName}
               width={64}
               height={64}
+              priority
               style={{ borderRadius: "var(--radius-full)" }}
             />
           ) : (
