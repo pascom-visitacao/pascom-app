@@ -1,21 +1,21 @@
-import Image from "next/image";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { signOut } from "./actions";
+import { CoordenacaoBento } from "./coordenacao-bento";
+import { PasconeiroBento } from "./pasconeiro-bento";
+import "./bento.css";
 
 const ROLE_LABEL: Record<string, string> = {
   coordenacao_geral: "Coordenação geral",
   pasconeiro: "Pasconeiro",
 };
 
-function getInitials(name: string) {
-  return name
-    .split(" ")
-    .filter(Boolean)
-    .map((part) => part[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
+function greeting() {
+  // aproximação de horário de Brasília (UTC-3, sem horário de verão)
+  const hour = new Date(Date.now() - 3 * 60 * 60 * 1000).getUTCHours();
+  if (hour < 12) return "Bom dia";
+  if (hour < 18) return "Boa tarde";
+  return "Boa noite";
 }
 
 export default async function DashboardPage() {
@@ -31,63 +31,49 @@ export default async function DashboardPage() {
 
   const { data: profile } = await supabase
     .from("users")
-    .select("name, email, avatar_url, role, area:areas(name)")
+    .select("name, role, area_id, area:areas(name)")
     .eq("id", user.id)
     .single();
 
-  const displayName = profile?.name ?? user.email ?? "Usuário";
-  const roleLabel = profile?.role ? ROLE_LABEL[profile.role] ?? profile.role : "—";
-  // Sem tipos gerados do banco (projeto Supabase ainda não existe), o
-  // TS não sabe que users.area_id -> areas.id é muitos-para-um, então
-  // tipa `area` como array — mas em runtime o PostgREST devolve objeto
-  // único. Normaliza os dois formatos até gerarmos os tipos de verdade.
+  const displayName = (profile?.name ?? user.email ?? "Usuário").split(" ")[0];
+  const isCoordenacao = profile?.role === "coordenacao_geral";
+  const roleLabel = profile?.role ? (ROLE_LABEL[profile.role] ?? profile.role) : "—";
+
   const areaRaw = profile?.area as { name: string } | { name: string }[] | null | undefined;
   const areaName = (Array.isArray(areaRaw) ? areaRaw[0]?.name : areaRaw?.name) ?? "Sem área definida";
 
   return (
-    <div
-      className="flex flex-1 items-center justify-center"
-      style={{ background: "var(--color-bg-subtle)" }}
-    >
+    <div style={{ padding: "var(--space-9)" }}>
       <div
-        className="card card-elevated"
-        style={{ maxWidth: 480, width: "100%", padding: "var(--space-9)" }}
+        className="flex items-center justify-between flex-wrap"
+        style={{ gap: "var(--space-5)", marginBottom: "var(--space-8)" }}
       >
-        <div
-          className="flex items-center"
-          style={{ gap: "var(--space-6)", marginBottom: "var(--space-7)" }}
-        >
-          {profile?.avatar_url ? (
-            <Image
-              src={profile.avatar_url}
-              alt={displayName}
-              width={64}
-              height={64}
-              priority
-              style={{ borderRadius: "var(--radius-full)" }}
-            />
-          ) : (
-            <span className="avatar avatar-lg">{getInitials(displayName)}</span>
-          )}
-          <div>
-            <h1 style={{ fontSize: "var(--text-lg)" }}>{displayName}</h1>
-            <p style={{ color: "var(--color-text-muted)", fontSize: "var(--text-sm)" }}>
-              {profile?.email ?? user.email}
-            </p>
-          </div>
+        <div>
+          <h1 style={{ fontSize: "var(--text-2xl)", marginBottom: "var(--space-2)" }}>
+            {greeting()}, {displayName}
+          </h1>
+          <p style={{ color: "var(--color-text-muted)", fontSize: "var(--text-sm)" }}>
+            Aqui está o panorama da Pascom hoje.
+          </p>
         </div>
-
-        <div className="flex" style={{ gap: "var(--space-3)", marginBottom: "var(--space-8)" }}>
-          <span className="badge badge-primary">{roleLabel}</span>
-          <span className="badge badge-neutral">{areaName}</span>
-        </div>
-
         <form action={signOut}>
-          <button type="submit" className="btn btn-outline btn-md">
+          <button type="submit" className="btn btn-outline btn-sm">
             Sair
           </button>
         </form>
       </div>
+
+      {isCoordenacao ? (
+        <CoordenacaoBento supabase={supabase} />
+      ) : (
+        <PasconeiroBento
+          supabase={supabase}
+          userId={user.id}
+          areaId={profile?.area_id ?? null}
+          areaName={areaName}
+          roleLabel={roleLabel}
+        />
+      )}
     </div>
   );
 }
