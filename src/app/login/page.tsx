@@ -45,6 +45,11 @@ export default function LoginPage() {
         >
           Entrar com Google
         </button>
+
+        <p style={{ marginTop: "var(--space-7)", fontSize: "var(--text-sm)", color: "var(--color-text-subtle)" }}>
+          É de outra pastoral e quer pedir um material ou serviço?{" "}
+          <a href="/solicitar">Peça aqui, sem precisar de conta.</a>
+        </p>
       </div>
     </div>
   );

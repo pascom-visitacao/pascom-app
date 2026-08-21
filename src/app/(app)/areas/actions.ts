@@ -14,6 +14,18 @@ export async function createArea(formData: FormData) {
   revalidatePath("/areas");
 }
 
+export async function createCategory(formData: FormData) {
+  const name = String(formData.get("name") ?? "").trim();
+  const areaId = String(formData.get("area_id") ?? "");
+  if (!name || !areaId) return;
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("request_categories").insert({ name, area_id: areaId });
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/areas");
+}
+
 export async function updateUserAssignment(
   userId: string,
   fields: { role?: "coordenacao_geral" | "pasconeiro"; area_id?: string | null },
