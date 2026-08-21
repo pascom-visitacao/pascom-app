@@ -8,11 +8,15 @@ export function NewActivityForm({
   members,
   events,
   ministries,
+  isCoordenacao,
+  currentUserId,
 }: {
   areaId: string;
   members: { id: string; name: string }[];
   events: { id: string; title: string }[];
   ministries: { id: string; name: string }[];
+  isCoordenacao: boolean;
+  currentUserId: string;
 }) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -60,11 +64,15 @@ export function NewActivityForm({
         <div className="input-wrap select-wrap">
           <select name="assignee_id" defaultValue="">
             <option value="">Sem responsável</option>
-            {members.map((member) => (
-              <option key={member.id} value={member.id}>
-                {member.name}
-              </option>
-            ))}
+            {isCoordenacao ? (
+              members.map((member) => (
+                <option key={member.id} value={member.id}>
+                  {member.name}
+                </option>
+              ))
+            ) : (
+              <option value={currentUserId}>Eu mesmo</option>
+            )}
           </select>
         </div>
       </div>

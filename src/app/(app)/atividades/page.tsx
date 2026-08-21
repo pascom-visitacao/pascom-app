@@ -115,6 +115,8 @@ export default async function AtividadesPage({
                 members={areaMembers ?? []}
                 events={events ?? []}
                 ministries={ministries ?? []}
+                isCoordenacao={isCoordenacao}
+                currentUserId={user.id}
               />
             </div>
           ) : null}
