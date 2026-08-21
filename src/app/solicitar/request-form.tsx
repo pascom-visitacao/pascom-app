@@ -16,6 +16,31 @@ export function RequestForm({
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
+  const [fileNames, setFileNames] = useState<string[]>([]);
+
+  function handleFilesChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const selected = Array.from(e.target.files ?? []);
+    setFileNames(selected.map((f) => f.name));
+
+    if (selected.length > 5) {
+      setFileError("Envie no máximo 5 imagens.");
+      return;
+    }
+    const tooBig = selected.find((f) => f.size > 5 * 1024 * 1024);
+    if (tooBig) {
+      setFileError(`"${tooBig.name}" passa de 5MB.`);
+      return;
+    }
+    const invalidType = selected.find(
+      (f) => !["image/jpeg", "image/png", "image/webp", "image/gif"].includes(f.type),
+    );
+    if (invalidType) {
+      setFileError(`"${invalidType.name}" não é uma imagem aceita (use JPG, PNG, WEBP ou GIF).`);
+      return;
+    }
+    setFileError(null);
+  }
 
   if (token) {
     const trackingUrl = `${window.location.origin}/acompanhar/${token}`;
@@ -115,6 +140,22 @@ export function RequestForm({
       </div>
 
       <div className="field">
+        <label className="field-label">Imagens de referência (opcional)</label>
+        <input
+          type="file"
+          name="attachments"
+          accept="image/jpeg,image/png,image/webp,image/gif"
+          multiple
+          onChange={handleFilesChange}
+        />
+        <span className="field-hint">Até 5 imagens, 5MB cada (JPG, PNG, WEBP ou GIF).</span>
+        {fileNames.length > 0 && !fileError && (
+          <span className="field-hint">{fileNames.join(", ")}</span>
+        )}
+        {fileError && <span className="field-hint is-error">{fileError}</span>}
+      </div>
+
+      <div className="field">
         <label className="field-label">Prazo desejado</label>
         <div className="input-wrap">
           <input type="date" name="deadline" />
@@ -153,7 +194,7 @@ export function RequestForm({
         </div>
       </div>
 
-      <button type="submit" className="btn btn-primary btn-md" disabled={isPending}>
+      <button type="submit" className="btn btn-primary btn-md" disabled={isPending || !!fileError}>
         {isPending ? "Enviando..." : "Enviar pedido"}
       </button>
     </form>

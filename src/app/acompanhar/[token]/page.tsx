@@ -25,6 +25,7 @@ type RequestByToken = {
   deadline: string | null;
   created_at: string;
   current_status: string | null;
+  attachment_urls: string[] | null;
 };
 
 export default async function AcompanharPage({
@@ -62,6 +63,26 @@ export default async function AcompanharPage({
         <p style={{ color: "var(--color-text-muted)", marginBottom: "var(--space-6)" }}>
           {data.description}
         </p>
+
+        {data.attachment_urls && data.attachment_urls.length > 0 && (
+          <div className="flex flex-wrap" style={{ gap: "var(--space-3)", marginBottom: "var(--space-6)" }}>
+            {data.attachment_urls.map((url) => (
+              // eslint-disable-next-line @next/next/no-img-element -- URL externa do Storage, sem necessidade de otimização do next/image
+              <img
+                key={url}
+                src={url}
+                alt="Anexo do pedido"
+                style={{
+                  width: 80,
+                  height: 80,
+                  objectFit: "cover",
+                  borderRadius: "var(--radius-md)",
+                  border: "1px solid var(--color-border)",
+                }}
+              />
+            ))}
+          </div>
+        )}
 
         <div className="flex flex-col" style={{ gap: "var(--space-3)", fontSize: "var(--text-sm)" }}>
           {data.deadline && (

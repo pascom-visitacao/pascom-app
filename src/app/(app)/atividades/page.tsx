@@ -20,6 +20,11 @@ function normalizeAssignee(raw: unknown): AssigneeRaw | null {
   return Array.isArray(raw) ? (raw[0] ?? null) : (raw as AssigneeRaw);
 }
 
+function normalizeAttachments(raw: unknown): string[] {
+  const request = Array.isArray(raw) ? raw[0] : raw;
+  return (request as { attachment_urls?: string[] } | null)?.attachment_urls ?? [];
+}
+
 export default async function AtividadesPage({
   searchParams,
 }: {
@@ -48,7 +53,9 @@ export default async function AtividadesPage({
   const { data: activities } = selectedAreaId
     ? await supabase
         .from("activities")
-        .select("id, title, description, status, due_date, source, assignee:users(id, name, avatar_url)")
+        .select(
+          "id, title, description, status, due_date, source, assignee:users(id, name, avatar_url), request:external_requests(attachment_urls)",
+        )
         .eq("area_id", selectedAreaId)
         .order("created_at", { ascending: true })
     : { data: [] };
@@ -114,6 +121,7 @@ export default async function AtividadesPage({
                   <div className="flex flex-col" style={{ gap: "var(--space-4)" }}>
                     {columnActivities.map((activity) => {
                       const assignee = normalizeAssignee(activity.assignee);
+                      const attachments = normalizeAttachments(activity.request);
                       return (
                         <div key={activity.id} className="card" style={{ padding: "var(--space-5)" }}>
                           {activity.source === "pedido_externo" && (
@@ -129,6 +137,26 @@ export default async function AtividadesPage({
                             <p className="card-desc" style={{ marginBottom: "var(--space-4)" }}>
                               {activity.description}
                             </p>
+                          )}
+                          {attachments.length > 0 && (
+                            <div className="flex flex-wrap" style={{ gap: "var(--space-2)", marginBottom: "var(--space-4)" }}>
+                              {attachments.map((url) => (
+                                <a key={url} href={url} target="_blank" rel="noopener noreferrer">
+                                  {/* eslint-disable-next-line @next/next/no-img-element -- URL externa do Storage */}
+                                  <img
+                                    src={url}
+                                    alt="Anexo"
+                                    style={{
+                                      width: 48,
+                                      height: 48,
+                                      objectFit: "cover",
+                                      borderRadius: "var(--radius-sm)",
+                                      border: "1px solid var(--color-border)",
+                                    }}
+                                  />
+                                </a>
+                              ))}
+                            </div>
                           )}
                           <div
                             className="flex items-center justify-between"
