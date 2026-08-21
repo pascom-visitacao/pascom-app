@@ -1,17 +1,17 @@
 import type { Metadata } from "next";
-import { Fredoka, Inter, JetBrains_Mono } from "next/font/google";
+import { Bricolage_Grotesque, Hanken_Grotesk, JetBrains_Mono } from "next/font/google";
 import "./tokens.css";
 import "./ds-styles.css";
 import "./globals.css";
 
-const fredoka = Fredoka({
-  variable: "--font-fredoka-loaded",
+const bricolageGrotesque = Bricolage_Grotesque({
+  variable: "--font-bricolage-loaded",
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
+  axes: ["opsz"],
 });
 
-const inter = Inter({
-  variable: "--font-inter-loaded",
+const hankenGrotesk = Hanken_Grotesk({
+  variable: "--font-hanken-loaded",
   subsets: ["latin"],
 });
 
@@ -29,7 +29,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="pt-BR"
-      className={`${fredoka.variable} ${inter.variable} ${jetbrainsMono.variable} h-full antialiased`}
+      className={`${bricolageGrotesque.variable} ${hankenGrotesk.variable} ${jetbrainsMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>

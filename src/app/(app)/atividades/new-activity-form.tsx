@@ -6,9 +6,13 @@ import { createActivity } from "./actions";
 export function NewActivityForm({
   areaId,
   members,
+  events,
+  ministries,
 }: {
   areaId: string;
   members: { id: string; name: string }[];
+  events: { id: string; title: string }[];
+  ministries: { id: string; name: string }[];
 }) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -69,6 +73,45 @@ export function NewActivityForm({
         <label className="field-label">Prazo</label>
         <div className="input-wrap">
           <input type="date" name="due_date" />
+        </div>
+      </div>
+
+      <div className="field">
+        <label className="field-label">Prioridade</label>
+        <div className="input-wrap select-wrap">
+          <select name="priority" defaultValue="media">
+            <option value="baixa">Baixa</option>
+            <option value="media">Média</option>
+            <option value="alta">Alta</option>
+          </select>
+        </div>
+      </div>
+
+      <div className="field">
+        <label className="field-label">Evento relacionado</label>
+        <div className="input-wrap select-wrap">
+          <select name="event_id" defaultValue="">
+            <option value="">Nenhum</option>
+            {events.map((event) => (
+              <option key={event.id} value={event.id}>
+                {event.title}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      <div className="field">
+        <label className="field-label">Ministério / pastoral relacionado</label>
+        <div className="input-wrap select-wrap">
+          <select name="parish_ministry_id" defaultValue="">
+            <option value="">Nenhum</option>
+            {ministries.map((ministry) => (
+              <option key={ministry.id} value={ministry.id}>
+                {ministry.name}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 

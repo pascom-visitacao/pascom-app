@@ -2,8 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { NewActivityForm } from "./new-activity-form";
-import { StatusSelect } from "./status-select";
-import { DeleteActivityButton } from "./delete-activity-button";
+import { ActivityCard, type ActivityCardData } from "./activity-card";
 import type { ActivityStatus } from "./actions";
 
 const COLUMNS: { status: ActivityStatus; label: string }[] = [
@@ -13,16 +12,9 @@ const COLUMNS: { status: ActivityStatus; label: string }[] = [
   { status: "concluido", label: "Concluído" },
 ];
 
-type AssigneeRaw = { id: string; name: string; avatar_url: string | null };
-
-function normalizeAssignee(raw: unknown): AssigneeRaw | null {
+function normalizeOne<T>(raw: unknown): T | null {
   if (!raw) return null;
-  return Array.isArray(raw) ? (raw[0] ?? null) : (raw as AssigneeRaw);
-}
-
-function normalizeAttachments(raw: unknown): string[] {
-  const request = Array.isArray(raw) ? raw[0] : raw;
-  return (request as { attachment_urls?: string[] } | null)?.attachment_urls ?? [];
+  return (Array.isArray(raw) ? (raw[0] ?? null) : raw) as T | null;
 }
 
 export default async function AtividadesPage({
@@ -50,19 +42,36 @@ export default async function AtividadesPage({
 
   const selectedAreaId = areaParam ?? profile?.area_id ?? areas?.[0]?.id ?? null;
 
-  const { data: activities } = selectedAreaId
+  const { data: rawActivities } = selectedAreaId
     ? await supabase
         .from("activities")
         .select(
-          "id, title, description, status, due_date, source, assignee:users(id, name, avatar_url), request:external_requests(attachment_urls)",
+          "id, title, description, status, due_date, source, priority, assignee:users(id, name, avatar_url), request:external_requests(attachment_urls), event:events(id, title), parish_ministry:parish_ministries(id, name)",
         )
         .eq("area_id", selectedAreaId)
         .order("created_at", { ascending: true })
     : { data: [] };
 
+  const activities: ActivityCardData[] = (rawActivities ?? []).map((a) => ({
+    id: a.id,
+    title: a.title,
+    description: a.description,
+    status: a.status,
+    due_date: a.due_date,
+    source: a.source,
+    priority: a.priority,
+    assignee: normalizeOne(a.assignee),
+    attachments: normalizeOne<{ attachment_urls: string[] }>(a.request)?.attachment_urls ?? [],
+    event: normalizeOne(a.event),
+    ministry: normalizeOne(a.parish_ministry),
+  }));
+
   const { data: areaMembers } = selectedAreaId
     ? await supabase.from("users").select("id, name").eq("area_id", selectedAreaId).order("name")
     : { data: [] };
+
+  const { data: events } = await supabase.from("events").select("id, title").order("date");
+  const { data: ministries } = await supabase.from("parish_ministries").select("id, name").order("name");
 
   const canWrite = isCoordenacao || profile?.area_id === selectedAreaId;
 
@@ -100,7 +109,12 @@ export default async function AtividadesPage({
         <>
           {canWrite ? (
             <div style={{ marginBottom: "var(--space-8)" }}>
-              <NewActivityForm areaId={selectedAreaId} members={areaMembers ?? []} />
+              <NewActivityForm
+                areaId={selectedAreaId}
+                members={areaMembers ?? []}
+                events={events ?? []}
+                ministries={ministries ?? []}
+              />
             </div>
           ) : null}
 
@@ -112,99 +126,21 @@ export default async function AtividadesPage({
             }}
           >
             {COLUMNS.map((column) => {
-              const columnActivities = (activities ?? []).filter((a) => a.status === column.status);
+              const columnActivities = activities.filter((a) => a.status === column.status);
               return (
                 <div key={column.status}>
                   <div className="card-stat-label" style={{ marginBottom: "var(--space-4)" }}>
                     {column.label} · {columnActivities.length}
                   </div>
                   <div className="flex flex-col" style={{ gap: "var(--space-4)" }}>
-                    {columnActivities.map((activity) => {
-                      const assignee = normalizeAssignee(activity.assignee);
-                      const attachments = normalizeAttachments(activity.request);
-                      return (
-                        <div key={activity.id} className="card" style={{ padding: "var(--space-5)" }}>
-                          {activity.source === "pedido_externo" && (
-                            <span
-                              className="badge badge-accent"
-                              style={{ marginBottom: "var(--space-3)" }}
-                            >
-                              Pedido externo
-                            </span>
-                          )}
-                          <div className="card-title">{activity.title}</div>
-                          {activity.description && (
-                            <p className="card-desc" style={{ marginBottom: "var(--space-4)" }}>
-                              {activity.description}
-                            </p>
-                          )}
-                          {attachments.length > 0 && (
-                            <div className="flex flex-wrap" style={{ gap: "var(--space-2)", marginBottom: "var(--space-4)" }}>
-                              {attachments.map((url) => (
-                                <a key={url} href={url} target="_blank" rel="noopener noreferrer">
-                                  {/* eslint-disable-next-line @next/next/no-img-element -- URL externa do Storage */}
-                                  <img
-                                    src={url}
-                                    alt="Anexo"
-                                    style={{
-                                      width: 48,
-                                      height: 48,
-                                      objectFit: "cover",
-                                      borderRadius: "var(--radius-sm)",
-                                      border: "1px solid var(--color-border)",
-                                    }}
-                                  />
-                                </a>
-                              ))}
-                            </div>
-                          )}
-                          <div
-                            className="flex items-center justify-between"
-                            style={{ marginBottom: "var(--space-4)" }}
-                          >
-                            {assignee ? (
-                              <span
-                                className="flex items-center"
-                                style={{ gap: "var(--space-2)", fontSize: "var(--text-sm)" }}
-                              >
-                                <span className="avatar avatar-sm">
-                                  {assignee.name
-                                    .split(" ")
-                                    .filter(Boolean)
-                                    .map((p) => p[0])
-                                    .slice(0, 2)
-                                    .join("")
-                                    .toUpperCase()}
-                                </span>
-                                {assignee.name}
-                              </span>
-                            ) : (
-                              <span style={{ fontSize: "var(--text-sm)", color: "var(--color-text-subtle)" }}>
-                                Sem responsável
-                              </span>
-                            )}
-                            {activity.due_date && (
-                              <span style={{ fontSize: "var(--text-xs)", color: "var(--color-text-muted)" }}>
-                                {new Date(activity.due_date).toLocaleDateString("pt-BR", {
-                                  day: "2-digit",
-                                  month: "2-digit",
-                                })}
-                              </span>
-                            )}
-                          </div>
-
-                          {canWrite && (
-                            <div
-                              className="flex items-center justify-between"
-                              style={{ gap: "var(--space-3)" }}
-                            >
-                              <StatusSelect activityId={activity.id} status={activity.status} />
-                              {isCoordenacao && <DeleteActivityButton activityId={activity.id} />}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
+                    {columnActivities.map((activity) => (
+                      <ActivityCard
+                        key={activity.id}
+                        activity={activity}
+                        canWrite={canWrite}
+                        isCoordenacao={isCoordenacao}
+                      />
+                    ))}
                   </div>
                 </div>
               );
