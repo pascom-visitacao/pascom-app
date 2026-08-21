@@ -57,8 +57,28 @@ Implementar via **Row Level Security (RLS)** no Supabase: cada tabela tem polít
 - **Candidatura/assumir tarefa:** atividade pode nascer sem responsável (igual às vagas de escala da seção 3.2) — Pasconeiro da área abre o briefing e assume a tarefa com uma ação única. Mesmo padrão de interação usado nas vagas, aplicado agora também às atividades — consistência entre os dois fluxos
 
 ### 3.4 Materiais (Drive)
-- Não duplicar arquivos — integrar via API do Google Drive
-- Estrutura de pastas espelhada por categoria/evento
+- Integração via API do Google Drive, conectada pela **conta institucional** (`pascomvisitacao@gmail.com`), não por usuário individual — evita materiais espalhados em Drives pessoais de voluntários
+- **Estrutura de pastas**: segue o documento "Diretrizes de Organização do Google Drive — PASCOM" (mantido como arquivo próprio na pasta `docs/` do projeto, não duplicado por inteiro aqui). Resumo da lógica:
+  - `Ano → Natureza da demanda → Projeto/Evento → Tipo de material`
+  - Categorias fixas dentro de cada ano: `01 Eventos e Campanhas`, `02 Redes Sociais` (por mês), `03 Pastorais e Movimentos`, `04 Comunicação Institucional`, `05 Fotos e Vídeos` (acervo, por mês), `06 Demandas Avulsas`, `99 Arquivo`
+  - `00 — Recursos da PASCOM` fica fora da estrutura anual (materiais permanentes: identidade visual, templates, logos)
+  - Princípio de fonte única: nunca duplicar arquivo — usar atalho do Drive quando precisar aparecer em mais de um contexto
+  - Só criar pasta quando houver arquivo que justifique (nunca pasta vazia só pra seguir o modelo)
+- **Mapeamento automático** (o app decide sozinho, sem perguntar):
+  - Atividade com `event_id` → `[Ano]/01 Eventos e Campanhas/[Nome do evento]/[subpasta por área]` — mapeamento de área: redes sociais→"Redes Sociais", fotografia→"Fotos", transmissão→"Vídeos", design→"Identidade Visual" ou "Impressos" (conforme o caso), texto→"Planejamento e Conteúdo"
+  - Atividade com `parish_ministry_id` e sem `event_id` → `[Ano]/03 Pastorais e Movimentos/[Nome do ministério]/`
+  - Atividade sem os dois, área = redes sociais → `[Ano]/02 Redes Sociais/[Mês]/[Data] — [Descrição]/`
+- **Não automatizável — seletor manual no upload**: "Comunicação Institucional" (permanente vs. pontual) e "Fotos e Vídeos" como acervo (peça produzida vs. registro bruto) exigem julgamento humano, o app erraria com frequência tentando adivinhar. Upload oferece seletor de destino nesses casos; padrão cai em "Demandas Avulsas" se ninguém escolher
+- `00 — Recursos da PASCOM` e as pastas `99` (Arquivo/Descartados) ficam fora da automação — geridas manualmente pela equipe, o app só respeita que existem
+
+- **Nova tela: "Enviar fotos"** (upload em massa, pensada pra zero fricção — fotos de evento são produzidas o tempo todo)
+  - Acesso fácil e visível (atalho no painel ou item de menu próprio, não escondido)
+  - Seleção múltipla de arquivos, otimizada pra celular (acesso direto à galeria/câmera do telefone)
+  - Campo opcional: evento relacionado (busca entre eventos existentes) — se escolhido, vai pra pasta daquele evento; se vazio, cai no acervo "Fotos e Vídeos" organizado por mês/data
+  - Grade de miniaturas do que foi selecionado antes de enviar, com barra de progresso durante o upload (arquivos de foto são pesados, várias de uma vez)
+  - Confirmação no final com link direto pra pasta no Drive
+  - Reaproveita a tabela `materials` já existente (`drive_file_id`, `name`, `folder_path`, `related_activity_id`) — `related_activity_id` fica opcional aqui, já que a maioria dessas fotos não estará amarrada a um card do Kanban
+
 - Busca e preview dentro do app
 
 ### 3.5 Central de pedidos externos (página pública, sem login)
@@ -125,9 +145,14 @@ materials (id, drive_file_id, name, folder_path, related_activity_id)
 - Painel bento já tem breakpoint de referência pronto no preview validado (colapsa sidebar, grade vira 2 colunas) — usar como base, não é preciso desenhar do zero
 
 **Fase 5 — Materiais e notificações**
-- Integração com Google Drive API
-- Notificações por e-mail
-- (Opcional) integração WhatsApp Business
+- **Sequência sugerida**: notificações primeiro (mais simples, sem OAuth novo, valor imediato), Drive depois (mais complexo, precisa expandir escopo do Google Cloud Console)
+- **Notificações — 3 gatilhos** (consolidado de 4 no rascunho original, já que "pedido externo novo" e "atividade sem responsável" são o mesmo evento na prática):
+  - Atividade sem responsável (cobre pedido externo novo e atividade interna sem dono) → notifica Pasconeiros da área
+  - Prazo próximo → notifica o responsável atual
+  - Vaga de escala aberta → notifica Pasconeiros da área
+  - Provedor: Resend (integra bem com Next.js/Vercel, tier gratuito suficiente)
+- **Drive**: ver detalhes completos na seção 3.4 — conta institucional, estrutura de pastas por natureza da demanda, mapeamento automático + seletor manual pros casos ambíguos, e a nova tela "Enviar fotos" (upload em massa)
+- (Opcional, fora do escopo inicial) integração WhatsApp Business
 
 ---
 

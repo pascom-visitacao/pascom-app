@@ -1,0 +1,58 @@
+/* Kanban responsivo — abas por status em mobile, via CSS puro (radio +
+   label), sem JavaScript. Acima do breakpoint, ignora os rádios e
+   mostra as 4 colunas lado a lado como sempre. */
+
+.kanban-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-6);
+}
+
+.kanban-radio {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.kanban-tabs {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .kanban-grid {
+    grid-template-columns: 1fr;
+  }
+  .kanban-column {
+    display: none;
+  }
+  .kanban-tabs {
+    display: flex;
+    overflow-x: auto;
+    margin-bottom: var(--space-6);
+  }
+  .kanban-tabs .tab-item {
+    white-space: nowrap;
+  }
+
+  #kanban-status-a_fazer:checked ~ .kanban-tabs label[for="kanban-status-a_fazer"],
+  #kanban-status-em_producao:checked ~ .kanban-tabs label[for="kanban-status-em_producao"],
+  #kanban-status-revisao:checked ~ .kanban-tabs label[for="kanban-status-revisao"],
+  #kanban-status-concluido:checked ~ .kanban-tabs label[for="kanban-status-concluido"] {
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+    font-weight: var(--weight-semibold);
+  }
+
+  #kanban-status-a_fazer:checked ~ .kanban-grid .kanban-column[data-status="a_fazer"],
+  #kanban-status-em_producao:checked ~ .kanban-grid .kanban-column[data-status="em_producao"],
+  #kanban-status-revisao:checked ~ .kanban-grid .kanban-column[data-status="revisao"],
+  #kanban-status-concluido:checked ~ .kanban-grid .kanban-column[data-status="concluido"] {
+    display: block;
+  }
+}

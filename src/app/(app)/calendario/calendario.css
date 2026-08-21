@@ -1,0 +1,36 @@
+/* Grade do mês em telas estreitas: troca os chips de evento (que não
+   cabem) por só um indicador compacto (bolinha + contagem) — o
+   detalhe continua na lista abaixo, que já existia. */
+
+.day-compact {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .day-chips {
+    display: none;
+  }
+  .day-compact {
+    display: flex;
+  }
+}
+
+.month-nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-5);
+}
+
+@media (max-width: 480px) {
+  .month-nav {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-3);
+    text-align: center;
+  }
+  .month-nav .card-title {
+    order: -1;
+    width: 100%;
+  }
+}

@@ -6,6 +6,7 @@ import { ScheduleForm } from "./schedule-form";
 import { ScheduleRow, type ScheduleRowData } from "./schedule-row";
 import { CalendarFileForm } from "./calendar-file-form";
 import { addMonths, buildMonthGrid, monthParamString, parseMonthParam } from "./date-utils";
+import "./calendario.css";
 
 const MONTH_NAMES = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -184,7 +185,7 @@ export default async function CalendarioPage({
 
       {view === "mes" && (
         <div className="card" style={{ padding: "var(--space-7)", marginBottom: "var(--space-8)" }}>
-          <div className="flex items-center justify-between" style={{ marginBottom: "var(--space-5)" }}>
+          <div className="month-nav">
             <Link href={`/calendario?view=mes&month=${monthParamString(prev.year, prev.month)}`} className="btn btn-outline btn-sm">
               ← Anterior
             </Link>
@@ -224,7 +225,7 @@ export default async function CalendarioPage({
                   <div style={{ fontSize: "var(--text-xs)", fontWeight: "var(--weight-semibold)", marginBottom: "var(--space-1)" }}>
                     {day.getDate()}
                   </div>
-                  <div className="flex flex-col" style={{ gap: 2 }}>
+                  <div className="day-chips flex flex-col" style={{ gap: 2 }}>
                     {dayEvents.slice(0, 2).map((e) => (
                       <span
                         key={e.id}
@@ -248,6 +249,20 @@ export default async function CalendarioPage({
                       </span>
                     )}
                   </div>
+                  {dayEvents.length > 0 && (
+                    <div className="day-compact items-center" style={{ gap: 4 }}>
+                      <span
+                        style={{
+                          width: 6,
+                          height: 6,
+                          borderRadius: "50%",
+                          background: "var(--color-primary)",
+                          flexShrink: 0,
+                        }}
+                      />
+                      <span style={{ fontSize: "10px", color: "var(--color-text-muted)" }}>{dayEvents.length}</span>
+                    </div>
+                  )}
                 </div>
               );
             })}

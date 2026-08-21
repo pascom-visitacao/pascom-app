@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { NewActivityForm } from "./new-activity-form";
 import { ActivityCard, type ActivityCardData } from "./activity-card";
 import type { ActivityStatus } from "./actions";
+import "./kanban.css";
 
 const COLUMNS: { status: ActivityStatus; label: string }[] = [
   { status: "a_fazer", label: "A fazer" },
@@ -118,17 +119,33 @@ export default async function AtividadesPage({
             </div>
           ) : null}
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
-              gap: "var(--space-6)",
-            }}
-          >
+          {COLUMNS.map((column, i) => (
+            <input
+              key={column.status}
+              type="radio"
+              name="kanban-status"
+              id={`kanban-status-${column.status}`}
+              className="kanban-radio"
+              defaultChecked={i === 0}
+            />
+          ))}
+
+          <div className="tabs kanban-tabs">
+            {COLUMNS.map((column) => {
+              const count = activities.filter((a) => a.status === column.status).length;
+              return (
+                <label key={column.status} htmlFor={`kanban-status-${column.status}`} className="tab-item">
+                  {column.label} · {count}
+                </label>
+              );
+            })}
+          </div>
+
+          <div className="kanban-grid">
             {COLUMNS.map((column) => {
               const columnActivities = activities.filter((a) => a.status === column.status);
               return (
-                <div key={column.status}>
+                <div key={column.status} className="kanban-column" data-status={column.status}>
                   <div className="card-stat-label" style={{ marginBottom: "var(--space-4)" }}>
                     {column.label} · {columnActivities.length}
                   </div>
