@@ -15,43 +15,49 @@ export async function GET(request: NextRequest) {
   const unauthorized = checkCronAuth(request);
   if (unauthorized) return unauthorized;
 
-  const supabase = createServiceRoleClient();
+  try {
+    const supabase = createServiceRoleClient();
 
-  const threshold = new Date();
-  threshold.setDate(threshold.getDate() + DAYS_AHEAD);
-  const thresholdDate = threshold.toISOString().slice(0, 10);
+    const threshold = new Date();
+    threshold.setDate(threshold.getDate() + DAYS_AHEAD);
+    const thresholdDate = threshold.toISOString().slice(0, 10);
 
-  const { data: activities, error } = await supabase
-    .from("activities")
-    .select("id, title, due_date, assignee:users(email)")
-    .not("assignee_id", "is", null)
-    .not("due_date", "is", null)
-    .lte("due_date", thresholdDate)
-    .is("due_date_reminder_sent_at", null)
-    .neq("status", "concluido");
+    const { data: activities, error } = await supabase
+      .from("activities")
+      .select("id, title, due_date, assignee:users(email)")
+      .not("assignee_id", "is", null)
+      .not("due_date", "is", null)
+      .lte("due_date", thresholdDate)
+      .is("due_date_reminder_sent_at", null)
+      .neq("status", "concluido");
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-
-  let sent = 0;
-  for (const activity of activities ?? []) {
-    const assignee = normalizeOne<{ email: string }>(activity.assignee);
-
-    if (assignee?.email) {
-      await sendEmail({
-        to: [assignee.email],
-        subject: `Prazo se aproximando: ${activity.title}`,
-        html: dueDateReminderEmail(activity.title, activity.due_date as string),
-      });
-      sent++;
+    if (error) {
+      console.error(error);
+      return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    await supabase
-      .from("activities")
-      .update({ due_date_reminder_sent_at: new Date().toISOString() })
-      .eq("id", activity.id);
-  }
+    let sent = 0;
+    for (const activity of activities ?? []) {
+      const assignee = normalizeOne<{ email: string }>(activity.assignee);
 
-  return NextResponse.json({ checked: activities?.length ?? 0, sent });
+      if (assignee?.email) {
+        await sendEmail({
+          to: [assignee.email],
+          subject: `Prazo se aproximando: ${activity.title}`,
+          html: dueDateReminderEmail(activity.title, activity.due_date as string),
+        });
+        sent++;
+      }
+
+      await supabase
+        .from("activities")
+        .update({ due_date_reminder_sent_at: new Date().toISOString() })
+        .eq("id", activity.id);
+    }
+
+    return NextResponse.json({ checked: activities?.length ?? 0, sent });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json({ error: "Erro interno" }, { status: 500 });
+  }
 }
