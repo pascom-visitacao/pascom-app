@@ -23,6 +23,12 @@ const jetbrainsMono = JetBrains_Mono({
 export const metadata: Metadata = {
   title: "PASCOM — Plataforma de Gestão",
   description: "Sistema de gestão da Pastoral da Comunicação",
+  verification: {
+    // Confirma posse do domínio pro Google Search Console — necessário
+    // pra tirar o aviso "app não verificado" da tela de consentimento
+    // OAuth do Drive, mesmo com escopo drive.file (não-sensível).
+    google: "Mei2tOQGCia7OUzDEHhBS5oTSDmYOSru7F0xa25cz7s",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
