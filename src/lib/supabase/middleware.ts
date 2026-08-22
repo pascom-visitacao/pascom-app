@@ -4,7 +4,7 @@ import { NextResponse, type NextRequest } from "next/server";
 // /api/cron/* tem autenticação própria (CRON_SECRET via checkCronAuth) e é
 // chamada sem sessão de usuário (cron da Vercel, GitHub Actions) — não deve
 // passar pelo redirect de login.
-const PUBLIC_PATHS = ["/login", "/auth", "/solicitar", "/acompanhar", "/api/cron"];
+const PUBLIC_PATHS = ["/login", "/auth", "/solicitar", "/acompanhar", "/api/cron", "/privacidade"];
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({ request });
