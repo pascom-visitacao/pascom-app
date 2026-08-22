@@ -73,3 +73,31 @@ export async function deleteActivity(activityId: string) {
 
   revalidatePath("/atividades");
 }
+
+export async function addComment(activityId: string, body: string) {
+  const trimmed = body.trim();
+  if (!trimmed) return;
+
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) throw new Error("Não autenticado");
+
+  const { error } = await supabase
+    .from("activity_comments")
+    .insert({ activity_id: activityId, author_id: user.id, body: trimmed });
+
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/atividades");
+}
+
+export async function deleteComment(commentId: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.from("activity_comments").delete().eq("id", commentId);
+
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/atividades");
+}

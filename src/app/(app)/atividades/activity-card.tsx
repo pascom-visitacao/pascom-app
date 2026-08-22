@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { StatusSelect } from "./status-select";
 import { DeleteActivityButton } from "./delete-activity-button";
 import { assumeActivity, type ActivityStatus } from "./actions";
+import { CommentsSection, type CommentData } from "./comments-section";
 
 const PRIORITY_LABELS: Record<string, string> = { baixa: "Baixa", media: "Média", alta: "Alta" };
 const PRIORITY_BADGE: Record<string, string> = {
@@ -24,6 +25,7 @@ export type ActivityCardData = {
   attachments: string[];
   event: { id: string; title: string } | null;
   ministry: { id: string; name: string } | null;
+  comments: CommentData[];
 };
 
 function initials(name: string) {
@@ -75,10 +77,12 @@ export function ActivityCard({
   activity,
   canWrite,
   isCoordenacao,
+  currentUserId,
 }: {
   activity: ActivityCardData;
   canWrite: boolean;
   isCoordenacao: boolean;
+  currentUserId: string;
 }) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -184,6 +188,13 @@ export function ActivityCard({
                 </div>
               )}
             </div>
+
+            <CommentsSection
+              activityId={activity.id}
+              comments={activity.comments}
+              currentUserId={currentUserId}
+              isCoordenacao={isCoordenacao}
+            />
           </div>
           <div className="modal-footer">
             {canWrite && !activity.assignee && (

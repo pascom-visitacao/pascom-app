@@ -47,7 +47,7 @@ export default async function AtividadesPage({
     ? await supabase
         .from("activities")
         .select(
-          "id, title, description, status, due_date, source, priority, assignee:users(id, name, avatar_url), request:external_requests(attachment_urls), event:events(id, title), parish_ministry:parish_ministries(id, name)",
+          "id, title, description, status, due_date, source, priority, assignee:users(id, name, avatar_url), request:external_requests(attachment_urls), event:events(id, title), parish_ministry:parish_ministries(id, name), comments:activity_comments(id, body, created_at, author:users(id, name))",
         )
         .eq("area_id", selectedAreaId)
         .order("created_at", { ascending: true })
@@ -65,6 +65,9 @@ export default async function AtividadesPage({
     attachments: normalizeOne<{ attachment_urls: string[] }>(a.request)?.attachment_urls ?? [],
     event: normalizeOne(a.event),
     ministry: normalizeOne(a.parish_ministry),
+    comments: (a.comments ?? [])
+      .map((c) => ({ ...c, author: normalizeOne<{ id: string; name: string }>(c.author) }))
+      .sort((x, y) => x.created_at.localeCompare(y.created_at)),
   }));
 
   const { data: areaMembers } = selectedAreaId
@@ -158,6 +161,7 @@ export default async function AtividadesPage({
                         activity={activity}
                         canWrite={canWrite}
                         isCoordenacao={isCoordenacao}
+                        currentUserId={user.id}
                       />
                     ))}
                   </div>
