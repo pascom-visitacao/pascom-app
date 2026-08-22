@@ -1,8 +1,14 @@
 // Script local, de uso unico: autoriza a conta institucional do Google
-// Drive (escopo drive.file) e usa o Picker pra selecionar a pasta raiz
-// "PASCOM", produzindo o refresh token + demais credenciais que a rota
-// server-side de upload vai usar. Nada disso passa pelo chat - roda no
-// seu terminal, os valores finais aparecem so no console local.
+// (escopos drive.file + calendar.events) e usa o Picker pra selecionar a
+// pasta raiz "PASCOM", produzindo o refresh token + demais credenciais
+// que o server-side (Drive e Google Calendar) vai usar. Nada disso passa
+// pelo chat - roda no seu terminal, os valores finais aparecem so no
+// console local.
+//
+// Reautorizando uma conta que já tinha só drive.file: esse novo refresh
+// token substitui o antigo por completo (o Google não "soma" escopo a um
+// token existente) - depois de rodar, atualiza GOOGLE_DRIVE_REFRESH_TOKEN
+// na Vercel com o valor novo, o antigo para de valer.
 //
 // Uso: node scripts/drive-oauth-setup/server.mjs
 // (antes, copia .env.drive-setup.example pra .env.drive-setup e preenche)
@@ -44,7 +50,10 @@ const server = http.createServer(async (req, res) => {
     authUrl.searchParams.set("client_id", CLIENT_ID);
     authUrl.searchParams.set("redirect_uri", REDIRECT_URI);
     authUrl.searchParams.set("response_type", "code");
-    authUrl.searchParams.set("scope", "https://www.googleapis.com/auth/drive.file");
+    authUrl.searchParams.set(
+      "scope",
+      "https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/calendar.events",
+    );
     authUrl.searchParams.set("access_type", "offline");
     authUrl.searchParams.set("prompt", "consent");
     authUrl.searchParams.set("state", state);
@@ -52,8 +61,8 @@ const server = http.createServer(async (req, res) => {
     res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" });
     res.end(`<!doctype html>
 <html><body style="font-family: sans-serif; padding: 40px;">
-  <h1>Setup Google Drive — PASCOM</h1>
-  <p>Faça login com a conta institucional (<code>pascomvisitacao@gmail.com</code>) e autorize o acesso.</p>
+  <h1>Setup Google Drive + Calendar — PASCOM</h1>
+  <p>Faça login com a conta institucional (<code>pascomvisitacao@gmail.com</code>) e autorize o acesso (Drive + Calendar).</p>
   <a href="${authUrl.toString()}" style="display:inline-block;padding:12px 20px;background:#1a73e8;color:white;text-decoration:none;border-radius:6px;">
     Autorizar com o Google
   </a>

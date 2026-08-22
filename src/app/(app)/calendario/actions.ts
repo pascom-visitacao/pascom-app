@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { createCalendarEvent } from "@/lib/google-calendar";
 
 export async function createEvent(formData: FormData) {
   const title = String(formData.get("title") ?? "").trim();
@@ -11,15 +12,27 @@ export async function createEvent(formData: FormData) {
 
   if (!title || !date) return;
 
-  const supabase = await createClient();
-  const { error } = await supabase.from("events").insert({
+  const eventData = {
     title,
     date: new Date(date).toISOString(),
     location: location || null,
     description: description || null,
-  });
+  };
+
+  const supabase = await createClient();
+  const { data: inserted, error } = await supabase.from("events").insert(eventData).select("id").single();
 
   if (error) throw new Error(error.message);
+
+  // Sincronização com Google Calendar é best-effort: o evento já está
+  // criado no app de qualquer forma, uma instabilidade do Google não pode
+  // travar o fluxo da Coordenação.
+  try {
+    const calendarEvent = await createCalendarEvent(eventData);
+    await supabase.from("events").update({ google_calendar_event_id: calendarEvent.id }).eq("id", inserted.id);
+  } catch (syncError) {
+    console.error("Falha ao sincronizar evento com o Google Calendar", { eventId: inserted.id, syncError });
+  }
 
   revalidatePath("/calendario");
 }

@@ -161,11 +161,15 @@ materials (id, drive_file_id, name, folder_path, related_activity_id)
   - Semana: navegação por período via `?date=`, grade de 7 colunas (empilha em coluna única abaixo de 640px, mesmo padrão responsivo da grade de mês) com chips de evento por dia
   - Dia: navegação por período via `?date=`, sem grade própria (uma célula só seria redundante) — a lista de eventos completa abaixo já filtra pro dia selecionado
   - A lista de eventos abaixo da grade agora filtra corretamente por visão (mês/semana/dia), antes mostrava tudo pra semana/dia
-- **2. Sincronização com Google Calendar** (depois — mais complexo, exige decisões de design antes de codar)
-  - Definir: sincronização de mão única (app → Google Calendar) ou bidirecional?
-  - Definir: calendário único compartilhado da Pascom, ou cada Pasconeiro recebe os eventos no próprio Google Calendar pessoal?
-  - Definir: todo evento sincroniza, ou só os marcados para isso?
-  - Pensar com calma nessas perguntas antes de repassar ao Claude Code, do mesmo jeito que foi feito com vagas/escalas na Fase 4
+- **2. Sincronização com Google Calendar — Etapa 1 IMPLEMENTADA** (mão única, app → Google Calendar)
+  - **Decisões tomadas**: mão única por enquanto (app é fonte da verdade); calendário único da conta institucional (`pascomvisitacao@gmail.com`, `primary`), não um por Pasconeiro; todo evento sincroniza automaticamente, sem marcação seletiva
+  - **Enquadramento explícito**: isso é a Etapa 1 de uma sincronização que será bidirecional no futuro, não a versão final. A Etapa 2 (Google Calendar → app) fica propositalmente pra depois, junto com editar/excluir evento no app — que ainda não existe e é pré-requisito pra sincronização de volta fazer sentido
+  - `src/lib/google-oauth.ts` — troca de refresh token extraída do `google-drive.ts` pra um helper compartilhado entre Drive e Calendar (mesma conta institucional, mesmas credenciais)
+  - `src/lib/google-calendar.ts` — `createCalendarEvent()`, REST simples sem SDK, mesmo padrão do Drive
+  - `events.google_calendar_event_id` (nova coluna, sem RLS nova) guarda o id do evento no Google Calendar, pronta pra quando editar/excluir existir
+  - `createEvent` chama o sync **best-effort** depois do insert — se o Google falhar, o evento continua criado normalmente no app (testado ao vivo: erro `ACCESS_TOKEN_SCOPE_INSUFFICIENT` capturado e logado sem quebrar o fluxo)
+  - **Pendência operacional (fora do código)**: o refresh token atual só tem o escopo `drive.file`. Pra sincronizar de verdade, alguém com acesso à conta institucional precisa reautorizar com `drive.file` + `calendar.events` juntos, rodando de novo `scripts/drive-oauth-setup/server.mjs` (já atualizado pra pedir os dois), e atualizar `GOOGLE_DRIVE_REFRESH_TOKEN` na Vercel com o valor novo
+  - `calendar.events` é escopo **Sensitive** (não Restricted) — exige verificação do Google (até 10 dias), mas sem auditoria de segurança externa. Se aparecer "app não verificado" ao reautorizar, mesmo plano de contingência já usado no Drive: modo Testing (token válido por 7 dias, renovável) pra destravar o uso imediato, verificação formal submetida em paralelo
 - **3. Calendário paroquial — Camada 2 (leitura assistida)** (por último, condicional)
   - Pré-preencher o formulário de criação de evento a partir do PDF/foto do padre, em vez de digitação manual (Camada 1, já existente desde a Fase 4)
   - Só vale a pena se o volume de eventos recorrentes justificar o esforço — reavaliar depois de usar a Camada 1 por um tempo, não implementar de antemão
