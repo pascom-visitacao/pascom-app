@@ -168,6 +168,7 @@ export default async function AtividadesPage({
                         canWrite={canWrite}
                         isCoordenacao={isCoordenacao}
                         currentUserId={user.id}
+                        members={areaMembers ?? []}
                       />
                     ))}
                   </div>

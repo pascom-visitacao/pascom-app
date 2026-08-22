@@ -59,3 +59,17 @@ export function dueDateReminderEmail(title: string, dueDate: string) {
     `<p>A atividade <strong>${title}</strong> tem prazo em ${new Date(dueDate).toLocaleDateString("pt-BR")}.</p>`,
   );
 }
+
+export function activityAssignedEmail(title: string) {
+  return WRAP(
+    "Atividade atribuída a você",
+    `<p>A Coordenação te designou como responsável pela atividade <strong>${title}</strong>.</p>`,
+  );
+}
+
+export function scheduleReminderEmail(roleNeeded: string, eventTitle: string, eventDate: string) {
+  return WRAP(
+    "Lembrete: escala amanhã",
+    `<p>Você está escalado(a) como <strong>${roleNeeded}</strong> pro evento <strong>${eventTitle}</strong>, amanhã (${new Date(eventDate).toLocaleString("pt-BR", { dateStyle: "long", timeStyle: "short" })}).</p>`,
+  );
+}

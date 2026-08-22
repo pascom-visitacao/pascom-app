@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+import { sendEmail, activityAssignedEmail } from "@/lib/email";
 
 export type ActivityStatus = "a_fazer" | "em_producao" | "revisao" | "concluido";
 export type ActivityPriority = "baixa" | "media" | "alta";
@@ -61,6 +62,39 @@ export async function assumeActivity(activityId: string) {
     .eq("id", activityId);
 
   if (error) throw new Error(error.message);
+
+  revalidatePath("/atividades");
+}
+
+// Atribuição direta pela Coordenação - diferente de assumeActivity
+// (self-service, só o próprio usuário, só quando a vaga está vazia).
+// A UI só mostra esse controle pra isCoordenacao, mas a RLS + o trigger
+// enforce_activity_reassignment já são o backstop real independente disso.
+export async function reassignActivity(activityId: string, userId: string) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("activities")
+    .update({ assignee_id: userId })
+    .eq("id", activityId)
+    .select("title, assignee:users(email, name)")
+    .single();
+
+  if (error) throw new Error(error.message);
+
+  // Notificação é best-effort: a reatribuição já aconteceu de qualquer
+  // forma, uma instabilidade do provedor de e-mail não pode desfazê-la.
+  try {
+    const assignee = Array.isArray(data.assignee) ? data.assignee[0] : data.assignee;
+    if (assignee?.email) {
+      await sendEmail({
+        to: [assignee.email],
+        subject: `Atividade atribuída a você: ${data.title}`,
+        html: activityAssignedEmail(data.title),
+      });
+    }
+  } catch (notifyError) {
+    console.error("Falha ao notificar atribuição de atividade", { activityId, notifyError });
+  }
 
   revalidatePath("/atividades");
 }

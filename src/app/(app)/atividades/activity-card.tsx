@@ -3,7 +3,7 @@
 import { useState, useTransition } from "react";
 import { StatusSelect } from "./status-select";
 import { DeleteActivityButton } from "./delete-activity-button";
-import { assumeActivity, type ActivityStatus } from "./actions";
+import { assumeActivity, reassignActivity, type ActivityStatus } from "./actions";
 import { CommentsSection, type CommentData } from "./comments-section";
 
 const PRIORITY_LABELS: Record<string, string> = { baixa: "Baixa", media: "Média", alta: "Alta" };
@@ -49,6 +49,41 @@ function AssigneeLine({ assignee }: { assignee: ActivityCardData["assignee"] }) 
   );
 }
 
+function ReassignSelect({
+  activityId,
+  currentAssigneeId,
+  members,
+}: {
+  activityId: string;
+  currentAssigneeId: string | null;
+  members: { id: string; name: string }[];
+}) {
+  const [isPending, startTransition] = useTransition();
+
+  return (
+    <div className="input-wrap select-wrap" style={{ display: "inline-flex", width: "auto" }}>
+      <select
+        value={currentAssigneeId ?? ""}
+        disabled={isPending}
+        onChange={(e) => {
+          const userId = e.target.value;
+          if (!userId) return;
+          startTransition(() => reassignActivity(activityId, userId));
+        }}
+      >
+        <option value="" disabled>
+          Atribuir a...
+        </option>
+        {members.map((member) => (
+          <option key={member.id} value={member.id}>
+            {member.name}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
 function Attachments({ attachments, size }: { attachments: string[]; size: number }) {
   if (attachments.length === 0) return null;
   return (
@@ -78,11 +113,13 @@ export function ActivityCard({
   canWrite,
   isCoordenacao,
   currentUserId,
+  members,
 }: {
   activity: ActivityCardData;
   canWrite: boolean;
   isCoordenacao: boolean;
   currentUserId: string;
+  members: { id: string; name: string }[];
 }) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -168,8 +205,17 @@ export function ActivityCard({
             <Attachments attachments={activity.attachments} size={80} />
 
             <div className="flex flex-col" style={{ gap: "var(--space-3)" }}>
-              <div>
-                <strong>Responsável:</strong> <AssigneeLine assignee={activity.assignee} />
+              <div className="flex items-center" style={{ gap: "var(--space-3)" }}>
+                <strong>Responsável:</strong>
+                {isCoordenacao ? (
+                  <ReassignSelect
+                    activityId={activity.id}
+                    currentAssigneeId={activity.assignee?.id ?? null}
+                    members={members}
+                  />
+                ) : (
+                  <AssigneeLine assignee={activity.assignee} />
+                )}
               </div>
               {activity.due_date && (
                 <div>
