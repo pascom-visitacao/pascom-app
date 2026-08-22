@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { signOut } from "./actions";
@@ -65,17 +66,20 @@ export default async function DashboardPage() {
         style={{ gap: "var(--space-5)", marginBottom: "var(--space-8)" }}
       >
         <div className="flex items-center" style={{ gap: "var(--space-5)" }}>
-          {profile?.avatar_url ? (
-            <Image
-              src={profile.avatar_url}
-              alt={displayName}
-              width={64}
-              height={64}
-              style={{ borderRadius: "var(--radius-full)", objectFit: "cover", flexShrink: 0 }}
-            />
-          ) : (
-            <span className="avatar avatar-lg">{initials(profile?.name ?? displayName)}</span>
-          )}
+          <Link href="/perfil" aria-label="Meu perfil" style={{ flexShrink: 0, lineHeight: 0 }}>
+            {profile?.avatar_url ? (
+              <Image
+                src={profile.avatar_url}
+                alt={displayName}
+                width={64}
+                height={64}
+                className="avatar-photo"
+                style={{ width: 64, height: 64 }}
+              />
+            ) : (
+              <span className="avatar avatar-lg">{initials(profile?.name ?? displayName)}</span>
+            )}
+          </Link>
           <div>
             <h1 style={{ fontSize: "var(--text-2xl)", marginBottom: "var(--space-2)" }}>
               {greeting()}, {displayName}

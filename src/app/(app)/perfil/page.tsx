@@ -4,6 +4,11 @@ import { ProfileForm } from "./profile-form";
 import { AreaAdjustment } from "./area-adjustment";
 import { effectiveAreaIds } from "@/lib/effective-areas";
 
+const ROLE_LABEL: Record<string, string> = {
+  coordenacao_geral: "Coordenação geral",
+  pasconeiro: "Pasconeiro",
+};
+
 export default async function PerfilPage() {
   const supabase = await createClient();
 
@@ -14,7 +19,7 @@ export default async function PerfilPage() {
 
   const { data: profile } = await supabase
     .from("users")
-    .select("name, phone, bio, skills, social_links, area_ids, pending_area_ids, areas_submitted_at")
+    .select("name, phone, bio, skills, social_links, avatar_url, role, area_ids, pending_area_ids, areas_submitted_at")
     .eq("id", user.id)
     .single();
 
@@ -34,6 +39,8 @@ export default async function PerfilPage() {
             bio: profile.bio,
             skills: profile.skills ?? [],
             social_links: profile.social_links ?? [],
+            avatar_url: profile.avatar_url,
+            roleLabel: profile.role ? (ROLE_LABEL[profile.role] ?? profile.role) : "—",
           }}
         />
 

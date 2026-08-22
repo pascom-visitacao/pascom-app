@@ -18,7 +18,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   const { data: profile } = await supabase
     .from("users")
-    .select("role, areas_submitted_at")
+    .select("role, areas_submitted_at, name, avatar_url")
     .eq("id", user.id)
     .single();
 
@@ -60,7 +60,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         </nav>
       </aside>
       <main className="ds-main">{children}</main>
-      <MobileNav isCoordenacao={isCoordenacao} />
+      <MobileNav
+        isCoordenacao={isCoordenacao}
+        userName={profile?.name ?? user.email ?? "Usuário"}
+        avatarUrl={profile?.avatar_url ?? null}
+      />
       {needsAreaOnboarding && <AreaOnboardingModal areas={allAreas ?? []} />}
     </div>
   );

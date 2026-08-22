@@ -53,7 +53,7 @@ export function AreaAdjustment({
   }
 
   return (
-    <div className="card" style={{ maxWidth: 480, display: "flex", flexDirection: "column", gap: "var(--space-4)" }}>
+    <div className="card" style={{ maxWidth: 480, width: "100%", display: "flex", flexDirection: "column", gap: "var(--space-4)" }}>
       <div className="card-title" style={{ marginBottom: 0 }}>
         Áreas de atuação
       </div>
@@ -89,9 +89,20 @@ export function AreaAdjustment({
 
       {!pickerOpen ? (
         inCooldown && cooldownEndsAt ? (
-          <p style={{ fontSize: "var(--text-sm)", color: "var(--color-text-muted)" }}>
-            Você poderá ajustar de novo a partir de {cooldownEndsAt.toLocaleDateString("pt-BR")}.
-          </p>
+          <div className="flex flex-col" style={{ gap: "var(--space-2)", alignItems: "flex-start" }}>
+            <button
+              type="button"
+              className="btn btn-outline btn-md"
+              disabled
+              title={`Disponível a partir de ${cooldownEndsAt.toLocaleDateString("pt-BR")}`}
+              style={{ cursor: "not-allowed" }}
+            >
+              Ajustar áreas
+            </button>
+            <p style={{ fontSize: "var(--text-sm)", color: "var(--color-text-muted)" }}>
+              Você poderá ajustar de novo a partir de {cooldownEndsAt.toLocaleDateString("pt-BR")}.
+            </p>
+          </div>
         ) : (
           <button type="button" className="btn btn-outline btn-md" onClick={() => setPickerOpen(true)}>
             Ajustar áreas

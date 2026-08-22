@@ -5,6 +5,8 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       // foto de perfil devolvida pelo Google OAuth
       { protocol: "https", hostname: "lh3.googleusercontent.com" },
+      // foto de perfil enviada pelo usuário (bucket público perfil-fotos)
+      { protocol: "https", hostname: "okreebpdofmhtomdmzcz.supabase.co" },
     ],
   },
   experimental: {

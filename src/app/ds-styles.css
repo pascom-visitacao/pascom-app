@@ -484,6 +484,17 @@ textarea.ds-textarea:focus { border-color: var(--color-primary); box-shadow: var
 .avatar-md { width: 44px; height: 44px; font-size: var(--text-sm); }
 .avatar-lg { width: 64px; height: 64px; font-size: var(--text-lg); }
 
+/* Regra única pra toda foto de perfil (real, não iniciais): preenche a
+   circunferência inteira, centralizada, sem esticar/deformar a imagem -
+   equivalente a um "recorte" central, nunca um "achatar pra caber". */
+.avatar-photo {
+  border-radius: var(--radius-full);
+  object-fit: cover;
+  object-position: center;
+  flex-shrink: 0;
+  display: block;
+}
+
 /* ---------- Modal ---------- */
 .modal-overlay {
   position: fixed; inset: 0;
