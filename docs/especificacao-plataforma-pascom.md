@@ -17,7 +17,7 @@ Sistema web para centralizar a operação da Pastoral da Comunicação: planejam
 | **Pasconeiro** | Membro/voluntário executor | Vê e assume atividades, atualiza status, comenta |
 | **Solicitante externo** | Outra pastoral/ministério | Sem login — acessa via link público para enviar e acompanhar pedidos |
 
-> Coordenador de área fica de fora por enquanto — só Coordenação geral e Pasconeiro. Dá pra adicionar esse papel intermediário depois sem quebrar nada, já que a estrutura de áreas (`area_id`) continua existindo no modelo de dados; só não há um papel dedicado a administrá-la ainda.
+> Coordenador de área **não entra nessa primeira versão do app** (decisão tomada na Fase 6, não é mais rascunho em aberto) — só Coordenação geral e Pasconeiro. A estrutura de áreas (`area_id`) continua existindo no modelo de dados, então esse papel intermediário pode ser adicionado numa versão futura sem quebrar nada; só não faz parte do escopo atual.
 
 Implementar via **Row Level Security (RLS)** no Supabase: cada tabela tem políticas que restringem o que cada `role` pode ler/escrever.
 
@@ -57,8 +57,28 @@ Implementar via **Row Level Security (RLS)** no Supabase: cada tabela tem polít
 - **Candidatura/assumir tarefa:** atividade pode nascer sem responsável (igual às vagas de escala da seção 3.2) — Pasconeiro da área abre o briefing e assume a tarefa com uma ação única. Mesmo padrão de interação usado nas vagas, aplicado agora também às atividades — consistência entre os dois fluxos
 
 ### 3.4 Materiais (Drive)
-- Não duplicar arquivos — integrar via API do Google Drive
-- Estrutura de pastas espelhada por categoria/evento
+- Integração via API do Google Drive, conectada pela **conta institucional** (`pascomvisitacao@gmail.com`), não por usuário individual — evita materiais espalhados em Drives pessoais de voluntários
+- **Estrutura de pastas**: segue o documento "Diretrizes de Organização do Google Drive — PASCOM" (mantido como arquivo próprio na pasta `docs/` do projeto, não duplicado por inteiro aqui). Resumo da lógica:
+  - `Ano → Natureza da demanda → Projeto/Evento → Tipo de material`
+  - Categorias fixas dentro de cada ano: `01 Eventos e Campanhas`, `02 Redes Sociais` (por mês), `03 Pastorais e Movimentos`, `04 Comunicação Institucional`, `05 Fotos e Vídeos` (acervo, por mês), `06 Demandas Avulsas`, `99 Arquivo`
+  - `00 — Recursos da PASCOM` fica fora da estrutura anual (materiais permanentes: identidade visual, templates, logos)
+  - Princípio de fonte única: nunca duplicar arquivo — usar atalho do Drive quando precisar aparecer em mais de um contexto
+  - Só criar pasta quando houver arquivo que justifique (nunca pasta vazia só pra seguir o modelo)
+- **Mapeamento automático** (o app decide sozinho, sem perguntar):
+  - Atividade com `event_id` → `[Ano]/01 Eventos e Campanhas/[Nome do evento]/[subpasta por área]` — mapeamento de área: redes sociais→"Redes Sociais", fotografia→"Fotos", transmissão→"Vídeos", design→"Identidade Visual" ou "Impressos" (conforme o caso), texto→"Planejamento e Conteúdo"
+  - Atividade com `parish_ministry_id` e sem `event_id` → `[Ano]/03 Pastorais e Movimentos/[Nome do ministério]/`
+  - Atividade sem os dois, área = redes sociais → `[Ano]/02 Redes Sociais/[Mês]/[Data] — [Descrição]/`
+- **Não automatizável — seletor manual no upload**: "Comunicação Institucional" (permanente vs. pontual) e "Fotos e Vídeos" como acervo (peça produzida vs. registro bruto) exigem julgamento humano, o app erraria com frequência tentando adivinhar. Upload oferece seletor de destino nesses casos; padrão cai em "Demandas Avulsas" se ninguém escolher
+- `00 — Recursos da PASCOM` e as pastas `99` (Arquivo/Descartados) ficam fora da automação — geridas manualmente pela equipe, o app só respeita que existem
+
+- **Nova tela: "Enviar fotos"** (upload em massa, pensada pra zero fricção — fotos de evento são produzidas o tempo todo)
+  - Acesso fácil e visível (atalho no painel ou item de menu próprio, não escondido)
+  - Seleção múltipla de arquivos, otimizada pra celular (acesso direto à galeria/câmera do telefone)
+  - Campo opcional: evento relacionado (busca entre eventos existentes) — se escolhido, vai pra pasta daquele evento; se vazio, cai no acervo "Fotos e Vídeos" organizado por mês/data
+  - Grade de miniaturas do que foi selecionado antes de enviar, com barra de progresso durante o upload (arquivos de foto são pesados, várias de uma vez)
+  - Confirmação no final com link direto pra pasta no Drive
+  - Reaproveita a tabela `materials` já existente (`drive_file_id`, `name`, `folder_path`, `related_activity_id`) — `related_activity_id` fica opcional aqui, já que a maioria dessas fotos não estará amarrada a um card do Kanban
+
 - Busca e preview dentro do app
 
 ### 3.5 Central de pedidos externos (página pública, sem login)
@@ -125,9 +145,27 @@ materials (id, drive_file_id, name, folder_path, related_activity_id)
 - Painel bento já tem breakpoint de referência pronto no preview validado (colapsa sidebar, grade vira 2 colunas) — usar como base, não é preciso desenhar do zero
 
 **Fase 5 — Materiais e notificações**
-- Integração com Google Drive API
-- Notificações por e-mail
-- (Opcional) integração WhatsApp Business
+- **Sequência sugerida**: notificações primeiro (mais simples, sem OAuth novo, valor imediato), Drive depois (mais complexo, precisa expandir escopo do Google Cloud Console)
+- **Notificações — 3 gatilhos** (consolidado de 4 no rascunho original, já que "pedido externo novo" e "atividade sem responsável" são o mesmo evento na prática):
+  - Atividade sem responsável (cobre pedido externo novo e atividade interna sem dono) → notifica Pasconeiros da área
+  - Prazo próximo → notifica o responsável atual
+  - Vaga de escala aberta → notifica Pasconeiros da área
+  - Provedor: Resend (integra bem com Next.js/Vercel, tier gratuito suficiente)
+- **Drive**: ver detalhes completos na seção 3.4 — conta institucional, estrutura de pastas por natureza da demanda, mapeamento automático + seletor manual pros casos ambíguos, e a nova tela "Enviar fotos" (upload em massa)
+- (Opcional, fora do escopo inicial) integração WhatsApp Business
+
+**Fase 6 — Calendário: visões restantes e sincronização**
+- **Coordenador de área não entra nessa versão** — decisão tomada, não é mais item em aberto (ver nota na seção 2)
+- **1. Visualizações Semana e Dia** (primeiro — mais simples, puro frontend)
+  - Estrutura de dados já existe (`date-utils.ts`, filtro `?view=`) desde a Fase 4.5; falta só desenhar e construir a grade visual das duas visões
+- **2. Sincronização com Google Calendar** (depois — mais complexo, exige decisões de design antes de codar)
+  - Definir: sincronização de mão única (app → Google Calendar) ou bidirecional?
+  - Definir: calendário único compartilhado da Pascom, ou cada Pasconeiro recebe os eventos no próprio Google Calendar pessoal?
+  - Definir: todo evento sincroniza, ou só os marcados para isso?
+  - Pensar com calma nessas perguntas antes de repassar ao Claude Code, do mesmo jeito que foi feito com vagas/escalas na Fase 4
+- **3. Calendário paroquial — Camada 2 (leitura assistida)** (por último, condicional)
+  - Pré-preencher o formulário de criação de evento a partir do PDF/foto do padre, em vez de digitação manual (Camada 1, já existente desde a Fase 4)
+  - Só vale a pena se o volume de eventos recorrentes justificar o esforço — reavaliar depois de usar a Camada 1 por um tempo, não implementar de antemão
 
 ---
 
@@ -148,7 +186,104 @@ Carregar as fontes (Bricolage Grotesque, Hanken Grotesk, JetBrains Mono) via Goo
 
 **Status:** v1.1 — todos os componentes essenciais para o app já estão prontos (modal, tabela e tooltip foram adicionados depois do v1 inicial, seguindo os mesmos tokens). Não há mais nada bloqueado por falta de componente; qualquer necessidade nova pode seguir o mesmo padrão ao ser criada durante o desenvolvimento.
 
-## 7. Observações práticas
+## 7. Novas funcionalidades em análise
+
+> Registradas aqui pra não perder contexto entre conversas. Sequenciamento e refinamentos consolidados a partir de `spec-fase6-v2.md` (levantamento original dos itens) e `spec-fase7.md` (ordem de execução + decisões refinadas) — os dois arquivos ficam em `docs/` como histórico, este documento é a fonte da verdade consolidada.
+
+### Ordem de execução
+
+| Ordem | Item | Motivo |
+|---|---|---|
+| — | 7.1 Configurações do Coordenador | Já sequenciado (roda antes de/paralelo à Fase 6) — sem mudança |
+| 1 | 7.7 Comentários em atividades | Risco baixíssimo, sem impacto em RLS existente, resolve dor real |
+| 2 | 7.6 Novo menu mobile | Decisão bloqueante — cada tela nova (Equipamentos, Configurações) aperta ainda mais o menu atual |
+| 3 | 7.3 Página de Equipamentos | Escopo fechado, independente dos demais itens |
+| 4 | 7.5 Avatar deslizante no Painel mobile | Puramente estético — menor prioridade |
+| 5 | 7.2 Múltiplas áreas por Pasconeiro | Maior risco estrutural (RLS) — ver estratégia de mitigação abaixo |
+| 6 | 7.4 Página de Perfil do usuário | Depende de 7.2 — só faz sentido depois |
+
+### 7.1 Configurações do Coordenador (nova página)
+- Cadastro de áreas e funções (pode reaproveitar o que já existe em Equipe & Áreas, ou centralizar aqui — decidir na hora)
+- Promover/rebaixar um Pasconeiro para Coordenação geral (e vice-versa)
+- **Painel de redes sociais — DECISÃO TOMADA: não guardar login/senha dentro do app.** Risco de ponto único de falha (se o banco vazar, todas as contas vazam juntas; senha de verdade não é revogável/escopada como token OAuth). Recomendado: gerenciador de senhas compartilhado da equipe (ex: Bitwarden Organizations). O app pode, no máximo, guardar um **link de referência** pra onde encontrar a credencial, nunca o valor em si
+- **"Login mãe":** a conta institucional (`pascomvisitacao@gmail.com`) precisa ficar protegida contra ser rebaixada — nenhum Coordenador (nem ela mesma) consegue mudar esse `role` específico. Tecnicamente: trigger semelhante ao `enforce_users_self_update` já existente, mas mirando um e-mail/id específico como exceção protegida, não o usuário autenticado atual
+
+### 7.7 Comentários em atividades
+- Qualquer usuário autenticado pode comentar num card do Kanban — cobre informação que surge depois do briefing inicial e não estava prevista
+
+### 7.6 Novo menu de navegação mobile
+- Substitui o menu atual (que ficará apertado com o crescimento: Painel, Atividades, Calendário, Equipamentos, além de Perfil/Configurações acessados via avatar)
+- Três candidatos prototipados em HTML (`preview-menu-mobile.html`, com os tokens reais do design system, alternável em tempo real): **(A) barra flutuante inferior**, **(B) rail lateral fino**, **(C) grid em tela cheia**
+- Decisão pendente — usuário vai testar no celular antes de escolher
+- **Critérios pra decisão durante o teste:**
+  - **A (barra flutuante inferior):** padrão mais familiar em apps mobile, fica na zona do polegar. Provável aposta mais segura, mas ocupa espaço vertical fixo em toda tela.
+  - **B (rail lateral fino):** padrão incomum em mobile — mais associado a tablet/desktop. Rouba largura horizontal de conteúdo, que já é escasso em telas estreitas (o próprio Kanban em uma coluna já disputa espaço).
+  - **C (grid em tela cheia):** esconde a navegação atrás de um toque extra. Custa fricção em ações do dia a dia (ex: Pasconeiro checando o Painel várias vezes ao dia).
+  - Vale testar com pelo menos um Pasconeiro que não tenha grande familiaridade com apps, já que parte do público-alvo da paróquia pode não ter os mesmos hábitos de navegação que alguém mais acostumado a interfaces mobile.
+
+### 7.3 Página de Equipamentos (nova)
+- Cadastro: nome, modelo, foto
+- Ação de "pegar" e "devolver"
+- Status: disponível / indisponível, com nome + foto redonda de quem está com o equipamento no momento
+- Somente Coordenação geral pode cadastrar equipamento novo
+
+### 7.5 Header do Painel com avatar "deslizante" (mobile)
+- Ao rolar a tela no Painel (mobile), o avatar do usuário desliza da posição inicial (ao lado da saudação) até virar um atalho fixo no canto superior direito
+- Nas demais páginas, esse atalho já nasce fixo no canto direito desde o início
+
+### 7.2 Múltiplas áreas por Pasconeiro
+- **Confirmado: é desejado.** Mas é mudança estrutural grande — hoje `area_id` é singular por usuário, e toda a RLS já validada (activities, schedules, trigger de reatribuição) depende disso. Precisaria virar tabela de relação (`user_areas`, N:N) e reescrever `my_area_id()` → `my_area_ids()` em tudo que depende dela
+- **Estratégia de mitigação de risco** — em vez de migrar tudo de uma vez, dividir em duas etapas:
+  - **Etapa A — criar a estrutura sem migrar o RLS:** criar tabela `user_areas` (`user_id`, `area_id`), populada 1:1 a partir do `area_id` atual de cada usuário (migração de dados, não de política). `users.area_id` continua existindo e sendo a fonte de verdade pra RLS por enquanto. UI já pode passar a mostrar/editar múltiplas áreas por Pasconeiro nessa etapa — cobre a parte visível pro usuário, incluindo o campo de 7.4
+  - **Etapa B — migrar RLS função por função:** reescrever `my_area_id()` → `my_area_ids()` incrementalmente, uma política/tabela por vez (`activities`, depois `schedules`, depois o trigger de reatribuição), testando cada uma isoladamente com a simulação de SQL já usada no projeto (usuário fake, políticas reais, rollback). Só depois de todas as políticas migradas, `users.area_id` é descontinuado (pode virar coluna derivada/"área primária" pra exibição, se for útil manter)
+  - Evita uma migration monolítica de alto risco e permite que 7.4 comece antes da Etapa B terminar
+
+### 7.4 Página de Perfil do usuário (nova, autonomia do próprio usuário)
+- Campos: nome, telefone/WhatsApp, foto, biografia curta, habilidades, áreas de atuação (múltiplas — depende do item 7.2), redes sociais pessoais
+- Cada pessoa edita os próprios dados livremente, sem depender da Coordenação
+
+### Novas ideias em análise (ainda não sequenciadas)
+
+> Registradas pra não perder contexto, sem compromisso de ordem ainda — avaliar prioridade numa próxima conversa.
+
+- **PWA (instalável na tela inicial):** dado o uso fortemente mobile da equipe, transformar o app num PWA instalável resolve boa parte da fricção de acesso rápido, sem o custo de aprovação/integração formal do WhatsApp Business API.
+- **Notificação leve via link `wa.me`:** antes de investir na API Business (que exige aprovação e tem custo), oferecer um botão "avisar no WhatsApp" que abre uma mensagem pré-preenchida já cobre boa parte do caso de uso de notificação — sem integração formal, sem custo, sem dependência de aprovação.
+- **Registro de presença real na escala:** hoje `confirmed` em `schedules` marca que a pessoa assumiu a vaga, mas não registra se ela de fato compareceu no dia. Pra uma equipe de voluntários, isso ajuda tanto a reconhecer quem é confiável quanto a identificar padrões de ausência. Possível campo adicional: `attended` (boolean, preenchido depois do evento, por quem? — a decidir: autoatestado pelo Pasconeiro ou marcado pela Coordenação).
+- **Tag "urgente" no Kanban:** separada de prioridade (que reflete importância, não janela de tempo). Prioridade "Alta" não implica necessariamente prazo apertado — uma tag/badge de urgência cobriria especificamente os pedidos de véspera de missa/evento, que precisam se destacar visualmente de forma diferente da prioridade.
+- **Briefing estruturado por categoria** *(origem: avaliação de roadmap de outra IA, validado por Claude — ver abaixo)*: hoje o formulário público de pedido externo já é categorizado (`request_categories`), mas os campos são genéricos pra todas as categorias. A ideia é cada categoria ganhar campos condicionais específicos, reduzindo pedidos incompletos e perguntas repetidas feitas pela equipe depois que a solicitação chega. Exemplos: post pra redes sociais (objetivo, público, formato desejado, CTA, imagens disponíveis), cobertura fotográfica (horário de chegada, duração prevista, momentos importantes, necessidade de foto oficial), impresso (dimensões, quantidade, gráfica, necessidade de sangria). Baixo risco técnico — formulário dinâmico por categoria, sem mudança estrutural em `activities` ou `external_requests`.
+- **Notificações expandidas** *(origem: avaliação de roadmap de outra IA, validado por Claude — ver abaixo)*: extensão natural dos 3 gatilhos já definidos na Fase 5, sem exigir nova arquitetura de notificação — só novos eventos disparando o mesmo mecanismo: atividade atribuída diretamente ao usuário, comentário mencionando `@usuario` (depende do 7.7), ajustes solicitados/material aprovado (só se algum fluxo de aprovação existir — hoje não existe, ver ressalva abaixo), lembrete de escala no dia anterior ao evento. Preferências de notificação por usuário (escolher quais tipos deseja receber) ficam como refinamento posterior, não bloqueante.
+
+### Avaliação de roadmap trazido de outra IA
+
+Matheus trouxe um documento de outra IA (`pascom-app-roadmap-melhorias.md`) com um roadmap amplo, organizado em torno do fluxo *Solicitar → Triar → Planejar → Produzir → Revisar → Aprovar → Publicar → Arquivar → Mensurar → Reutilizar aprendizado*. Avaliação resumida:
+
+**Validou decisões já tomadas:** múltiplas áreas (= 7.2) e equipamentos (= 7.3) apareceram como prioridade independentemente — bom sinal de convergência.
+
+**Incorporado neste documento:** briefing estruturado por categoria e notificações expandidas (ambos na lista acima) — baixo risco, extensão natural do que já existe.
+
+**Não incorporado, com justificativa:**
+- **Workflow de aprovação formal** (estados como "Aguardando revisão" / "Ajustes solicitados" / "Aprovado") — processo corporativo demais pra uma equipe voluntária; o Kanban de 4 colunas já resolve "pronto ou não". Só valeria a pena se a equipe começasse a sentir falta disso na prática, não preventivamente.
+- **Entregáveis + Campanhas** (nova hierarquia Campanha → Evento → Atividade → Entregável) — maior mudança estrutural do documento; duplica parcialmente o que `event_id` + Kanban já cobrem hoje. Esperar a dor aparecer antes de construir.
+- **DAM (camada de metadados/tags) sobre o Google Drive** — tensiona com a decisão já tomada de o Drive ser fonte única e a estrutura de pastas já resolver organização (ver seção 3.4). Reconstruiria busca que o próprio Drive já oferece.
+- **Multicanal, métricas, IA, automações, multi-paróquia** — o próprio documento de origem já classifica como fases distantes; concordância mantida.
+- Publicação automática em redes, chat interno, gamificação e CRM de fiéis — o documento de origem já recomendava não priorizar, e essa recomendação também vale pro contexto deste projeto (reduzir burocracia, não replicar complexidade corporativa).
+
+**Oportunidades futuras (não comprometidas)** — descartar não é o mesmo que esquecer. Os itens abaixo **não fazem parte do roadmap comprometido**, nenhum deve ser desenhado ou codado sem que a condição de promoção seja atendida primeiro. Lógica de *product discovery* contínuo: a ideia só vira tarefa quando a realidade pedir, não antes.
+
+| Hipótese | Condição de promoção (o que precisaria acontecer pra virar item real) |
+|---|---|
+| Workflow de aprovação formal | Equipe relatar repetidamente que peças saíram sem revisão adequada, e o Kanban atual não estiver dando conta de sinalizar isso |
+| Campanhas + Entregáveis | Coordenação sentir falta concreta de agrupar atividades espalhadas sob um guarda-chuva maior — hoje `event_id` não é suficiente pra isso |
+| DAM sobre o Drive | Busca dentro da estrutura de pastas atual do Drive se mostrar insuficiente na prática, não apenas em teoria |
+| Multicanal (canais de publicação, adaptação por canal) | Equipe crescer o suficiente pra justificar rastrear a mesma peça em múltiplos canais formalmente, em vez de fazer isso de cabeça |
+| Métricas/Analytics | Volume de atividades justificar decisões guiadas por dado — hoje a equipe é pequena o bastante pra perceber gargalos sem dashboard |
+| IA (assistente de briefing, geração de adaptação de texto, busca inteligente) | Base de dados estruturada (briefings, campanhas, materiais) já existir e estar populada o suficiente pra IA ter o que consultar — não faz sentido antes disso |
+| Automações por regra | Padrões repetitivos identificados no uso real (não hipotéticos) que justifiquem a manutenção de regras automáticas |
+| Multi-paróquia | Intenção explícita de transformar o sistema em produto pra outras comunidades — hoje não existe essa intenção |
+
+---
+
+## 8. Observações práticas
 - Comece cada fase pedindo ao Claude Code para gerar o schema/migração antes da interface.
 - Valide cada fase com dados reais da pastoral antes de avançar para a próxima.
 - Mantenha este documento atualizado conforme decisões mudarem — é a referência para novas sessões de trabalho.
