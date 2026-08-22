@@ -1,9 +1,20 @@
+import Image from "next/image";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { signOut } from "./actions";
 import { CoordenacaoBento } from "./coordenacao-bento";
 import { PasconeiroBento } from "./pasconeiro-bento";
 import "./bento.css";
+
+function initials(name: string) {
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .map((p) => p[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+}
 
 const ROLE_LABEL: Record<string, string> = {
   coordenacao_geral: "Coordenação geral",
@@ -31,7 +42,7 @@ export default async function DashboardPage() {
 
   const { data: profile } = await supabase
     .from("users")
-    .select("name, role, area_id, area:areas(name)")
+    .select("name, avatar_url, role, area_id, area:areas(name)")
     .eq("id", user.id)
     .single();
 
@@ -48,13 +59,26 @@ export default async function DashboardPage() {
         className="flex items-center justify-between flex-wrap"
         style={{ gap: "var(--space-5)", marginBottom: "var(--space-8)" }}
       >
-        <div>
-          <h1 style={{ fontSize: "var(--text-2xl)", marginBottom: "var(--space-2)" }}>
-            {greeting()}, {displayName}
-          </h1>
-          <p style={{ color: "var(--color-text-muted)", fontSize: "var(--text-sm)" }}>
-            Aqui está o panorama da Pascom hoje.
-          </p>
+        <div className="flex items-center" style={{ gap: "var(--space-5)" }}>
+          {profile?.avatar_url ? (
+            <Image
+              src={profile.avatar_url}
+              alt={displayName}
+              width={64}
+              height={64}
+              style={{ borderRadius: "var(--radius-full)", objectFit: "cover", flexShrink: 0 }}
+            />
+          ) : (
+            <span className="avatar avatar-lg">{initials(profile?.name ?? displayName)}</span>
+          )}
+          <div>
+            <h1 style={{ fontSize: "var(--text-2xl)", marginBottom: "var(--space-2)" }}>
+              {greeting()}, {displayName}
+            </h1>
+            <p style={{ color: "var(--color-text-muted)", fontSize: "var(--text-sm)" }}>
+              Aqui está o panorama da Pascom hoje.
+            </p>
+          </div>
         </div>
         <form action={signOut}>
           <button type="submit" className="btn btn-outline btn-sm">

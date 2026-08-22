@@ -225,9 +225,10 @@ Carregar as fontes (Bricolage Grotesque, Hanken Grotesk, JetBrains Mono) via Goo
 - Trigger `enforce_equipment_update` bloqueia: edição de metadado por não-coordenação, atribuição do equipamento livre pra terceiro (só pra si mesmo), e transferência direta de equipamento já ocupado sem passar pela coordenação
 - Implementado em `src/app/(app)/equipamentos/`, foto via bucket público `equipamentos-fotos` (upload só coordenação)
 
-### 7.5 Header do Painel com avatar "deslizante" (mobile)
-- Ao rolar a tela no Painel (mobile), o avatar do usuário desliza da posição inicial (ao lado da saudação) até virar um atalho fixo no canto superior direito
-- Nas demais páginas, esse atalho já nasce fixo no canto direito desde o início
+### 7.5 Header do Painel com avatar "deslizante" (mobile) — PARCIAL
+- Premissa original mudou: a ideia era o avatar virar atalho de navegação, mas o 7.6 (menu mobile) já cobre navegação de outra forma
+- **Implementado por agora**: avatar (foto do Google, com fallback de iniciais) ao lado da saudação no `/dashboard`, tamanho `avatar-lg` (64px) — só elemento visual/identificação, sem ação de clique
+- **Pausado**: comportamento de deslizar ao rolar + virar atalho fixo, e o que o toque no avatar faz — decidir quando o 7.4 (Página de Perfil) existir, provavelmente como atalho pra lá
 
 ### 7.2 Múltiplas áreas por Pasconeiro
 - **Confirmado: é desejado.** Mas é mudança estrutural grande — hoje `area_id` é singular por usuário, e toda a RLS já validada (activities, schedules, trigger de reatribuição) depende disso. Precisaria virar tabela de relação (`user_areas`, N:N) e reescrever `my_area_id()` → `my_area_ids()` em tudo que depende dela
