@@ -40,6 +40,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             <NavLink href="/dashboard">Painel</NavLink>
             <NavLink href="/atividades">Atividades</NavLink>
             <NavLink href="/calendario">Calendário</NavLink>
+            <NavLink href="/equipamentos">Equipamentos</NavLink>
             <NavLink href="/materiais">Enviar fotos</NavLink>
           </div>
           {isCoordenacao && (

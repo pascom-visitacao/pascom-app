@@ -217,11 +217,13 @@ Carregar as fontes (Bricolage Grotesque, Hanken Grotesk, JetBrains Mono) via Goo
 - **Decisão final: combinação de A + C**, não uma escolha excludente — barra flutuante fixa com 4 posições (Painel, Atividades, Calendário, "Mais"); "Mais" abre o grid (candidato C) como catálogo completo de todas as páginas, com redundância proposital (Painel/Atividades/Calendário aparecem nos dois lugares) — regra simples: "tudo está no grid, a barra é só atalho pros mais usados". Conteúdo do grid varia por papel: Pasconeiro vê Painel/Atividades/Calendário/Enviar fotos; Coordenação vê os mesmos + Equipe & Áreas + Configurações (Equipamentos entra quando o 7.3 for construído)
 - Implementado em `src/app/(app)/mobile-nav.tsx` + estilos em `ds-styles.css`, breakpoint 960px (mesmo da sidebar colapsada anterior)
 
-### 7.3 Página de Equipamentos (nova)
+### 7.3 Página de Equipamentos (nova) — IMPLEMENTADO
 - Cadastro: nome, modelo, foto
 - Ação de "pegar" e "devolver"
 - Status: disponível / indisponível, com nome + foto redonda de quem está com o equipamento no momento
 - Somente Coordenação geral pode cadastrar equipamento novo
+- Trigger `enforce_equipment_update` bloqueia: edição de metadado por não-coordenação, atribuição do equipamento livre pra terceiro (só pra si mesmo), e transferência direta de equipamento já ocupado sem passar pela coordenação
+- Implementado em `src/app/(app)/equipamentos/`, foto via bucket público `equipamentos-fotos` (upload só coordenação)
 
 ### 7.5 Header do Painel com avatar "deslizante" (mobile)
 - Ao rolar a tela no Painel (mobile), o avatar do usuário desliza da posição inicial (ao lado da saudação) até virar um atalho fixo no canto superior direito

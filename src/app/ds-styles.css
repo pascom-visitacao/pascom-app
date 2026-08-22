@@ -660,7 +660,7 @@ textarea.ds-textarea:focus { border-color: var(--color-primary); box-shadow: var
   .mobile-nav-bar {
     display: flex;
     position: fixed;
-    left: 0; right: 0; bottom: 18px;
+    left: 0; right: 0; bottom: var(--space-6);
     justify-content: center;
     z-index: var(--z-sidebar);
   }
@@ -673,14 +673,14 @@ textarea.ds-textarea:focus { border-color: var(--color-primary); box-shadow: var
     box-shadow: var(--shadow-xl);
   }
   .mobile-nav-item {
-    display: flex; flex-direction: column; align-items: center; gap: 2px;
-    width: 62px; padding: var(--space-2) 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    width: 62px; min-height: 48px;
     border-radius: var(--radius-full);
     color: rgba(255, 255, 255, 0.55);
     background: none; border: none; cursor: pointer; font: inherit;
   }
   .mobile-nav-item svg { width: 20px; height: 20px; }
-  .mobile-nav-item span { font-size: 10px; font-weight: var(--weight-medium); }
+  .mobile-nav-item span { font-size: var(--text-xs); font-weight: var(--weight-medium); }
   .mobile-nav-item.is-active { background: var(--color-primary); color: #fff; }
 
   .mobile-nav-grid {
@@ -692,13 +692,13 @@ textarea.ds-textarea:focus { border-color: var(--color-primary); box-shadow: var
   }
   .mobile-nav-grid.is-open { display: block; }
   .mobile-nav-grid .close {
-    position: absolute; top: 18px; right: 18px;
-    width: 40px; height: 40px; border-radius: var(--radius-full);
+    position: absolute; top: var(--space-6); right: var(--space-6);
+    width: 48px; height: 48px; border-radius: var(--radius-full);
     background: rgba(255, 255, 255, 0.1); color: #fff;
     display: flex; align-items: center; justify-content: center;
     border: none; cursor: pointer;
   }
-  .mobile-nav-grid .close svg { width: 18px; height: 18px; }
+  .mobile-nav-grid .close svg { width: 20px; height: 20px; }
   .mobile-nav-grid .title {
     color: rgba(255, 255, 255, 0.5); font-size: var(--text-xs);
     text-transform: uppercase; letter-spacing: 0.06em;
@@ -713,7 +713,7 @@ textarea.ds-textarea:focus { border-color: var(--color-primary); box-shadow: var
   }
   .mobile-nav-grid .item.is-active { background: var(--color-primary); }
   .mobile-nav-grid .item svg { width: 24px; height: 24px; }
-  .mobile-nav-grid .item span { font-family: var(--font-body); font-weight: var(--weight-medium); font-size: var(--text-sm); }
+  .mobile-nav-grid .item span { font-family: var(--font-body); font-weight: var(--weight-semibold); font-size: var(--text-base); }
 }
 
 /* ---------- RESPONSIVE ---------- */
