@@ -11,12 +11,14 @@ export function UserAssignmentRow({
   areaId,
   areas,
   disableSelf,
+  isProtected,
 }: {
   userId: string;
   role: Role;
   areaId: string | null;
   areas: { id: string; name: string }[];
   disableSelf: boolean;
+  isProtected?: boolean;
 }) {
   const [isPending, startTransition] = useTransition();
 
@@ -25,7 +27,8 @@ export function UserAssignmentRow({
       <div className="input-wrap select-wrap" style={{ width: 210, flexShrink: 0 }}>
         <select
           value={role}
-          disabled={isPending || disableSelf}
+          disabled={isPending || disableSelf || isProtected}
+          title={isProtected ? "Conta institucional protegida — papel não pode ser alterado" : undefined}
           onChange={(e) => {
             const nextRole = e.target.value as Role;
             startTransition(() => {

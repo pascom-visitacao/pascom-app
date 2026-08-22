@@ -45,6 +45,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             <div className="ds-nav-group">
               <div className="ds-nav-group-title">Administração</div>
               <NavLink href="/areas">Equipe &amp; Áreas</NavLink>
+              <NavLink href="/configuracoes">Configurações</NavLink>
             </div>
           )}
         </nav>

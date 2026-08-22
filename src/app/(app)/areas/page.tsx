@@ -29,7 +29,7 @@ export default async function AreasPage() {
   const { data: areas } = await supabase.from("areas").select("id, name").order("name");
   const { data: users } = await supabase
     .from("users")
-    .select("id, name, email, role, area_id")
+    .select("id, name, email, role, area_id, is_protected")
     .order("name");
   const { data: categories } = await supabase
     .from("request_categories")
@@ -143,6 +143,7 @@ export default async function AreasPage() {
                 areaId={member.area_id}
                 areas={areas ?? []}
                 disableSelf={member.id === user.id}
+                isProtected={member.is_protected}
               />
             </div>
           ))}
