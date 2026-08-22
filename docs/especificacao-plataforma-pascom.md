@@ -211,15 +211,11 @@ Carregar as fontes (Bricolage Grotesque, Hanken Grotesk, JetBrains Mono) via Goo
 ### 7.7 Comentários em atividades
 - Qualquer usuário autenticado pode comentar num card do Kanban — cobre informação que surge depois do briefing inicial e não estava prevista
 
-### 7.6 Novo menu de navegação mobile
-- Substitui o menu atual (que ficará apertado com o crescimento: Painel, Atividades, Calendário, Equipamentos, além de Perfil/Configurações acessados via avatar)
+### 7.6 Novo menu de navegação mobile — IMPLEMENTADO
+- Substitui o menu atual (colapsava em barra horizontal com scroll)
 - Três candidatos prototipados em HTML (`preview-menu-mobile.html`, com os tokens reais do design system, alternável em tempo real): **(A) barra flutuante inferior**, **(B) rail lateral fino**, **(C) grid em tela cheia**
-- Decisão pendente — usuário vai testar no celular antes de escolher
-- **Critérios pra decisão durante o teste:**
-  - **A (barra flutuante inferior):** padrão mais familiar em apps mobile, fica na zona do polegar. Provável aposta mais segura, mas ocupa espaço vertical fixo em toda tela.
-  - **B (rail lateral fino):** padrão incomum em mobile — mais associado a tablet/desktop. Rouba largura horizontal de conteúdo, que já é escasso em telas estreitas (o próprio Kanban em uma coluna já disputa espaço).
-  - **C (grid em tela cheia):** esconde a navegação atrás de um toque extra. Custa fricção em ações do dia a dia (ex: Pasconeiro checando o Painel várias vezes ao dia).
-  - Vale testar com pelo menos um Pasconeiro que não tenha grande familiaridade com apps, já que parte do público-alvo da paróquia pode não ter os mesmos hábitos de navegação que alguém mais acostumado a interfaces mobile.
+- **Decisão final: combinação de A + C**, não uma escolha excludente — barra flutuante fixa com 4 posições (Painel, Atividades, Calendário, "Mais"); "Mais" abre o grid (candidato C) como catálogo completo de todas as páginas, com redundância proposital (Painel/Atividades/Calendário aparecem nos dois lugares) — regra simples: "tudo está no grid, a barra é só atalho pros mais usados". Conteúdo do grid varia por papel: Pasconeiro vê Painel/Atividades/Calendário/Enviar fotos; Coordenação vê os mesmos + Equipe & Áreas + Configurações (Equipamentos entra quando o 7.3 for construído)
+- Implementado em `src/app/(app)/mobile-nav.tsx` + estilos em `ds-styles.css`, breakpoint 960px (mesmo da sidebar colapsada anterior)
 
 ### 7.3 Página de Equipamentos (nova)
 - Cadastro: nome, modelo, foto

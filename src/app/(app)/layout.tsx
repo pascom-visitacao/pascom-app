@@ -2,6 +2,7 @@ import Image from "next/image";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { NavLink } from "./nav-link";
+import { MobileNav } from "./mobile-nav";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -51,6 +52,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         </nav>
       </aside>
       <main className="ds-main">{children}</main>
+      <MobileNav isCoordenacao={isCoordenacao} />
     </div>
   );
 }
