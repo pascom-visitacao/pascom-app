@@ -7,6 +7,15 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "lh3.googleusercontent.com" },
     ],
   },
+  experimental: {
+    serverActions: {
+      // padrão do Next é 1MB, bem abaixo do que fotos reais (equipamento,
+      // perfil, materiais) precisam. Alinhado ao teto real da própria
+      // Vercel pra corpo de function (~4,5MB) - não adianta liberar mais
+      // que isso aqui, a Vercel rejeitaria de qualquer forma.
+      bodySizeLimit: "4.5mb",
+    },
+  },
 };
 
 export default nextConfig;

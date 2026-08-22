@@ -3,7 +3,14 @@
 import { createClient } from "@/lib/supabase/server";
 
 const MAX_FILES = 5;
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+// O client já comprime cada imagem antes de enviar (ver request-form.tsx);
+// isso aqui é rede de segurança contra compressão que não pegou o alvo,
+// ou alguém chamando a action direto sem passar pelo form. O que
+// realmente importa é a SOMA, já que todos os arquivos vão juntos numa
+// chamada só - o teto real é o corpo inteiro da function (~4,5MB na
+// Vercel, ver next.config.ts).
+const MAX_FILE_SIZE = 3 * 1024 * 1024; // 3MB por arquivo (sanidade)
+const MAX_TOTAL_SIZE = 4 * 1024 * 1024; // 4MB somados, com margem
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 
 const EXTENSION_BY_TYPE: Record<string, string> = {
@@ -38,8 +45,13 @@ export async function submitExternalRequest(formData: FormData) {
       return { error: `"${file.name}" não é uma imagem aceita (use JPG, PNG, WEBP ou GIF).` };
     }
     if (file.size > MAX_FILE_SIZE) {
-      return { error: `"${file.name}" passa de 5MB.` };
+      return { error: `"${file.name}" passa de 3MB mesmo após compressão. Tente uma imagem menor.` };
     }
+  }
+
+  const totalSize = files.reduce((sum, f) => sum + f.size, 0);
+  if (totalSize > MAX_TOTAL_SIZE) {
+    return { error: "As imagens juntas passam do limite. Envie menos imagens ou imagens menores." };
   }
 
   const supabase = await createClient();

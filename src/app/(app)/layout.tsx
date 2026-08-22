@@ -48,6 +48,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             <NavLink href="/calendario">Calendário</NavLink>
             <NavLink href="/equipamentos">Equipamentos</NavLink>
             <NavLink href="/materiais">Enviar fotos</NavLink>
+            <NavLink href="/perfil">Meu perfil</NavLink>
           </div>
           {isCoordenacao && (
             <div className="ds-nav-group">

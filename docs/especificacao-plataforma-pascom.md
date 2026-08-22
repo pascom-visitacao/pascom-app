@@ -246,9 +246,13 @@ Carregar as fontes (Bricolage Grotesque, Hanken Grotesk, JetBrains Mono) via Goo
 - Testado com simulação cobrindo: primeira seleção, cooldown, efetivação em 24h calculada ao vivo, remoção bloqueada por atividade e por vaga confirmada, bypass de escrita direta bloqueado, e as 5 policies respeitando múltiplas áreas — depois testado ao vivo pelo usuário
 - UI de "ajustar depois da primeira vez" fica pro 7.4 (Perfil), como já estava planejado
 
-### 7.4 Página de Perfil do usuário (nova, autonomia do próprio usuário)
-- Campos: nome, telefone/WhatsApp, foto, biografia curta, habilidades, áreas de atuação (múltiplas — depende do item 7.2), redes sociais pessoais
+### 7.4 Página de Perfil do usuário (nova, autonomia do próprio usuário) — IMPLEMENTADO
+- Campos: nome, telefone/WhatsApp, foto, biografia curta, habilidades, áreas de atuação (múltiplas — via 7.2, com o ajuste "cooldown de 3 dias / efetivação em 24h" exposto na própria página), redes sociais pessoais
 - Cada pessoa edita os próprios dados livremente, sem depender da Coordenação
+- Colunas de autoedição (`phone`, `bio`, `skills`, `social_links`, `name`, `avatar_url`) liberadas via `GRANT UPDATE` seletivo pro `authenticated`; trigger `enforce_users_self_update` estendido com regra invertida (só o próprio dono edita esses campos — nem Coordenação edita por outra pessoa)
+- Foto de perfil: bucket público `perfil-fotos`, upload restrito à própria pasta (`{user_id}/arquivo`)
+- **Bug real encontrado e corrigido durante o teste**: upload de foto usa `upsert: true`, que o Storage resolve como `INSERT ... ON CONFLICT DO UPDATE`. Pra decidir se há conflito, o Postgres precisa de uma policy de **SELECT** aplicável sob RLS, mesmo sem nenhuma linha conflitante existir ainda — faltava essa policy (só havia INSERT e UPDATE), causando rejeição do upsert inteiro com uma mensagem genérica de RLS. Corrigido adicionando a policy de SELECT restrita à própria pasta
+- **Bug pré-existente descoberto de carona (Fase 3)**: o limite padrão de 1MB do corpo de Server Actions do Next.js nunca tinha sido configurado, e o formulário público `/solicitar` permitia até 5 imagens × 5MB = 25MB — bem acima do teto real (~4,5MB por invocação na Vercel). Corrigido via `experimental.serverActions.bodySizeLimit` em `next.config.ts` + compressão client-side (`src/lib/compress-image.ts`, reaproveitada de "Enviar fotos") aplicada também em `/solicitar`, com tetos por arquivo e somados calibrados pra caber com margem
 
 ### Novas ideias em análise (ainda não sequenciadas)
 

@@ -2,9 +2,17 @@
 
 import { useState, useTransition } from "react";
 import { submitExternalRequest } from "./actions";
+import { compressImage } from "@/lib/compress-image";
 
 type Category = { id: string; name: string };
 type EventOption = { id: string; title: string };
+
+// Todos os arquivos vão juntos numa chamada só (não um por vez como no
+// "Enviar fotos"), então o alvo é por arquivo dividido pelo total
+// permitido - com 5 arquivos, 0.7MB cada soma 3.5MB, com margem segura
+// abaixo do teto de 4,5MB da própria Vercel pro corpo da function
+// inteira (ver next.config.ts).
+const COMPRESSION_TARGET_PER_FILE = 0.7 * 1024 * 1024;
 
 export function RequestForm({
   categories,
@@ -18,6 +26,8 @@ export function RequestForm({
   const [token, setToken] = useState<string | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
   const [fileNames, setFileNames] = useState<string[]>([]);
+  const [files, setFiles] = useState<File[]>([]);
+  const [isCompressing, setIsCompressing] = useState(false);
 
   function handleFilesChange(e: React.ChangeEvent<HTMLInputElement>) {
     const selected = Array.from(e.target.files ?? []);
@@ -25,11 +35,7 @@ export function RequestForm({
 
     if (selected.length > 5) {
       setFileError("Envie no máximo 5 imagens.");
-      return;
-    }
-    const tooBig = selected.find((f) => f.size > 5 * 1024 * 1024);
-    if (tooBig) {
-      setFileError(`"${tooBig.name}" passa de 5MB.`);
+      setFiles([]);
       return;
     }
     const invalidType = selected.find(
@@ -37,9 +43,11 @@ export function RequestForm({
     );
     if (invalidType) {
       setFileError(`"${invalidType.name}" não é uma imagem aceita (use JPG, PNG, WEBP ou GIF).`);
+      setFiles([]);
       return;
     }
     setFileError(null);
+    setFiles(selected);
   }
 
   if (token) {
@@ -85,6 +93,14 @@ export function RequestForm({
       action={(formData) => {
         setError(null);
         startTransition(async () => {
+          formData.delete("attachments");
+          setIsCompressing(true);
+          for (const file of files) {
+            const compressed = await compressImage(file, COMPRESSION_TARGET_PER_FILE);
+            formData.append("attachments", compressed);
+          }
+          setIsCompressing(false);
+
           const result = await submitExternalRequest(formData);
           if (result.error) {
             setError(result.error);
@@ -148,7 +164,7 @@ export function RequestForm({
           multiple
           onChange={handleFilesChange}
         />
-        <span className="field-hint">Até 5 imagens, 5MB cada (JPG, PNG, WEBP ou GIF).</span>
+        <span className="field-hint">Até 5 imagens (JPG, PNG, WEBP ou GIF) — comprimidas automaticamente ao enviar.</span>
         {fileNames.length > 0 && !fileError && (
           <span className="field-hint">{fileNames.join(", ")}</span>
         )}
@@ -195,7 +211,7 @@ export function RequestForm({
       </div>
 
       <button type="submit" className="btn btn-primary btn-md" disabled={isPending || !!fileError}>
-        {isPending ? "Enviando..." : "Enviar pedido"}
+        {isCompressing ? "Preparando imagens..." : isPending ? "Enviando..." : "Enviar pedido"}
       </button>
     </form>
   );

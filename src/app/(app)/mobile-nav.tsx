@@ -68,6 +68,12 @@ const ICONS: Record<string, React.ReactNode> = {
       <circle cx="12" cy="13" r="3.3" />
     </svg>
   ),
+  user: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="8" r="3.6" />
+      <path d="M4.5 20c1-4 4-6.2 7.5-6.2s6.5 2.2 7.5 6.2" />
+    </svg>
+  ),
 };
 
 type NavItem = { href: string; label: string; icon: keyof typeof ICONS };
@@ -85,6 +91,7 @@ const GRID_ITEMS_PASCONEIRO: NavItem[] = [
   ...BAR_ITEMS,
   { href: "/equipamentos", label: "Equipamentos", icon: "cam" },
   { href: "/materiais", label: "Enviar fotos", icon: "photo" },
+  { href: "/perfil", label: "Meu perfil", icon: "user" },
 ];
 
 const GRID_ITEMS_COORDENACAO: NavItem[] = [

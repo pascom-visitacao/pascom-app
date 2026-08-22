@@ -4,7 +4,9 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
 const ALLOWED_PHOTO_TYPES = ["image/jpeg", "image/png", "image/webp"];
-const MAX_PHOTO_SIZE = 5 * 1024 * 1024;
+// Margem abaixo do teto de ~4,5MB da Vercel pro corpo de uma Server
+// Action (ver next.config.ts) - sobra espaço pro resto do formulário.
+const MAX_PHOTO_SIZE = 4 * 1024 * 1024;
 
 export async function createEquipment(formData: FormData) {
   const name = String(formData.get("name") ?? "").trim();
@@ -21,7 +23,7 @@ export async function createEquipment(formData: FormData) {
       return { error: "Envie JPG, PNG ou WEBP." };
     }
     if (photo.size > MAX_PHOTO_SIZE) {
-      return { error: "A foto passa de 5MB." };
+      return { error: "A foto passa de 4MB." };
     }
 
     const ext = photo.type.split("/")[1];

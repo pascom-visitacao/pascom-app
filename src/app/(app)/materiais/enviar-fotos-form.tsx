@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { uploadMaterial, type UploadMaterialResult } from "./actions";
+import { compressImage } from "@/lib/compress-image";
 import "./materiais.css";
 
 type Status = "pendente" | "comprimindo" | "enviando" | "concluido" | "erro";
@@ -18,40 +19,10 @@ type UploadItem = {
 
 // Alvo pós-compressão, com margem abaixo do limite de 4MB do servidor
 // (src/app/(app)/materiais/actions.ts) - sobra espaço pra variações de
-// codificação entre o canvas e o multipart final.
+// codificação entre o canvas e o multipart final. Cada foto vai numa
+// chamada de Server Action separada (sequencial), então o alvo é por
+// arquivo mesmo.
 const COMPRESSION_TARGET_BYTES = 3.5 * 1024 * 1024;
-const MAX_DIMENSION = 2000;
-
-async function compressImage(file: File): Promise<File> {
-  const bitmap = await createImageBitmap(file);
-  let { width, height } = bitmap;
-
-  if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
-    const scale = MAX_DIMENSION / Math.max(width, height);
-    width = Math.round(width * scale);
-    height = Math.round(height * scale);
-  }
-
-  const canvas = document.createElement("canvas");
-  canvas.width = width;
-  canvas.height = height;
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return file;
-  ctx.drawImage(bitmap, 0, 0, width, height);
-
-  let quality = 0.85;
-  let blob: Blob | null = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", quality));
-
-  while (blob && blob.size > COMPRESSION_TARGET_BYTES && quality > 0.35) {
-    quality -= 0.15;
-    blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/jpeg", quality));
-  }
-
-  if (!blob) return file;
-
-  const newName = file.name.replace(/\.\w+$/, "") + ".jpg";
-  return new File([blob], newName, { type: "image/jpeg" });
-}
 
 export function EnviarFotosForm({ events }: { events: { id: string; title: string }[] }) {
   const [items, setItems] = useState<UploadItem[]>([]);
@@ -90,7 +61,7 @@ export function EnviarFotosForm({ events }: { events: { id: string; title: strin
     if (!item.keepOriginal && item.file.type.startsWith("image/")) {
       updateItem(item.id, { status: "comprimindo" });
       try {
-        fileToSend = await compressImage(item.file);
+        fileToSend = await compressImage(item.file, COMPRESSION_TARGET_BYTES);
       } catch {
         fileToSend = item.file;
       }
