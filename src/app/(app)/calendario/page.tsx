@@ -5,7 +5,16 @@ import { EventForm } from "./event-form";
 import { ScheduleForm } from "./schedule-form";
 import { ScheduleRow, type ScheduleRowData } from "./schedule-row";
 import { CalendarFileForm } from "./calendar-file-form";
-import { addMonths, buildMonthGrid, monthParamString, parseMonthParam } from "./date-utils";
+import {
+  addDays,
+  addMonths,
+  buildMonthGrid,
+  buildWeekGrid,
+  dateParamString,
+  monthParamString,
+  parseDateParam,
+  parseMonthParam,
+} from "./date-utils";
 import { effectiveAreaIds } from "@/lib/effective-areas";
 import "./calendario.css";
 
@@ -30,9 +39,9 @@ function normalizeOne<T>(raw: unknown): T | null {
 export default async function CalendarioPage({
   searchParams,
 }: {
-  searchParams: Promise<{ view?: string; month?: string }>;
+  searchParams: Promise<{ view?: string; month?: string; date?: string }>;
 }) {
-  const { view: viewParam, month: monthParam } = await searchParams;
+  const { view: viewParam, month: monthParam, date: dateParam } = await searchParams;
   const view = VIEWS.some((v) => v.key === viewParam) ? viewParam! : "mes";
 
   const supabase = await createClient();
@@ -120,7 +129,21 @@ export default async function CalendarioPage({
     return d.getFullYear() === year && d.getMonth() === month;
   });
 
-  const eventsToList = view === "mes" ? monthEvents : (rawEvents ?? []);
+  const refDate = parseDateParam(dateParam);
+  const weekDays = buildWeekGrid(refDate);
+  const weekStart = weekDays[0];
+  const weekEnd = weekDays[6];
+  const prevWeek = addDays(weekStart, -7);
+  const nextWeek = addDays(weekStart, 7);
+  const prevDay = addDays(refDate, -1);
+  const nextDay = addDays(refDate, 1);
+
+  const weekDayStrings = new Set(weekDays.map((d) => d.toDateString()));
+  const weekEvents = (rawEvents ?? []).filter((e) => weekDayStrings.has(new Date(e.date).toDateString()));
+  const dayEvents = (rawEvents ?? []).filter((e) => new Date(e.date).toDateString() === refDate.toDateString());
+
+  const eventsToList =
+    view === "mes" ? monthEvents : view === "semana" ? weekEvents : view === "dia" ? dayEvents : (rawEvents ?? []);
 
   return (
     <div style={{ padding: "var(--space-9)", maxWidth: 1000 }}>
@@ -136,7 +159,7 @@ export default async function CalendarioPage({
         {VIEWS.map((v) => (
           <Link
             key={v.key}
-            href={`/calendario?view=${v.key}${v.key === "mes" && monthParam ? `&month=${monthParam}` : ""}`}
+            href={`/calendario?view=${v.key}${v.key === "mes" && monthParam ? `&month=${monthParam}` : ""}${v.key !== "mes" && dateParam ? `&date=${dateParam}` : ""}`}
             className={`tab-item${view === v.key ? " is-active" : ""}`}
           >
             {v.label}
@@ -272,12 +295,83 @@ export default async function CalendarioPage({
         </div>
       )}
 
-      {(view === "semana" || view === "dia") && (
-        <div className="alert alert-info" style={{ marginBottom: "var(--space-8)" }}>
-          <div>
-            <div className="alert-title">Visão de {view === "semana" ? "semana" : "dia"} chegando em breve</div>
-            Por enquanto, use a visão de Mês. A lista de eventos abaixo já mostra tudo.
+      {view === "semana" && (
+        <div className="card" style={{ padding: "var(--space-7)", marginBottom: "var(--space-8)" }}>
+          <div className="month-nav">
+            <Link href={`/calendario?view=semana&date=${dateParamString(prevWeek)}`} className="btn btn-outline btn-sm">
+              ← Semana anterior
+            </Link>
+            <div className="card-title" style={{ marginBottom: 0 }}>
+              {weekStart.getMonth() === weekEnd.getMonth() && weekStart.getFullYear() === weekEnd.getFullYear()
+                ? `${weekStart.getDate()} – ${weekEnd.getDate()} de ${MONTH_NAMES[weekStart.getMonth()]} de ${weekEnd.getFullYear()}`
+                : `${weekStart.getDate()} de ${MONTH_NAMES[weekStart.getMonth()]} – ${weekEnd.getDate()} de ${MONTH_NAMES[weekEnd.getMonth()]} de ${weekEnd.getFullYear()}`}
+            </div>
+            <Link href={`/calendario?view=semana&date=${dateParamString(nextWeek)}`} className="btn btn-outline btn-sm">
+              Próxima semana →
+            </Link>
           </div>
+
+          <div className="week-grid">
+            {weekDays.map((day) => {
+              const isToday = day.toDateString() === today.toDateString();
+              const dayItems = eventsByDay.get(day.toDateString()) ?? [];
+              return (
+                <div
+                  key={day.toISOString()}
+                  style={{
+                    minHeight: 110,
+                    padding: "var(--space-3)",
+                    borderRadius: "var(--radius-md)",
+                    background: isToday ? "var(--color-primary-subtle)" : "var(--color-bg-subtle)",
+                    border: isToday ? "1.5px solid var(--color-primary)" : "1px solid transparent",
+                  }}
+                >
+                  <div style={{ fontSize: "var(--text-xs)", fontWeight: "var(--weight-semibold)", color: "var(--color-text-subtle)", textTransform: "uppercase", marginBottom: "var(--space-1)" }}>
+                    {WEEKDAY_LABELS[(day.getDay() + 6) % 7]}
+                  </div>
+                  <div style={{ fontSize: "var(--text-sm)", fontWeight: "var(--weight-semibold)", marginBottom: "var(--space-2)" }}>
+                    {day.getDate()}
+                  </div>
+                  <div className="flex flex-col" style={{ gap: 2 }}>
+                    {dayItems.map((e) => (
+                      <span
+                        key={e.id}
+                        style={{
+                          fontSize: "var(--text-xs)",
+                          background: "var(--color-primary)",
+                          color: "#fff",
+                          borderRadius: "var(--radius-xs)",
+                          padding: "2px 6px",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {e.title}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {view === "dia" && (
+        <div className="month-nav" style={{ marginBottom: "var(--space-8)" }}>
+          <Link href={`/calendario?view=dia&date=${dateParamString(prevDay)}`} className="btn btn-outline btn-sm">
+            ← Dia anterior
+          </Link>
+          <div className="card-title" style={{ marginBottom: 0 }}>
+            {(() => {
+              const label = refDate.toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+              return label.charAt(0).toUpperCase() + label.slice(1);
+            })()}
+          </div>
+          <Link href={`/calendario?view=dia&date=${dateParamString(nextDay)}`} className="btn btn-outline btn-sm">
+            Próximo dia →
+          </Link>
         </div>
       )}
 
@@ -325,7 +419,13 @@ export default async function CalendarioPage({
           <div className="alert alert-info">
             <div>
               <div className="alert-title">
-                {view === "mes" ? "Nenhum evento neste mês" : "Nenhum evento cadastrado"}
+                {view === "mes"
+                  ? "Nenhum evento neste mês"
+                  : view === "semana"
+                    ? "Nenhum evento nesta semana"
+                    : view === "dia"
+                      ? "Nenhum evento neste dia"
+                      : "Nenhum evento cadastrado"}
               </div>
               {isCoordenacao
                 ? "Clique em “+ Novo evento” pra começar."

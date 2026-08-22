@@ -156,8 +156,11 @@ materials (id, drive_file_id, name, folder_path, related_activity_id)
 
 **Fase 6 — Calendário: visões restantes e sincronização**
 - **Coordenador de área não entra nessa versão** — decisão tomada, não é mais item em aberto (ver nota na seção 2)
-- **1. Visualizações Semana e Dia** (primeiro — mais simples, puro frontend)
-  - Estrutura de dados já existe (`date-utils.ts`, filtro `?view=`) desde a Fase 4.5; falta só desenhar e construir a grade visual das duas visões
+- **1. Visualizações Semana e Dia — IMPLEMENTADO**
+  - `date-utils.ts` ganhou `parseDateParam`/`dateParamString`/`addDays`/`startOfWeek`/`buildWeekGrid`, espelhando o padrão já existente pra mês
+  - Semana: navegação por período via `?date=`, grade de 7 colunas (empilha em coluna única abaixo de 640px, mesmo padrão responsivo da grade de mês) com chips de evento por dia
+  - Dia: navegação por período via `?date=`, sem grade própria (uma célula só seria redundante) — a lista de eventos completa abaixo já filtra pro dia selecionado
+  - A lista de eventos abaixo da grade agora filtra corretamente por visão (mês/semana/dia), antes mostrava tudo pra semana/dia
 - **2. Sincronização com Google Calendar** (depois — mais complexo, exige decisões de design antes de codar)
   - Definir: sincronização de mão única (app → Google Calendar) ou bidirecional?
   - Definir: calendário único compartilhado da Pascom, ou cada Pasconeiro recebe os eventos no próprio Google Calendar pessoal?

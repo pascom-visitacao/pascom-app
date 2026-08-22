@@ -27,3 +27,36 @@ export function buildMonthGrid(year: number, month: number): Date[] {
     return d;
   });
 }
+
+export function parseDateParam(param: string | undefined): Date {
+  if (param && /^\d{4}-\d{2}-\d{2}$/.test(param)) {
+    const [y, m, d] = param.split("-").map(Number);
+    return new Date(y, m - 1, d);
+  }
+  return new Date();
+}
+
+export function dateParamString(date: Date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
+}
+
+export function addDays(date: Date, delta: number) {
+  const d = new Date(date);
+  d.setDate(d.getDate() + delta);
+  return d;
+}
+
+/** Segunda-feira da semana que contém a data. */
+export function startOfWeek(date: Date) {
+  const offset = (date.getDay() + 6) % 7; // segunda-feira = 0
+  return addDays(date, -offset);
+}
+
+/** Os 7 dias (segunda a domingo) da semana que contém a data. */
+export function buildWeekGrid(date: Date): Date[] {
+  const start = startOfWeek(date);
+  return Array.from({ length: 7 }, (_, i) => addDays(start, i));
+}
