@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { effectiveAreaIds } from "@/lib/effective-areas";
 
 const STATUS_LABELS: Record<string, string> = {
   a_fazer: "Recebido",
@@ -54,7 +55,10 @@ export async function CoordenacaoBento({ supabase }: { supabase: SupabaseClient<
       .order("date", { ascending: true })
       .limit(1)
       .maybeSingle(),
-    supabase.from("users").select("id, name, area_id").eq("role", "pasconeiro"),
+    supabase
+      .from("users")
+      .select("id, name, area_ids, pending_area_ids, areas_submitted_at")
+      .eq("role", "pasconeiro"),
     supabase
       .from("activities")
       .select("updated_at")
@@ -70,7 +74,7 @@ export async function CoordenacaoBento({ supabase }: { supabase: SupabaseClient<
 
   const eventDays = new Set((eventsThisWeek ?? []).map((e) => new Date(e.date).toDateString()));
 
-  const teamAreas = new Set((pasconeiros ?? []).filter((p) => p.area_id).map((p) => p.area_id));
+  const teamAreas = new Set((pasconeiros ?? []).flatMap((p) => effectiveAreaIds(p)));
 
   const concludedByDay = [0, 0, 0, 0, 0, 0, 0];
   for (const a of concludedThisWeek ?? []) {

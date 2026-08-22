@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { NewActivityForm } from "./new-activity-form";
 import { ActivityCard, type ActivityCardData } from "./activity-card";
 import type { ActivityStatus } from "./actions";
+import { effectiveAreaIds } from "@/lib/effective-areas";
 import "./kanban.css";
 
 const COLUMNS: { status: ActivityStatus; label: string }[] = [
@@ -33,15 +34,16 @@ export default async function AtividadesPage({
 
   const { data: profile } = await supabase
     .from("users")
-    .select("role, area_id")
+    .select("role, area_ids, pending_area_ids, areas_submitted_at")
     .eq("id", user.id)
     .single();
 
   const isCoordenacao = profile?.role === "coordenacao_geral";
+  const myAreaIds = profile ? effectiveAreaIds(profile) : [];
 
   const { data: areas } = await supabase.from("areas").select("id, name").order("name");
 
-  const selectedAreaId = areaParam ?? profile?.area_id ?? areas?.[0]?.id ?? null;
+  const selectedAreaId = areaParam ?? myAreaIds[0] ?? areas?.[0]?.id ?? null;
 
   const { data: rawActivities } = selectedAreaId
     ? await supabase
@@ -70,14 +72,18 @@ export default async function AtividadesPage({
       .sort((x, y) => x.created_at.localeCompare(y.created_at)),
   }));
 
-  const { data: areaMembers } = selectedAreaId
-    ? await supabase.from("users").select("id, name").eq("area_id", selectedAreaId).order("name")
+  const { data: rawAreaMembers } = selectedAreaId
+    ? await supabase
+        .from("users")
+        .select("id, name, area_ids, pending_area_ids, areas_submitted_at")
+        .order("name")
     : { data: [] };
+  const areaMembers = (rawAreaMembers ?? []).filter((m) => effectiveAreaIds(m).includes(selectedAreaId ?? ""));
 
   const { data: events } = await supabase.from("events").select("id, title").order("date");
   const { data: ministries } = await supabase.from("parish_ministries").select("id, name").order("name");
 
-  const canWrite = isCoordenacao || profile?.area_id === selectedAreaId;
+  const canWrite = isCoordenacao || myAreaIds.includes(selectedAreaId ?? "");
 
   return (
     <div style={{ padding: "var(--space-9)" }}>

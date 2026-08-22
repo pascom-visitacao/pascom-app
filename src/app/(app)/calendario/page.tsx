@@ -6,6 +6,7 @@ import { ScheduleForm } from "./schedule-form";
 import { ScheduleRow, type ScheduleRowData } from "./schedule-row";
 import { CalendarFileForm } from "./calendar-file-form";
 import { addMonths, buildMonthGrid, monthParamString, parseMonthParam } from "./date-utils";
+import { effectiveAreaIds } from "@/lib/effective-areas";
 import "./calendario.css";
 
 const MONTH_NAMES = [
@@ -43,11 +44,12 @@ export default async function CalendarioPage({
 
   const { data: profile } = await supabase
     .from("users")
-    .select("role, area_id")
+    .select("role, area_ids, pending_area_ids, areas_submitted_at")
     .eq("id", user.id)
     .single();
 
   const isCoordenacao = profile?.role === "coordenacao_geral";
+  const myAreaIds = profile ? effectiveAreaIds(profile) : [];
 
   const { data: areas } = await supabase.from("areas").select("id, name").order("name");
 
@@ -308,7 +310,7 @@ export default async function CalendarioPage({
                       schedule={schedule}
                       currentUserId={user.id}
                       isCoordenacao={isCoordenacao}
-                      sameArea={schedule.area?.id === profile?.area_id}
+                      sameArea={schedule.area ? myAreaIds.includes(schedule.area.id) : false}
                     />
                   ))}
                 </div>

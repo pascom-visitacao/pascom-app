@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { signOut } from "./actions";
 import { CoordenacaoBento } from "./coordenacao-bento";
 import { PasconeiroBento } from "./pasconeiro-bento";
+import { effectiveAreaIds } from "@/lib/effective-areas";
 import "./bento.css";
 
 function initials(name: string) {
@@ -42,7 +43,7 @@ export default async function DashboardPage() {
 
   const { data: profile } = await supabase
     .from("users")
-    .select("name, avatar_url, role, area_id, area:areas(name)")
+    .select("name, avatar_url, role, area_ids, pending_area_ids, areas_submitted_at")
     .eq("id", user.id)
     .single();
 
@@ -50,8 +51,12 @@ export default async function DashboardPage() {
   const isCoordenacao = profile?.role === "coordenacao_geral";
   const roleLabel = profile?.role ? (ROLE_LABEL[profile.role] ?? profile.role) : "—";
 
-  const areaRaw = profile?.area as { name: string } | { name: string }[] | null | undefined;
-  const areaName = (Array.isArray(areaRaw) ? areaRaw[0]?.name : areaRaw?.name) ?? "Sem área definida";
+  const myAreaIds = profile ? effectiveAreaIds(profile) : [];
+  const { data: myAreas } =
+    myAreaIds.length > 0
+      ? await supabase.from("areas").select("name").in("id", myAreaIds)
+      : { data: [] };
+  const areaName = (myAreas ?? []).map((a) => a.name).join(", ") || "Nenhuma área selecionada ainda";
 
   return (
     <div style={{ padding: "var(--space-9)" }}>
@@ -93,7 +98,7 @@ export default async function DashboardPage() {
         <PasconeiroBento
           supabase={supabase}
           userId={user.id}
-          areaId={profile?.area_id ?? null}
+          areaIds={myAreaIds}
           areaName={areaName}
           roleLabel={roleLabel}
         />

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
 import { sendEmail, unassignedActivitiesEmail, openSchedulesEmail } from "@/lib/email";
 import { checkCronAuth } from "@/lib/cron-auth";
+import { effectiveAreaIds } from "@/lib/effective-areas";
 
 type ServiceRoleClient = ReturnType<typeof createServiceRoleClient>;
 
@@ -11,8 +12,14 @@ function normalizeOne<T>(raw: unknown): T | null {
 }
 
 async function pasconeiroEmails(supabase: ServiceRoleClient, areaId: string): Promise<string[]> {
-  const { data } = await supabase.from("users").select("email").eq("role", "pasconeiro").eq("area_id", areaId);
-  return (data ?? []).map((u) => u.email);
+  // sem sessão de usuário (roda como service_role), não dá pra chamar
+  // my_area_ids() - busca as colunas cruas e calcula o conjunto vigente
+  // em TS, mesma lógica de effective_area_ids().
+  const { data } = await supabase
+    .from("users")
+    .select("email, area_ids, pending_area_ids, areas_submitted_at")
+    .eq("role", "pasconeiro");
+  return (data ?? []).filter((u) => effectiveAreaIds(u).includes(areaId)).map((u) => u.email);
 }
 
 async function notifyUnassignedActivities(supabase: ServiceRoleClient) {

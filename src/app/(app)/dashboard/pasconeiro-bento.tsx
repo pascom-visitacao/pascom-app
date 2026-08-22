@@ -4,14 +4,14 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 export async function PasconeiroBento({
   supabase,
   userId,
-  areaId,
+  areaIds,
   areaName,
   roleLabel,
 }: {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- sem tipos gerados do banco
   supabase: SupabaseClient<any>;
   userId: string;
-  areaId: string | null;
+  areaIds: string[];
   areaName: string;
   roleLabel: string;
 }) {
@@ -26,11 +26,11 @@ export async function PasconeiroBento({
       .select("id", { count: "exact", head: true })
       .eq("user_id", userId)
       .eq("confirmed", true),
-    areaId
+    areaIds.length > 0
       ? supabase
           .from("schedules")
           .select("id", { count: "exact", head: true })
-          .eq("area_id", areaId)
+          .in("area_id", areaIds)
           .is("user_id", null)
       : Promise.resolve({ count: 0 }),
   ]);
@@ -52,7 +52,7 @@ export async function PasconeiroBento({
 
       <Link href="/calendario" className="bento-tile tile-vagas is-light">
         <div className="tile-arrow">→</div>
-        <div className="tile-label">Vagas abertas na minha área</div>
+        <div className="tile-label">Vagas abertas nas minhas áreas</div>
         <div className="tile-number">{openScheduleCount ?? 0}</div>
       </Link>
 

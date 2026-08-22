@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createArea, createCategory } from "./actions";
 import { UserAssignmentRow } from "./user-assignment-row";
+import { effectiveAreaIds } from "@/lib/effective-areas";
 
 function areaName(raw: unknown): string {
   const area = Array.isArray(raw) ? raw[0] : raw;
@@ -27,9 +28,11 @@ export default async function AreasPage() {
   }
 
   const { data: areas } = await supabase.from("areas").select("id, name").order("name");
+  const areaNameById = new Map((areas ?? []).map((a) => [a.id, a.name]));
+
   const { data: users } = await supabase
     .from("users")
-    .select("id, name, email, role, area_id, is_protected")
+    .select("id, name, email, role, area_ids, pending_area_ids, areas_submitted_at, is_protected")
     .order("name");
   const { data: categories } = await supabase
     .from("request_categories")
@@ -140,8 +143,9 @@ export default async function AreasPage() {
               <UserAssignmentRow
                 userId={member.id}
                 role={member.role}
-                areaId={member.area_id}
-                areas={areas ?? []}
+                areaNames={effectiveAreaIds(member)
+                  .map((id) => areaNameById.get(id))
+                  .filter((name): name is string => Boolean(name))}
                 disableSelf={member.id === user.id}
                 isProtected={member.is_protected}
               />

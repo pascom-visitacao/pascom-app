@@ -26,12 +26,11 @@ export async function createCategory(formData: FormData) {
   revalidatePath("/areas");
 }
 
-export async function updateUserAssignment(
-  userId: string,
-  fields: { role?: "coordenacao_geral" | "pasconeiro"; area_id?: string | null },
-) {
+// Área não é editável por coordenação (autonomia do próprio Pasconeiro,
+// via seleção própria - ver area-selection-actions.ts). Só role.
+export async function updateUserRole(userId: string, role: "coordenacao_geral" | "pasconeiro") {
   const supabase = await createClient();
-  const { error } = await supabase.from("users").update(fields).eq("id", userId);
+  const { error } = await supabase.from("users").update({ role }).eq("id", userId);
   if (error) throw new Error(error.message);
 
   revalidatePath("/areas");

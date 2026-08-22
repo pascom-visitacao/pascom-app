@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { NavLink } from "./nav-link";
 import { MobileNav } from "./mobile-nav";
+import { AreaOnboardingModal } from "./area-onboarding-modal";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -17,11 +18,16 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   const { data: profile } = await supabase
     .from("users")
-    .select("role")
+    .select("role, areas_submitted_at")
     .eq("id", user.id)
     .single();
 
   const isCoordenacao = profile?.role === "coordenacao_geral";
+  const needsAreaOnboarding = profile?.areas_submitted_at === null;
+
+  const { data: allAreas } = needsAreaOnboarding
+    ? await supabase.from("areas").select("id, name").order("name")
+    : { data: [] };
 
   return (
     <div className="ds-shell">
@@ -54,6 +60,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
       </aside>
       <main className="ds-main">{children}</main>
       <MobileNav isCoordenacao={isCoordenacao} />
+      {needsAreaOnboarding && <AreaOnboardingModal areas={allAreas ?? []} />}
     </div>
   );
 }

@@ -230,12 +230,21 @@ Carregar as fontes (Bricolage Grotesque, Hanken Grotesk, JetBrains Mono) via Goo
 - **Implementado por agora**: avatar (foto do Google, com fallback de iniciais) ao lado da saudação no `/dashboard`, tamanho `avatar-lg` (64px) — só elemento visual/identificação, sem ação de clique
 - **Pausado**: comportamento de deslizar ao rolar + virar atalho fixo, e o que o toque no avatar faz — decidir quando o 7.4 (Página de Perfil) existir, provavelmente como atalho pra lá
 
-### 7.2 Múltiplas áreas por Pasconeiro
-- **Confirmado: é desejado.** Mas é mudança estrutural grande — hoje `area_id` é singular por usuário, e toda a RLS já validada (activities, schedules, trigger de reatribuição) depende disso. Precisaria virar tabela de relação (`user_areas`, N:N) e reescrever `my_area_id()` → `my_area_ids()` em tudo que depende dela
-- **Estratégia de mitigação de risco** — em vez de migrar tudo de uma vez, dividir em duas etapas:
-  - **Etapa A — criar a estrutura sem migrar o RLS:** criar tabela `user_areas` (`user_id`, `area_id`), populada 1:1 a partir do `area_id` atual de cada usuário (migração de dados, não de política). `users.area_id` continua existindo e sendo a fonte de verdade pra RLS por enquanto. UI já pode passar a mostrar/editar múltiplas áreas por Pasconeiro nessa etapa — cobre a parte visível pro usuário, incluindo o campo de 7.4
-  - **Etapa B — migrar RLS função por função:** reescrever `my_area_id()` → `my_area_ids()` incrementalmente, uma política/tabela por vez (`activities`, depois `schedules`, depois o trigger de reatribuição), testando cada uma isoladamente com a simulação de SQL já usada no projeto (usuário fake, políticas reais, rollback). Só depois de todas as políticas migradas, `users.area_id` é descontinuado (pode virar coluna derivada/"área primária" pra exibição, se for útil manter)
-  - Evita uma migration monolítica de alto risco e permite que 7.4 comece antes da Etapa B terminar
+### 7.2 Múltiplas áreas por Pasconeiro — IMPLEMENTADO
+- **Desenho final: self-service completo**, não administrativo — decisão que mudou durante a implementação (checar quem editava `area_id` antes de codar revelou que era 100% Coordenação via `/areas`, nunca o próprio usuário; o desenho aprovado inverteu isso por completo)
+- **Regras de negócio:**
+  1. Usuário novo nasce Pasconeiro sem nenhuma área (já era assim)
+  2. Sem área selecionada, nenhuma atividade/vaga aparece como assumível — bloqueio natural via RLS, sem mensagem de erro especial
+  3. Primeiro acesso: modal obrigatório, até 3 áreas, vale imediatamente (sem espera)
+  4. Ajustes seguintes: cooldown de 3 dias desde o último envio; a nova seleção (substitui o conjunto inteiro, não edita item a item) só passa a valer 24h depois, e esse envio reinicia o cooldown — um timestamp por usuário controla os dois prazos
+  5. Não é possível remover uma área com atividade não concluída OU vaga confirmada do usuário nessa área
+  6. Máximo de 3 áreas simultâneas
+  7. **Coordenação não edita mais a área de ninguém** — `/areas` (Equipe) virou só visualização (badges); papel (`role`) continua editável por Coordenação normalmente
+- **Etapa A + Etapa B colapsadas numa migration só** (não faseadas por sessões diferentes): a checagem de "assumível" precisava considerar múltiplas áreas desde o primeiro dia, senão a regra 2 ficaria falsa assim que o self-service existisse — não dava pra faseiar com segurança
+- **Schema**: `users.area_ids`/`pending_area_ids`/`areas_submitted_at` (array, não tabela de junção — o pendente sempre substitui o conjunto inteiro, não edita item a item). `effective_area_ids(user_id)`/`my_area_ids()` calculam o conjunto vigente na hora (sem cron pra "promover" o pendente). Toda a lógica de negócio mora em `submit_area_selection()` (RPC chamada pelo próprio usuário). Coluna protegida por `REVOKE`/`GRANT` seletivo (não trigger — um trigger bloquearia a escrita legítima de dentro da própria função)
+- `users.area_id` (singular) e `my_area_id()` foram removidos; 5 policies (`external_requests`, `activities` ×2, `schedules` ×2) migradas pra `my_area_ids()`
+- Testado com simulação cobrindo: primeira seleção, cooldown, efetivação em 24h calculada ao vivo, remoção bloqueada por atividade e por vaga confirmada, bypass de escrita direta bloqueado, e as 5 policies respeitando múltiplas áreas — depois testado ao vivo pelo usuário
+- UI de "ajustar depois da primeira vez" fica pro 7.4 (Perfil), como já estava planejado
 
 ### 7.4 Página de Perfil do usuário (nova, autonomia do próprio usuário)
 - Campos: nome, telefone/WhatsApp, foto, biografia curta, habilidades, áreas de atuação (múltiplas — depende do item 7.2), redes sociais pessoais
