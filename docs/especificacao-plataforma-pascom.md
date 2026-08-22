@@ -280,6 +280,9 @@ Matheus trouxe um documento de outra IA (`pascom-app-roadmap-melhorias.md`) com 
 | IA (assistente de briefing, geração de adaptação de texto, busca inteligente) | Base de dados estruturada (briefings, campanhas, materiais) já existir e estar populada o suficiente pra IA ter o que consultar — não faz sentido antes disso |
 | Automações por regra | Padrões repetitivos identificados no uso real (não hipotéticos) que justifiquem a manutenção de regras automáticas |
 | Multi-paróquia | Intenção explícita de transformar o sistema em produto pra outras comunidades — hoje não existe essa intenção |
+| Menu geral em grid como catálogo separado (segunda camada de navegação, além da barra/rail principal escolhida em 7.6) | Número de destinos de navegação crescer além do que cabe confortavelmente numa barra única (mais que ~5-6 itens de primeiro nível) |
+
+> Avaliação (agosto/2026): documento de outra IA (`recomendacoes-navegacao-mobile-app.md`) recomendava Bottom Nav fixa + Menu Geral em Grid como catálogo separado (duas camadas), mas pressupõe um app bem maior que o PASCOM hoje (menciona Publicações, Aprovações, Banco de ideias, Relatórios, Usuários — fora do roadmap atual). Resolve um problema de "muitos itens" que não existe ainda com só 4-5 destinos (Painel, Atividades, Calendário, Equipamentos + Perfil/Config via avatar). Não muda a decisão em andamento no 7.6 — os candidatos A/B/C continuam sendo testados como estão.
 
 ---
 
