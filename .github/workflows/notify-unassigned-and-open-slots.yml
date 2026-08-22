@@ -1,0 +1,20 @@
+name: Notify unassigned activities and open slots
+
+# O plano Hobby da Vercel só permite cron nativo em cadência diária,
+# então essa notificação (que precisa ser mais frequente) roda por
+# aqui em vez de vercel.json — mesma ideia de cron job, disparada por
+# fora.
+
+on:
+  schedule:
+    - cron: "0 * * * *" # a cada hora, no minuto 0
+  workflow_dispatch: # permite disparar manualmente pra testar
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Chamar rota de notificação
+        run: |
+          curl -sf -X GET "https://pascom-app-phi.vercel.app/api/cron/notify-unassigned-and-open-slots" \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}"
