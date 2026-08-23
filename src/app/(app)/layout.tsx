@@ -33,12 +33,11 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     <div className="ds-shell">
       <aside className="ds-sidebar">
         <Image
-          src="/brand/pascom-horizontal.svg"
+          src="/brand/pascom-horizontal-mono-negativo.svg"
           alt="Logo Pascom"
           width={132}
           height={35}
           className="ds-sidebar-logo"
-          style={{ filter: "brightness(0) invert(1)" }}
         />
         <nav>
           <div className="ds-nav-group">
