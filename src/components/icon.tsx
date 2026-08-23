@@ -5,6 +5,9 @@ import type { LucideIcon, LucideProps } from "lucide-react";
 // que os ícones desenhados à mão já tinham. Muda aqui, não em cada uso.
 const DEFAULT_STROKE_WIDTH = 2.5;
 
-export function Icon({ icon: IconComponent, ...props }: { icon: LucideIcon } & LucideProps) {
-  return <IconComponent strokeWidth={DEFAULT_STROKE_WIDTH} {...props} />;
+export function Icon({ icon: IconComponent, style, ...props }: { icon: LucideIcon } & LucideProps) {
+  // flexShrink: 0 por padrão - sem isso, um ícone ao lado de texto que
+  // pode crescer (nome de arquivo, label longa) vira o único filho
+  // "encolhível" da linha e o flexbox o espreme até quase sumir.
+  return <IconComponent strokeWidth={DEFAULT_STROKE_WIDTH} style={{ flexShrink: 0, ...style }} {...props} />;
 }

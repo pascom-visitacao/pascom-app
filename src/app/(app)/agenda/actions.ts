@@ -138,6 +138,7 @@ export async function uploadCalendarFile(formData: FormData) {
     .upload(path, file, { contentType: file.type });
 
   if (uploadError) {
+    console.error("Falha ao enviar arquivo do calendário paroquial", { path, userId: user.id, uploadError });
     return { error: "Não foi possível enviar o arquivo." };
   }
 

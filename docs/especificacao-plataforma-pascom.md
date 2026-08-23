@@ -176,6 +176,7 @@ materials (id, drive_file_id, name, folder_path, related_activity_id)
 - **3. Calendário paroquial — Camada 2 (leitura assistida)** (por último, condicional)
   - Pré-preencher o formulário de criação de evento a partir do PDF/foto do padre, em vez de digitação manual (Camada 1, já existente desde a Fase 4)
   - Só vale a pena se o volume de eventos recorrentes justificar o esforço — reavaliar depois de usar a Camada 1 por um tempo, não implementar de antemão
+  - **Bug de produção real encontrado e corrigido (testando um item não relacionado da UI)**: a Camada 1 (upload de referência do calendário paroquial) nunca funcionou de verdade — a migration original (`20260822200000_fase4_atividades_calendario.sql`) tinha aplicação parcial neste banco: o bucket de storage existia, mas a policy de `storage.objects`, o tipo `calendar_reference_period` e a tabela `parish_calendar_files` (com sua própria policy) nunca chegaram a ser criados. Corrigido com 2 migrations recriando exatamente o que faltava, cada uma testada via simulação antes de aplicar; upload confirmado funcionando de ponta a ponta ao vivo
 
 ---
 
