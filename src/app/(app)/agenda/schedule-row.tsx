@@ -1,6 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
+import Image from "next/image";
 import { assumeSchedule, releaseSchedule } from "./actions";
 
 export type ScheduleRowData = {
@@ -8,7 +9,7 @@ export type ScheduleRowData = {
   role_needed: string;
   confirmed: boolean;
   area: { id: string; name: string } | null;
-  user: { id: string; name: string } | null;
+  user: { id: string; name: string; avatar_url: string | null } | null;
 };
 
 export function ScheduleRow({
@@ -42,7 +43,18 @@ export function ScheduleRow({
         {schedule.area && <span className="badge badge-neutral">{schedule.area.name}</span>}
         {schedule.user ? (
           <span className="flex items-center" style={{ gap: "var(--space-2)" }}>
-            <span className="avatar avatar-sm">{schedule.user.name.slice(0, 2).toUpperCase()}</span>
+            {schedule.user.avatar_url ? (
+              <Image
+                src={schedule.user.avatar_url}
+                alt={schedule.user.name}
+                width={32}
+                height={32}
+                className="avatar-photo"
+                style={{ width: 32, height: 32 }}
+              />
+            ) : (
+              <span className="avatar avatar-sm">{schedule.user.name.slice(0, 2).toUpperCase()}</span>
+            )}
             {schedule.user.name}
             {schedule.confirmed && <span className="badge badge-success">Confirmado</span>}
           </span>

@@ -20,7 +20,7 @@ export function EventForm() {
     <form
       ref={formRef}
       className="card"
-      style={{ maxWidth: 480, display: "flex", flexDirection: "column", gap: "var(--space-5)" }}
+      style={{ width: "100%", maxWidth: 480, display: "flex", flexDirection: "column", gap: "var(--space-5)" }}
       action={(formData) => {
         startTransition(async () => {
           await createEvent(formData);

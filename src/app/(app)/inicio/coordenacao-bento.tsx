@@ -1,6 +1,17 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { effectiveAreaIds } from "@/lib/effective-areas";
+
+function initials(name: string) {
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .map((p) => p[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+}
 
 const STATUS_LABELS: Record<string, string> = {
   a_fazer: "Recebido",
@@ -57,7 +68,7 @@ export async function CoordenacaoBento({ supabase }: { supabase: SupabaseClient<
       .maybeSingle(),
     supabase
       .from("users")
-      .select("id, name, area_ids, pending_area_ids, areas_submitted_at")
+      .select("id, name, avatar_url, area_ids, pending_area_ids, areas_submitted_at")
       .eq("role", "pasconeiro"),
     supabase
       .from("activities")
@@ -155,11 +166,23 @@ export async function CoordenacaoBento({ supabase }: { supabase: SupabaseClient<
           <div className="tile-sub">Pasconeiros em {teamAreas.size} áreas</div>
         </div>
         <div className="avatars">
-          {(pasconeiros ?? []).slice(0, 3).map((p) => (
-            <span key={p.id} className="avatar avatar-sm">
-              {p.name.slice(0, 1).toUpperCase()}
-            </span>
-          ))}
+          {(pasconeiros ?? []).slice(0, 3).map((p) =>
+            p.avatar_url ? (
+              <Image
+                key={p.id}
+                src={p.avatar_url}
+                alt={p.name}
+                width={32}
+                height={32}
+                className="avatar-photo"
+                style={{ width: 32, height: 32 }}
+              />
+            ) : (
+              <span key={p.id} className="avatar avatar-sm">
+                {initials(p.name)}
+              </span>
+            ),
+          )}
           {(pasconeiros?.length ?? 0) > 3 && (
             <span className="avatar avatar-sm">+{(pasconeiros?.length ?? 0) - 3}</span>
           )}

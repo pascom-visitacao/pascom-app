@@ -50,7 +50,8 @@
 .tile-equipe { grid-column: span 2; }
 .tile-equipe .tile-row { display: flex; align-items: baseline; gap: var(--space-3); }
 .tile-equipe .avatars { display: flex; margin-top: var(--space-3); }
-.tile-equipe .avatars .avatar { margin-right: -10px; border: 2px solid var(--color-surface); }
+.tile-equipe .avatars .avatar,
+.tile-equipe .avatars .avatar-photo { margin-right: -10px; border: 2px solid var(--color-surface); }
 
 .tile-concluidas .mini-chart { display: flex; align-items: flex-end; gap: 4px; height: 32px; margin-top: var(--space-3); }
 .tile-concluidas .mini-chart span { flex: 1; background: var(--color-green-400); border-radius: 2px; }

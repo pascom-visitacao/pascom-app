@@ -1,6 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
+import Image from "next/image";
 import { takeEquipment, returnEquipment } from "./actions";
 
 function initials(name: string) {
@@ -54,7 +55,18 @@ export function EquipmentCard({
           )}
           {equipment.holder ? (
             <div className="flex items-center" style={{ gap: "var(--space-2)", marginTop: "var(--space-2)" }}>
-              <span className="avatar avatar-sm">{initials(equipment.holder.name)}</span>
+              {equipment.holder.avatar_url ? (
+                <Image
+                  src={equipment.holder.avatar_url}
+                  alt={equipment.holder.name}
+                  width={32}
+                  height={32}
+                  className="avatar-photo"
+                  style={{ width: 32, height: 32 }}
+                />
+              ) : (
+                <span className="avatar avatar-sm">{initials(equipment.holder.name)}</span>
+              )}
               <span style={{ fontSize: "var(--text-sm)" }}>{equipment.holder.name}</span>
               <span className="badge badge-warning">Indisponível</span>
             </div>

@@ -69,7 +69,7 @@ export default async function CalendarioPage({
 
   const { data: rawSchedules } = await supabase
     .from("schedules")
-    .select("id, event_id, role_needed, confirmed, area:areas(id, name), user:users(id, name)")
+    .select("id, event_id, role_needed, confirmed, area:areas(id, name), user:users(id, name, avatar_url)")
     .order("role_needed", { ascending: true });
 
   const schedulesByEvent = new Map<string, ScheduleRowData[]>();
