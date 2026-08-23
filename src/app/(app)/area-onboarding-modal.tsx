@@ -2,6 +2,8 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { Check } from "lucide-react";
+import { Icon } from "@/components/icon";
 import { submitAreaSelection } from "./area-selection-actions";
 
 export function AreaOnboardingModal({ areas }: { areas: { id: string; name: string }[] }) {
@@ -69,9 +71,7 @@ export function AreaOnboardingModal({ areas }: { areas: { id: string; name: stri
                     onChange={() => toggle(area.id)}
                   />
                   <span className="box">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                      <path d="M5 13l4 4L19 7" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
+                    <Icon icon={Check} />
                   </span>
                   {area.name}
                 </label>

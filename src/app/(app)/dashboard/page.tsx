@@ -5,8 +5,13 @@ import { createClient } from "@/lib/supabase/server";
 import { signOut } from "./actions";
 import { CoordenacaoBento } from "./coordenacao-bento";
 import { PasconeiroBento } from "./pasconeiro-bento";
+import { AutoFitName } from "./auto-fit-name";
 import { effectiveAreaIds } from "@/lib/effective-areas";
 import "./bento.css";
+
+// espelha calc(var(--text-2xl) + 2pt) em px, já que o auto-shrink roda em
+// JS e precisa de um número - 32px (--text-2xl) + 2pt (≈2.667px)
+const NAME_MAX_FONT_SIZE = 34.67;
 
 function initials(name: string) {
   return name
@@ -65,7 +70,7 @@ export default async function DashboardPage() {
         className="flex items-center justify-between flex-wrap"
         style={{ gap: "var(--space-5)", marginBottom: "var(--space-8)" }}
       >
-        <div className="flex items-center" style={{ gap: "var(--space-5)" }}>
+        <div className="flex items-center" style={{ gap: "var(--space-5)", minWidth: 0 }}>
           <Link href="/perfil" aria-label="Meu perfil" style={{ flexShrink: 0, lineHeight: 0 }}>
             {profile?.avatar_url ? (
               <Image
@@ -80,9 +85,20 @@ export default async function DashboardPage() {
               <span className="avatar avatar-lg">{initials(profile?.name ?? displayName)}</span>
             )}
           </Link>
-          <div>
-            <h1 style={{ fontSize: "var(--text-2xl)", marginBottom: "var(--space-2)" }}>
-              {greeting()}, {displayName}
+          <div style={{ minWidth: 0 }}>
+            <h1
+              style={{
+                display: "flex",
+                alignItems: "baseline",
+                gap: "0.3em",
+                minWidth: 0,
+                marginBottom: "var(--space-2)",
+              }}
+            >
+              <span style={{ fontSize: "calc(var(--text-2xl) - 4pt)", fontWeight: "var(--weight-regular)", flexShrink: 0 }}>
+                {greeting()},
+              </span>
+              <AutoFitName name={displayName} maxFontSize={NAME_MAX_FONT_SIZE} />
             </h1>
             <p style={{ color: "var(--color-text-muted)", fontSize: "var(--text-sm)" }}>
               Aqui está o panorama da Pascom hoje.

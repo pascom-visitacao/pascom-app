@@ -1,6 +1,8 @@
 "use client";
 
 import { useRef, useState } from "react";
+import { ImagePlus } from "lucide-react";
+import { Icon } from "@/components/icon";
 import { uploadMaterial, type UploadMaterialResult } from "./actions";
 import { compressImage } from "@/lib/compress-image";
 import "./materiais.css";
@@ -118,7 +120,17 @@ export function EnviarFotosForm({ events }: { events: { id: string; title: strin
           multiple
           onChange={(e) => handleFileSelect(e.target.files)}
           disabled={isSubmitting}
+          style={{ display: "none" }}
         />
+        <button
+          type="button"
+          className="btn btn-outline btn-md"
+          onClick={() => inputRef.current?.click()}
+          disabled={isSubmitting}
+        >
+          <Icon icon={ImagePlus} size={18} />
+          Escolher fotos
+        </button>
       </div>
 
       {items.length > 0 && (

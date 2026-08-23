@@ -194,6 +194,17 @@ Carregar as fontes (Bricolage Grotesque, Hanken Grotesk, JetBrains Mono) via Goo
 
 **Status:** v1.1 — todos os componentes essenciais para o app já estão prontos (modal, tabela e tooltip foram adicionados depois do v1 inicial, seguindo os mesmos tokens). Não há mais nada bloqueado por falta de componente; qualquer necessidade nova pode seguir o mesmo padrão ao ser criada durante o desenvolvimento.
 
+**Biblioteca de ícones — migrado pra `lucide-react`** (era SVG desenhado à mão, um `Record` por tela). `src/components/icon.tsx` centraliza o `strokeWidth` padrão (2.5, mais "cheio" que o 2 default do Lucide) — qualquer ícone novo usa `<Icon icon={NomeDoIcone} />` em vez de configurar caso a caso.
+
+**Apanhado de ajustes de UI (frontend/CSS, sem migration):**
+- Menu flutuante mobile: itens da barra ganharam padding real (`min-width` + `padding` em vez de `width` fixa) e ícones 24px, respeitando o touch target de 48×48dp sem cortar conteúdo nas bordas
+- Removido o sublinhado global em `a:hover` (aparecia como efeito colateral em qualquer botão/link ao tocar/clicar) — troca por mudança de cor real (`--color-blue-700`); também neutralizado o tap-highlight padrão do navegador em `a`/`button`
+- Bento tile "Pedidos externos pendentes": `grid-auto-rows` fixo (128px) cortava conteúdo no mobile (a linha some quando o tile perde o `grid-row: span 2`) — trocado pra `minmax(128px, auto)`, cresce com o conteúdo em vez de cortar
+- Saudação do Painel: "Boa tarde," em peso regular e `calc(var(--text-2xl) - 4pt)`; nome em `calc(var(--text-2xl) + 2pt)` com auto-encolhimento via `AutoFitName` (mede contra o container pai, reduz até caber, sem quebrar layout) — testado em viewport extremo (220px) sem overflow
+- Botão "Escolher fotos" (`/materiais`): trocado o `<input type="file">` nu (sem estilo, parecia link solto) pelo mesmo padrão já usado no upload de foto de perfil (input escondido + botão real disparando o seletor)
+- Kanban: breakpoint pra layout mobile (abas de status) estava em 768px, mas o resto do app (sidebar → menu mobile) usa 960px — criava uma faixa de largura intermediária (768–960px) onde a sidebar já tinha sumido mas o Kanban ainda tentava mostrar 4 colunas espremidas. Unificado pra 960px
+- Avatar do responsável nos cards de atividade: `avatar_url` já vinha na query, mas o componente nunca usava, só mostrava iniciais — corrigido pra usar a foto real quando existe (mesmo padrão `.avatar-photo` do resto do app)
+
 ## 7. Novas funcionalidades em análise
 
 > Registradas aqui pra não perder contexto entre conversas. Sequenciamento e refinamentos consolidados a partir de `spec-fase6-v2.md` (levantamento original dos itens) e `spec-fase7.md` (ordem de execução + decisões refinadas) — os dois arquivos ficam em `docs/` como histórico, este documento é a fonte da verdade consolidada.

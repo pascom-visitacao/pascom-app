@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import Image from "next/image";
 import { StatusSelect } from "./status-select";
 import { DeleteActivityButton } from "./delete-activity-button";
 import { assumeActivity, reassignActivity, type ActivityStatus } from "./actions";
@@ -41,7 +42,18 @@ function initials(name: string) {
 function AssigneeLine({ assignee }: { assignee: ActivityCardData["assignee"] }) {
   return assignee ? (
     <span className="flex items-center" style={{ gap: "var(--space-2)", fontSize: "var(--text-sm)" }}>
-      <span className="avatar avatar-sm">{initials(assignee.name)}</span>
+      {assignee.avatar_url ? (
+        <Image
+          src={assignee.avatar_url}
+          alt={assignee.name}
+          width={32}
+          height={32}
+          className="avatar-photo"
+          style={{ width: 32, height: 32 }}
+        />
+      ) : (
+        <span className="avatar avatar-sm">{initials(assignee.name)}</span>
+      )}
       {assignee.name}
     </span>
   ) : (
