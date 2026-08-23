@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Columns3, Calendar, Image as ImageIcon, Users, Settings, LayoutGrid, X, Camera, User, ChevronRight, Download } from "lucide-react";
+import { Home, Columns3, Calendar, Image as ImageIcon, Users, Settings, LayoutGrid, X, Camera, User, ChevronRight, Download, Info, Archive } from "lucide-react";
 import { Icon } from "@/components/icon";
 
 function initials(name: string) {
@@ -29,6 +29,8 @@ const ICONS = {
   cam: <Icon icon={Camera} />,
   user: <Icon icon={User} />,
   download: <Icon icon={Download} />,
+  info: <Icon icon={Info} />,
+  archive: <Icon icon={Archive} />,
 } satisfies Record<string, React.ReactNode>;
 
 type NavItem = { href: string; label: string; icon: keyof typeof ICONS };
@@ -46,7 +48,10 @@ const GRID_ITEMS_PASCONEIRO: NavItem[] = [
   ...BAR_ITEMS,
   { href: "/equipamentos", label: "Equipamentos", icon: "cam" },
   { href: "/materiais", label: "Enviar fotos", icon: "photo" },
+  { href: "/acervo", label: "Acervo", icon: "archive" },
+  { href: "/equipe", label: "Equipe", icon: "users" },
   { href: "/instalar", label: "Instalar app", icon: "download" },
+  { href: "/sobre", label: "Sobre o app", icon: "info" },
 ];
 
 const GRID_ITEMS_COORDENACAO: NavItem[] = [
