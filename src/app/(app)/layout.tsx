@@ -6,6 +6,7 @@ import { MobileNav } from "./mobile-nav";
 import { AreaOnboardingModal } from "./area-onboarding-modal";
 import { InitialOnboardingModal } from "./initial-onboarding-modal";
 import { CoordenacaoPromotionBanner } from "./coordenacao-promotion-banner";
+import { RevalidateOnFocus } from "./revalidate-on-focus";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -38,6 +39,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   return (
     <div className="ds-shell">
+      <RevalidateOnFocus />
       <aside className="ds-sidebar">
         <Image
           src="/brand/pascom-horizontal-mono-negativo.svg"
