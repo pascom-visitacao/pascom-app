@@ -296,6 +296,11 @@ code, pre, kbd { font-family: var(--font-mono); }
 .badge-neutral  { background: var(--color-bg-inset); color: var(--color-text-muted); }
 .badge-solid    { background: var(--color-primary); color: #fff; }
 .badge-outline  { background: transparent; border: 1.5px solid currentColor; }
+/* Sólido escuro, deliberadamente fora da escala semântica de cor
+   (verde/azul/âmbar/vermelho) - pra sinalizar algo ortogonal a
+   prioridade/status/origem, tipo urgência, sem risco de ser confundido
+   com "Alta" (vermelho) ou qualquer outro badge existente. */
+.badge-dark     { background: var(--color-dark-bg); color: #fff; }
 
 /* ---------- Card ---------- */
 .card {
@@ -543,7 +548,7 @@ textarea.ds-textarea:focus { border-color: var(--color-primary); box-shadow: var
   font-size: var(--text-sm); color: var(--color-text-muted); line-height: var(--leading-loose);
 }
 .modal-footer {
-  display: flex; align-items: center; justify-content: flex-end; gap: var(--space-4);
+  display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: var(--space-4);
   padding: var(--space-6) var(--space-7);
   border-top: 1px solid var(--color-border);
   flex-shrink: 0;

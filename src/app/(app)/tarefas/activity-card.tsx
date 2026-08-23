@@ -2,9 +2,11 @@
 
 import { useState, useTransition } from "react";
 import Image from "next/image";
+import { Zap } from "lucide-react";
+import { Icon } from "@/components/icon";
 import { StatusSelect } from "./status-select";
 import { DeleteActivityButton } from "./delete-activity-button";
-import { assumeActivity, reassignActivity, type ActivityStatus } from "./actions";
+import { assumeActivity, reassignActivity, toggleUrgent, type ActivityStatus } from "./actions";
 import { CommentsSection, type CommentData } from "./comments-section";
 
 const PRIORITY_LABELS: Record<string, string> = { baixa: "Baixa", media: "Média", alta: "Alta" };
@@ -22,6 +24,7 @@ export type ActivityCardData = {
   due_date: string | null;
   source: "interna" | "pedido_externo";
   priority: string;
+  is_urgent: boolean;
   assignee: { id: string; name: string; avatar_url: string | null } | null;
   attachments: string[];
   event: { id: string; title: string } | null;
@@ -37,6 +40,15 @@ function initials(name: string) {
     .slice(0, 2)
     .join("")
     .toUpperCase();
+}
+
+function UrgentBadge() {
+  return (
+    <span className="badge badge-dark">
+      <Icon icon={Zap} />
+      Urgente
+    </span>
+  );
 }
 
 function AssigneeLine({ assignee }: { assignee: ActivityCardData["assignee"] }) {
@@ -144,6 +156,7 @@ export function ActivityCard({
         onClick={() => setOpen(true)}
       >
         <div className="flex flex-wrap items-center" style={{ gap: "var(--space-2)", marginBottom: "var(--space-3)" }}>
+          {activity.is_urgent && <UrgentBadge />}
           {activity.source === "pedido_externo" && <span className="badge badge-accent">Pedido externo</span>}
           <span className={`badge ${PRIORITY_BADGE[activity.priority] ?? "badge-neutral"}`}>
             {PRIORITY_LABELS[activity.priority] ?? activity.priority}
@@ -204,6 +217,7 @@ export function ActivityCard({
           </div>
           <div className="modal-body">
             <div className="flex flex-wrap" style={{ gap: "var(--space-2)", marginBottom: "var(--space-5)" }}>
+              {activity.is_urgent && <UrgentBadge />}
               {activity.source === "pedido_externo" && <span className="badge badge-accent">Pedido externo</span>}
               <span className={`badge ${PRIORITY_BADGE[activity.priority] ?? "badge-neutral"}`}>
                 Prioridade {PRIORITY_LABELS[activity.priority] ?? activity.priority}
@@ -265,10 +279,18 @@ export function ActivityCard({
                 {isPending ? "Assumindo..." : "Assumir tarefa"}
               </button>
             )}
+            {canWrite && (
+              <button
+                type="button"
+                className="btn btn-outline btn-md"
+                disabled={isPending}
+                onClick={() => startTransition(() => toggleUrgent(activity.id, !activity.is_urgent))}
+              >
+                <Icon icon={Zap} size={16} />
+                {activity.is_urgent ? "Remover urgência" : "Marcar urgente"}
+              </button>
+            )}
             {canWrite && <StatusSelect activityId={activity.id} status={activity.status} />}
-            <button className="btn btn-outline btn-md" onClick={() => setOpen(false)}>
-              Fechar
-            </button>
           </div>
         </div>
       </div>

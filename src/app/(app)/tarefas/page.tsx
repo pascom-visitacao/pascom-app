@@ -49,7 +49,7 @@ export default async function AtividadesPage({
     ? await supabase
         .from("activities")
         .select(
-          "id, title, description, status, due_date, source, priority, assignee:users(id, name, avatar_url), request:external_requests(attachment_urls), event:events(id, title), parish_ministry:parish_ministries(id, name), comments:activity_comments(id, body, created_at, author:users(id, name))",
+          "id, title, description, status, due_date, source, priority, is_urgent, assignee:users(id, name, avatar_url), request:external_requests(attachment_urls), event:events(id, title), parish_ministry:parish_ministries(id, name), comments:activity_comments(id, body, created_at, author:users(id, name))",
         )
         .eq("area_id", selectedAreaId)
         .order("created_at", { ascending: true })
@@ -63,6 +63,7 @@ export default async function AtividadesPage({
     due_date: a.due_date,
     source: a.source,
     priority: a.priority,
+    is_urgent: a.is_urgent,
     assignee: normalizeOne(a.assignee),
     attachments: normalizeOne<{ attachment_urls: string[] }>(a.request)?.attachment_urls ?? [],
     event: normalizeOne(a.event),

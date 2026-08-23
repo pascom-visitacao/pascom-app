@@ -48,6 +48,23 @@ export async function updateActivityStatus(activityId: string, status: ActivityS
   revalidatePath("/tarefas");
 }
 
+// Marca/desmarca urgência - manual, só depois que a atividade já existe
+// (não faz parte da criação nem do formulário público). Mesmo nível de
+// acesso que já rege priority: sem checagem extra aqui, a RLS de
+// activities (coordenação, responsável, ou qualquer um da área) é quem
+// decide se o UPDATE passa ou não.
+export async function toggleUrgent(activityId: string, urgent: boolean) {
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("activities")
+    .update({ is_urgent: urgent })
+    .eq("id", activityId);
+
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/tarefas");
+}
+
 export async function assumeActivity(activityId: string) {
   const supabase = await createClient();
 
