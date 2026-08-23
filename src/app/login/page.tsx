@@ -50,6 +50,9 @@ export default function LoginPage() {
           É de outra pastoral e quer pedir um material ou serviço?{" "}
           <a href="/solicitar">Peça aqui, sem precisar de conta.</a>
         </p>
+        <p style={{ marginTop: "var(--space-3)", fontSize: "var(--text-sm)", color: "var(--color-text-subtle)" }}>
+          <a href="/instalar">Instalar o PASCOM no celular</a>
+        </p>
       </div>
     </div>
   );
