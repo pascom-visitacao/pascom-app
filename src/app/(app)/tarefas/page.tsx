@@ -162,16 +162,22 @@ export default async function AtividadesPage({
                     {column.label} · {columnActivities.length}
                   </div>
                   <div className="flex flex-col" style={{ gap: "var(--space-4)" }}>
-                    {columnActivities.map((activity) => (
-                      <ActivityCard
-                        key={activity.id}
-                        activity={activity}
-                        canWrite={canWrite}
-                        isCoordenacao={isCoordenacao}
-                        currentUserId={user.id}
-                        members={areaMembers ?? []}
-                      />
-                    ))}
+                    {columnActivities.length === 0 ? (
+                      <p style={{ fontSize: "var(--text-sm)", color: "var(--color-text-subtle)" }}>
+                        Nenhuma tarefa por aqui — quando sua área tiver algo pra fazer, aparece aqui.
+                      </p>
+                    ) : (
+                      columnActivities.map((activity) => (
+                        <ActivityCard
+                          key={activity.id}
+                          activity={activity}
+                          canWrite={canWrite}
+                          isCoordenacao={isCoordenacao}
+                          currentUserId={user.id}
+                          members={areaMembers ?? []}
+                        />
+                      ))
+                    )}
                   </div>
                 </div>
               );

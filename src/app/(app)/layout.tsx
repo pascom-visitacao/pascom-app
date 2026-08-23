@@ -4,6 +4,8 @@ import { createClient } from "@/lib/supabase/server";
 import { NavLink } from "./nav-link";
 import { MobileNav } from "./mobile-nav";
 import { AreaOnboardingModal } from "./area-onboarding-modal";
+import { InitialOnboardingModal } from "./initial-onboarding-modal";
+import { CoordenacaoPromotionBanner } from "./coordenacao-promotion-banner";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient();
@@ -18,12 +20,17 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   const { data: profile } = await supabase
     .from("users")
-    .select("role, areas_submitted_at, name, avatar_url")
+    .select("role, areas_submitted_at, name, avatar_url, onboarding_seen")
     .eq("id", user.id)
     .single();
 
   const isCoordenacao = profile?.role === "coordenacao_geral";
-  const needsAreaOnboarding = profile?.areas_submitted_at === null;
+  const onboardingSeen = (profile?.onboarding_seen ?? {}) as Record<string, boolean>;
+  const needsInitialOnboarding = !onboardingSeen.initial;
+  // Nunca empilha modal: o conceitual (pulável) sempre vem antes do de
+  // área (obrigatório) - só avalia esse depois que o outro já foi visto.
+  const needsAreaOnboarding = !needsInitialOnboarding && profile?.areas_submitted_at === null;
+  const needsPromotionNotice = isCoordenacao && !onboardingSeen.coordenacao_promovido;
 
   const { data: allAreas } = needsAreaOnboarding
     ? await supabase.from("areas").select("id, name").order("name")
@@ -59,13 +66,20 @@ export default async function AppLayout({ children }: { children: React.ReactNod
           )}
         </nav>
       </aside>
-      <main className="ds-main">{children}</main>
+      <main className="ds-main">
+        {needsPromotionNotice && <CoordenacaoPromotionBanner />}
+        {children}
+      </main>
       <MobileNav
         isCoordenacao={isCoordenacao}
         userName={profile?.name ?? user.email ?? "Usuário"}
         avatarUrl={profile?.avatar_url ?? null}
       />
-      {needsAreaOnboarding && <AreaOnboardingModal areas={allAreas ?? []} />}
+      {needsInitialOnboarding ? (
+        <InitialOnboardingModal firstName={(profile?.name ?? user.email ?? "Usuário").split(" ")[0]} />
+      ) : (
+        needsAreaOnboarding && <AreaOnboardingModal areas={allAreas ?? []} />
+      )}
     </div>
   );
 }

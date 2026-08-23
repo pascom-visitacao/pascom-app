@@ -131,6 +131,10 @@ export function EnviarFotosForm({ events }: { events: { id: string; title: strin
           <Icon icon={ImagePlus} size={18} />
           Escolher fotos
         </button>
+        <p style={{ fontSize: "var(--text-xs)", color: "var(--color-text-subtle)", marginTop: "var(--space-2)" }}>
+          Pode escolher várias de uma vez. Elas vão direto pro Google Drive da Pascom, na pasta do evento
+          selecionado acima (ou pro acervo geral, organizado por data, se nenhum evento for escolhido).
+        </p>
       </div>
 
       {items.length > 0 && (
