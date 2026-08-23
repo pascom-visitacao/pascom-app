@@ -86,18 +86,8 @@ export default async function DashboardPage() {
             )}
           </Link>
           <div style={{ minWidth: 0 }}>
-            <h1
-              style={{
-                display: "flex",
-                alignItems: "baseline",
-                gap: "0.3em",
-                minWidth: 0,
-                marginBottom: "var(--space-2)",
-              }}
-            >
-              <span style={{ fontSize: "calc(var(--text-2xl) - 4pt)", fontWeight: "var(--weight-regular)", flexShrink: 0 }}>
-                {greeting()},
-              </span>
+            <h1 className="inicio-greeting">
+              <span className="greeting-word">{greeting()},</span>
               <AutoFitName name={displayName} maxFontSize={NAME_MAX_FONT_SIZE} />
             </h1>
             <p style={{ color: "var(--color-text-muted)", fontSize: "var(--text-sm)" }}>

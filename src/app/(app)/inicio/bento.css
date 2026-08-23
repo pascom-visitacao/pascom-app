@@ -61,6 +61,31 @@
 .tile-minhas .tile-number { color: var(--color-primary); }
 .tile-escalas .tile-number { color: var(--color-secondary); }
 
+/* Saudação do cabeçalho ("Bom dia, Matheus") - linha corrida no desktop,
+   quebra em duas linhas no mobile (cumprimento em cima, nome embaixo).
+   960px pra bater com o breakpoint em que o app já vira "modo mobile"
+   (sidebar some, entra a barra inferior - ver ds-styles.css). */
+.inicio-greeting {
+  display: flex;
+  align-items: baseline;
+  gap: 0.3em;
+  min-width: 0;
+  margin-bottom: var(--space-2);
+}
+.inicio-greeting .greeting-word {
+  font-size: calc(var(--text-2xl) - 4pt);
+  font-weight: var(--weight-regular);
+  flex-shrink: 0;
+}
+
+@media (max-width: 960px) {
+  .inicio-greeting {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+  }
+}
+
 @media (max-width: 860px) {
   .bento { grid-template-columns: repeat(2, 1fr); }
   .tile-pedidos, .tile-semana, .tile-equipe { grid-column: span 2; }
