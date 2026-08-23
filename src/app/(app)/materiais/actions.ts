@@ -78,7 +78,7 @@ export async function uploadMaterial(formData: FormData): Promise<UploadMaterial
       .eq("id", activityId)
       .single();
 
-    if (error || !activity) throw new Error("Atividade não encontrada");
+    if (error || !activity) throw new Error("Tarefa não encontrada");
 
     relatedActivityId = activityId;
     pathSegments =

@@ -25,7 +25,7 @@ export function NewActivityForm({
   if (!open) {
     return (
       <button type="button" className="btn btn-primary btn-md" onClick={() => setOpen(true)}>
-        + Nova atividade
+        + Nova tarefa
       </button>
     );
   }
@@ -56,7 +56,7 @@ export function NewActivityForm({
 
       <div className="field">
         <label className="field-label">Descrição</label>
-        <textarea className="ds-textarea" name="description" placeholder="Detalhes da atividade..." />
+        <textarea className="ds-textarea" name="description" placeholder="Detalhes da tarefa..." />
       </div>
 
       <div className="field">

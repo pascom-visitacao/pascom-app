@@ -37,20 +37,20 @@ export async function PasconeiroBento({
 
   return (
     <div className="bento" style={{ gridAutoRows: 160 }}>
-      <Link href="/atividades" className="bento-tile tile-minhas is-light">
+      <Link href="/tarefas" className="bento-tile tile-minhas is-light">
         <div className="tile-arrow">→</div>
-        <div className="tile-label">Minhas atividades pendentes</div>
+        <div className="tile-label">Minhas tarefas pendentes</div>
         <div className="tile-number">{myPendingCount ?? 0}</div>
         <div className="tile-sub">ainda não concluídas</div>
       </Link>
 
-      <Link href="/calendario" className="bento-tile tile-escalas is-light">
+      <Link href="/agenda" className="bento-tile tile-escalas is-light">
         <div className="tile-arrow">→</div>
         <div className="tile-label">Minhas escalas confirmadas</div>
         <div className="tile-number">{myScheduleCount ?? 0}</div>
       </Link>
 
-      <Link href="/calendario" className="bento-tile tile-vagas is-light">
+      <Link href="/agenda" className="bento-tile tile-vagas is-light">
         <div className="tile-arrow">→</div>
         <div className="tile-label">Vagas abertas nas minhas áreas</div>
         <div className="tile-number">{openScheduleCount ?? 0}</div>

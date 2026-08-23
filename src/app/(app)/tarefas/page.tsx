@@ -91,14 +91,14 @@ export default async function AtividadesPage({
         className="flex items-center justify-between flex-wrap"
         style={{ gap: "var(--space-5)", marginBottom: "var(--space-7)" }}
       >
-        <h1 style={{ fontSize: "var(--text-xl)" }}>Atividades</h1>
+        <h1 style={{ fontSize: "var(--text-xl)" }}>Tarefas</h1>
 
         {areas && areas.length > 0 && (
           <div className="flex flex-wrap" style={{ gap: "var(--space-2)" }}>
             {areas.map((area) => (
               <Link
                 key={area.id}
-                href={`/atividades?area=${area.id}`}
+                href={`/tarefas?area=${area.id}`}
                 className={`btn btn-sm ${area.id === selectedAreaId ? "btn-primary" : "btn-outline"}`}
               >
                 {area.name}

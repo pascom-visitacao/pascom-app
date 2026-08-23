@@ -42,7 +42,7 @@ export function AreaOnboardingModal({ areas }: { areas: { id: string; name: stri
         </div>
         <div className="modal-body">
           <p style={{ marginBottom: "var(--space-5)" }}>
-            Escolha até 3 áreas em que você atua na Pascom. Isso define quais atividades e vagas você pode assumir.
+            Escolha até 3 áreas em que você atua na Pascom. Isso define quais tarefas e vagas você pode assumir.
           </p>
 
           <div className="alert alert-warning" style={{ marginBottom: "var(--space-5)" }}>

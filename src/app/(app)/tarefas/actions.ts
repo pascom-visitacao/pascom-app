@@ -33,7 +33,7 @@ export async function createActivity(formData: FormData) {
 
   if (error) throw new Error(error.message);
 
-  revalidatePath("/atividades");
+  revalidatePath("/tarefas");
 }
 
 export async function updateActivityStatus(activityId: string, status: ActivityStatus) {
@@ -45,7 +45,7 @@ export async function updateActivityStatus(activityId: string, status: ActivityS
 
   if (error) throw new Error(error.message);
 
-  revalidatePath("/atividades");
+  revalidatePath("/tarefas");
 }
 
 export async function assumeActivity(activityId: string) {
@@ -63,7 +63,7 @@ export async function assumeActivity(activityId: string) {
 
   if (error) throw new Error(error.message);
 
-  revalidatePath("/atividades");
+  revalidatePath("/tarefas");
 }
 
 // Atribuição direta pela Coordenação - diferente de assumeActivity
@@ -88,7 +88,7 @@ export async function reassignActivity(activityId: string, userId: string) {
     if (assignee?.email) {
       await sendEmail({
         to: [assignee.email],
-        subject: `Atividade atribuída a você: ${data.title}`,
+        subject: `Tarefa atribuída a você: ${data.title}`,
         html: activityAssignedEmail(data.title),
       });
     }
@@ -96,7 +96,7 @@ export async function reassignActivity(activityId: string, userId: string) {
     console.error("Falha ao notificar atribuição de atividade", { activityId, notifyError });
   }
 
-  revalidatePath("/atividades");
+  revalidatePath("/tarefas");
 }
 
 export async function deleteActivity(activityId: string) {
@@ -105,7 +105,7 @@ export async function deleteActivity(activityId: string) {
 
   if (error) throw new Error(error.message);
 
-  revalidatePath("/atividades");
+  revalidatePath("/tarefas");
 }
 
 export async function addComment(activityId: string, body: string) {
@@ -124,7 +124,7 @@ export async function addComment(activityId: string, body: string) {
 
   if (error) throw new Error(error.message);
 
-  revalidatePath("/atividades");
+  revalidatePath("/tarefas");
 }
 
 export async function deleteComment(commentId: string) {
@@ -133,5 +133,5 @@ export async function deleteComment(commentId: string) {
 
   if (error) throw new Error(error.message);
 
-  revalidatePath("/atividades");
+  revalidatePath("/tarefas");
 }

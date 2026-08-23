@@ -1,5 +1,7 @@
 # Plataforma de Gestão — Pastoral da Comunicação (PASCOM)
 
+> **Nomenclatura de navegação (renomeado)**: as seções antes chamadas "Painel", "Atividades" e "Calendário" na UI e nas rotas (`/dashboard`, `/atividades`, `/calendario`) passaram a se chamar **Início** (`/inicio`), **Tarefas** (`/tarefas`) e **Agenda** (`/agenda`), respectivamente — texto exibido e rota, em todo o app (menus, títulos de página, e-mails de notificação). Tabelas do banco (`activities`, etc.) e nomes de função/variável no código continuam com os nomes originais em inglês, sem relação com essa troca. As demais menções deste documento a "Painel"/"Atividades"/"Calendário" abaixo são registro histórico de quando cada fase foi decidida/construída — não foram reescritas.
+
 ## 1. Visão geral
 
 Sistema web para centralizar a operação da Pastoral da Comunicação: planejamento, escalas, calendário, produção de materiais, integração com Google Drive, e um canal público para outras pastorais solicitarem materiais/serviços.

@@ -12,7 +12,7 @@ export function DeleteActivityButton({ activityId }: { activityId: string }) {
       className="btn btn-ghost btn-sm"
       disabled={isPending}
       onClick={() => {
-        if (!window.confirm("Excluir esta atividade?")) return;
+        if (!window.confirm("Excluir esta tarefa?")) return;
         startTransition(() => {
           deleteActivity(activityId);
         });

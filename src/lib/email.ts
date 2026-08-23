@@ -40,8 +40,8 @@ const WRAP = (title: string, body: string) => `
 export function unassignedActivitiesEmail(activities: { title: string }[], areaName: string) {
   const items = activities.map((a) => `<li>${a.title}</li>`).join("");
   return WRAP(
-    "Atividades sem responsável",
-    `<p>Existem atividades na área <strong>${areaName}</strong> aguardando alguém assumir:</p><ul>${items}</ul>`,
+    "Tarefas sem responsável",
+    `<p>Existem tarefas na área <strong>${areaName}</strong> aguardando alguém assumir:</p><ul>${items}</ul>`,
   );
 }
 
@@ -56,14 +56,14 @@ export function openSchedulesEmail(schedules: { role_needed: string }[], areaNam
 export function dueDateReminderEmail(title: string, dueDate: string) {
   return WRAP(
     "Prazo se aproximando",
-    `<p>A atividade <strong>${title}</strong> tem prazo em ${new Date(dueDate).toLocaleDateString("pt-BR")}.</p>`,
+    `<p>A tarefa <strong>${title}</strong> tem prazo em ${new Date(dueDate).toLocaleDateString("pt-BR")}.</p>`,
   );
 }
 
 export function activityAssignedEmail(title: string) {
   return WRAP(
-    "Atividade atribuída a você",
-    `<p>A Coordenação te designou como responsável pela atividade <strong>${title}</strong>.</p>`,
+    "Tarefa atribuída a você",
+    `<p>A Coordenação te designou como responsável pela tarefa <strong>${title}</strong>.</p>`,
   );
 }
 

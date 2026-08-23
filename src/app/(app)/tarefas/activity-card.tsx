@@ -262,7 +262,7 @@ export function ActivityCard({
                 disabled={isPending}
                 onClick={() => startTransition(() => assumeActivity(activity.id))}
               >
-                {isPending ? "Assumindo..." : "Assumir atividade"}
+                {isPending ? "Assumindo..." : "Assumir tarefa"}
               </button>
             )}
             {canWrite && <StatusSelect activityId={activity.id} status={activity.status} />}

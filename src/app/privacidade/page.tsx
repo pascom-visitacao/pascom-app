@@ -13,8 +13,8 @@ export default function PrivacidadePage() {
 
         <p>
           O PASCOM App é uma ferramenta interna de gestão da Pastoral da Comunicação de uma paróquia
-          católica, usada pela própria equipe (voluntários e coordenação) pra organizar atividades,
-          escalas, calendário de eventos e materiais de comunicação. Não é um produto ao público em
+          católica, usada pela própria equipe (voluntários e coordenação) pra organizar tarefas,
+          escalas, agenda de eventos e materiais de comunicação. Não é um produto ao público em
           geral.
         </p>
 
@@ -22,7 +22,7 @@ export default function PrivacidadePage() {
         <p>
           Os membros da equipe entram no app usando login do Google. Nesse processo, o app recebe
           apenas nome, e-mail e foto de perfil públicos da conta Google usada — usados só pra
-          identificar a pessoa dentro do app (autoria de atividades, atribuição de tarefas, etc). Esses
+          identificar a pessoa dentro do app (autoria de tarefas, atribuição de responsáveis, etc). Esses
           dados não são compartilhados com terceiros nem usados fora do funcionamento do próprio app.
         </p>
 

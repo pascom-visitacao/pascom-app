@@ -42,7 +42,7 @@ async function notifyUnassignedActivities(supabase: ServiceRoleClient) {
     const emails = await pasconeiroEmails(supabase, areaId);
     await sendEmail({
       to: emails,
-      subject: `${items.length} atividade(s) sem responsável — ${name}`,
+      subject: `${items.length} tarefa(s) sem responsável — ${name}`,
       html: unassignedActivitiesEmail(items, name),
     });
 

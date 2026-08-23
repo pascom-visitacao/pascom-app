@@ -19,7 +19,7 @@ export default async function ConfiguracoesPage() {
     .single();
 
   if (profile?.role !== "coordenacao_geral") {
-    redirect("/dashboard");
+    redirect("/inicio");
   }
 
   const { data: accounts } = await supabase

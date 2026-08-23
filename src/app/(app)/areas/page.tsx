@@ -24,7 +24,7 @@ export default async function AreasPage() {
     .single();
 
   if (profile?.role !== "coordenacao_geral") {
-    redirect("/dashboard");
+    redirect("/inicio");
   }
 
   const { data: areas } = await supabase.from("areas").select("id, name").order("name");

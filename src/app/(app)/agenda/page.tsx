@@ -151,7 +151,7 @@ export default async function CalendarioPage({
         className="flex items-center justify-between flex-wrap"
         style={{ gap: "var(--space-5)", marginBottom: "var(--space-6)" }}
       >
-        <h1 style={{ fontSize: "var(--text-xl)" }}>Calendário</h1>
+        <h1 style={{ fontSize: "var(--text-xl)" }}>Agenda</h1>
         {isCoordenacao && <EventForm />}
       </div>
 
@@ -159,7 +159,7 @@ export default async function CalendarioPage({
         {VIEWS.map((v) => (
           <Link
             key={v.key}
-            href={`/calendario?view=${v.key}${v.key === "mes" && monthParam ? `&month=${monthParam}` : ""}${v.key !== "mes" && dateParam ? `&date=${dateParam}` : ""}`}
+            href={`/agenda?view=${v.key}${v.key === "mes" && monthParam ? `&month=${monthParam}` : ""}${v.key !== "mes" && dateParam ? `&date=${dateParam}` : ""}`}
             className={`tab-item${view === v.key ? " is-active" : ""}`}
           >
             {v.label}
@@ -211,13 +211,13 @@ export default async function CalendarioPage({
       {view === "mes" && (
         <div className="card" style={{ padding: "var(--space-7)", marginBottom: "var(--space-8)" }}>
           <div className="month-nav">
-            <Link href={`/calendario?view=mes&month=${monthParamString(prev.year, prev.month)}`} className="btn btn-outline btn-sm">
+            <Link href={`/agenda?view=mes&month=${monthParamString(prev.year, prev.month)}`} className="btn btn-outline btn-sm">
               ← Anterior
             </Link>
             <div className="card-title" style={{ marginBottom: 0 }}>
               {MONTH_NAMES[month]} de {year}
             </div>
-            <Link href={`/calendario?view=mes&month=${monthParamString(next.year, next.month)}`} className="btn btn-outline btn-sm">
+            <Link href={`/agenda?view=mes&month=${monthParamString(next.year, next.month)}`} className="btn btn-outline btn-sm">
               Próximo →
             </Link>
           </div>
@@ -298,7 +298,7 @@ export default async function CalendarioPage({
       {view === "semana" && (
         <div className="card" style={{ padding: "var(--space-7)", marginBottom: "var(--space-8)" }}>
           <div className="month-nav">
-            <Link href={`/calendario?view=semana&date=${dateParamString(prevWeek)}`} className="btn btn-outline btn-sm">
+            <Link href={`/agenda?view=semana&date=${dateParamString(prevWeek)}`} className="btn btn-outline btn-sm">
               ← Semana anterior
             </Link>
             <div className="card-title" style={{ marginBottom: 0 }}>
@@ -306,7 +306,7 @@ export default async function CalendarioPage({
                 ? `${weekStart.getDate()} – ${weekEnd.getDate()} de ${MONTH_NAMES[weekStart.getMonth()]} de ${weekEnd.getFullYear()}`
                 : `${weekStart.getDate()} de ${MONTH_NAMES[weekStart.getMonth()]} – ${weekEnd.getDate()} de ${MONTH_NAMES[weekEnd.getMonth()]} de ${weekEnd.getFullYear()}`}
             </div>
-            <Link href={`/calendario?view=semana&date=${dateParamString(nextWeek)}`} className="btn btn-outline btn-sm">
+            <Link href={`/agenda?view=semana&date=${dateParamString(nextWeek)}`} className="btn btn-outline btn-sm">
               Próxima semana →
             </Link>
           </div>
@@ -360,7 +360,7 @@ export default async function CalendarioPage({
 
       {view === "dia" && (
         <div className="month-nav" style={{ marginBottom: "var(--space-8)" }}>
-          <Link href={`/calendario?view=dia&date=${dateParamString(prevDay)}`} className="btn btn-outline btn-sm">
+          <Link href={`/agenda?view=dia&date=${dateParamString(prevDay)}`} className="btn btn-outline btn-sm">
             ← Dia anterior
           </Link>
           <div className="card-title" style={{ marginBottom: 0 }}>
@@ -369,7 +369,7 @@ export default async function CalendarioPage({
               return label.charAt(0).toUpperCase() + label.slice(1);
             })()}
           </div>
-          <Link href={`/calendario?view=dia&date=${dateParamString(nextDay)}`} className="btn btn-outline btn-sm">
+          <Link href={`/agenda?view=dia&date=${dateParamString(nextDay)}`} className="btn btn-outline btn-sm">
             Próximo dia →
           </Link>
         </div>

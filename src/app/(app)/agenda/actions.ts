@@ -34,7 +34,7 @@ export async function createEvent(formData: FormData) {
     console.error("Falha ao sincronizar evento com o Google Calendar", { eventId: inserted.id, syncError });
   }
 
-  revalidatePath("/calendario");
+  revalidatePath("/agenda");
 }
 
 export async function createSchedule(formData: FormData) {
@@ -56,7 +56,7 @@ export async function createSchedule(formData: FormData) {
 
   if (error) throw new Error(error.message);
 
-  revalidatePath("/calendario");
+  revalidatePath("/agenda");
 }
 
 export async function assumeSchedule(scheduleId: string) {
@@ -74,7 +74,7 @@ export async function assumeSchedule(scheduleId: string) {
 
   if (error) throw new Error(error.message);
 
-  revalidatePath("/calendario");
+  revalidatePath("/agenda");
 }
 
 export async function releaseSchedule(scheduleId: string) {
@@ -86,7 +86,7 @@ export async function releaseSchedule(scheduleId: string) {
 
   if (error) throw new Error(error.message);
 
-  revalidatePath("/calendario");
+  revalidatePath("/agenda");
 }
 
 const ALLOWED_CALENDAR_TYPES = ["image/jpeg", "image/png", "image/webp", "application/pdf"];
@@ -151,6 +151,6 @@ export async function uploadCalendarFile(formData: FormData) {
 
   if (error) throw new Error(error.message);
 
-  revalidatePath("/calendario");
+  revalidatePath("/agenda");
   return {};
 }

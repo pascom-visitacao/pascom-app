@@ -131,10 +131,10 @@ export async function CoordenacaoBento({ supabase }: { supabase: SupabaseClient<
       <div className="bento-tile tile-atrasadas">
         <div className="tile-label">Sem responsável</div>
         <div className="tile-number">{unassignedCount ?? 0}</div>
-        <div className="tile-sub">atividades</div>
+        <div className="tile-sub">tarefas</div>
       </div>
 
-      <Link href="/calendario" className="bento-tile tile-evento is-light">
+      <Link href="/agenda" className="bento-tile tile-evento is-light">
         <div className="tile-arrow">→</div>
         <div className="tile-label">Próximo evento</div>
         {nextEvent ? (
@@ -176,7 +176,7 @@ export async function CoordenacaoBento({ supabase }: { supabase: SupabaseClient<
         </div>
       </div>
 
-      <Link href="/calendario" className="bento-tile tile-vagas is-light">
+      <Link href="/agenda" className="bento-tile tile-vagas is-light">
         <div className="tile-arrow">→</div>
         <div className="tile-label">Vagas abertas</div>
         <div className="tile-number">{openSchedules?.length ?? 0}</div>

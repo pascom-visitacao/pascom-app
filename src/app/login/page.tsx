@@ -35,7 +35,7 @@ export default function LoginPage() {
           Plataforma de Gestão
         </h1>
         <p style={{ color: "var(--color-text-muted)", marginBottom: "var(--space-7)" }}>
-          Entre com a conta Google da paróquia para acessar o painel da
+          Entre com a conta Google da paróquia para acessar a plataforma da
           Pastoral da Comunicação.
         </p>
         <button

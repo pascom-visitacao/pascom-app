@@ -25,7 +25,7 @@ export default async function PerfilPage() {
 
   const { data: areas } = await supabase.from("areas").select("id, name").order("name");
 
-  if (!profile) redirect("/dashboard");
+  if (!profile) redirect("/inicio");
 
   return (
     <div style={{ padding: "var(--space-9)" }}>

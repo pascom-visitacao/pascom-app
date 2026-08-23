@@ -33,9 +33,9 @@ const ICONS = {
 type NavItem = { href: string; label: string; icon: keyof typeof ICONS };
 
 const BAR_ITEMS: NavItem[] = [
-  { href: "/dashboard", label: "Painel", icon: "home" },
-  { href: "/atividades", label: "Atividades", icon: "cols" },
-  { href: "/calendario", label: "Calendário", icon: "cal" },
+  { href: "/inicio", label: "Início", icon: "home" },
+  { href: "/tarefas", label: "Tarefas", icon: "cols" },
+  { href: "/agenda", label: "Agenda", icon: "cal" },
 ];
 
 // "Mais" abre o grid com o catálogo completo — inclui até os 3 itens já
