@@ -2,9 +2,12 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { EventForm } from "./event-form";
+import { DeleteEventButton } from "./delete-event-button";
 import { ScheduleForm } from "./schedule-form";
 import { ScheduleRow, type ScheduleRowData } from "./schedule-row";
 import { CalendarFileForm } from "./calendar-file-form";
+import { EVENT_COLOR_STYLE } from "./event-color";
+import type { EventColor } from "./actions";
 import {
   addDays,
   addMonths,
@@ -64,7 +67,7 @@ export default async function CalendarioPage({
 
   const { data: rawEvents } = await supabase
     .from("events")
-    .select("id, title, date, location, description")
+    .select("id, title, date, location, description, color")
     .order("date", { ascending: true });
 
   const { data: rawSchedules } = await supabase
@@ -116,11 +119,11 @@ export default async function CalendarioPage({
   const grid = buildMonthGrid(year, month);
   const today = new Date();
 
-  const eventsByDay = new Map<string, { id: string; title: string }[]>();
+  const eventsByDay = new Map<string, { id: string; title: string; color: EventColor }[]>();
   for (const e of rawEvents ?? []) {
     const key = new Date(e.date).toDateString();
     const list = eventsByDay.get(key) ?? [];
-    list.push({ id: e.id, title: e.title });
+    list.push({ id: e.id, title: e.title, color: e.color });
     eventsByDay.set(key, list);
   }
 
@@ -239,25 +242,31 @@ export default async function CalendarioPage({
                 <div
                   key={day.toISOString()}
                   style={{
-                    minHeight: 84,
+                    height: 84,
+                    minWidth: 0,
                     padding: "var(--space-2)",
                     borderRadius: "var(--radius-md)",
                     background: isToday ? "var(--color-primary-subtle)" : "var(--color-bg-subtle)",
                     border: isToday ? "1.5px solid var(--color-primary)" : "1px solid transparent",
                     opacity: inMonth ? 1 : 0.4,
+                    overflow: "hidden",
                   }}
                 >
                   <div style={{ fontSize: "var(--text-xs)", fontWeight: "var(--weight-semibold)", marginBottom: "var(--space-1)" }}>
                     {day.getDate()}
                   </div>
-                  <div className="day-chips flex flex-col" style={{ gap: 2 }}>
+                  <div className="day-chips flex flex-col" style={{ gap: 2, minWidth: 0 }}>
                     {dayEvents.slice(0, 2).map((e) => (
                       <span
                         key={e.id}
+                        className="tooltip"
+                        data-tooltip={e.title}
+                        tabIndex={0}
                         style={{
+                          display: "block",
+                          minWidth: 0,
                           fontSize: "10px",
-                          background: "var(--color-primary)",
-                          color: "#fff",
+                          ...EVENT_COLOR_STYLE[e.color],
                           borderRadius: "var(--radius-xs)",
                           padding: "1px 4px",
                           overflow: "hidden",
@@ -320,6 +329,7 @@ export default async function CalendarioPage({
                   key={day.toISOString()}
                   style={{
                     minHeight: 110,
+                    minWidth: 0,
                     padding: "var(--space-3)",
                     borderRadius: "var(--radius-md)",
                     background: isToday ? "var(--color-primary-subtle)" : "var(--color-bg-subtle)",
@@ -332,14 +342,18 @@ export default async function CalendarioPage({
                   <div style={{ fontSize: "var(--text-sm)", fontWeight: "var(--weight-semibold)", marginBottom: "var(--space-2)" }}>
                     {day.getDate()}
                   </div>
-                  <div className="flex flex-col" style={{ gap: 2 }}>
+                  <div className="flex flex-col" style={{ gap: 2, minWidth: 0 }}>
                     {dayItems.map((e) => (
                       <span
                         key={e.id}
+                        className="tooltip"
+                        data-tooltip={e.title}
+                        tabIndex={0}
                         style={{
+                          display: "block",
+                          minWidth: 0,
                           fontSize: "var(--text-xs)",
-                          background: "var(--color-primary)",
-                          color: "#fff",
+                          ...EVENT_COLOR_STYLE[e.color],
                           borderRadius: "var(--radius-xs)",
                           padding: "2px 6px",
                           overflow: "hidden",
@@ -380,8 +394,16 @@ export default async function CalendarioPage({
           const schedules = schedulesByEvent.get(event.id) ?? [];
           return (
             <div key={event.id} className="card" style={{ padding: "var(--space-7)" }}>
-              <div className="card-title" style={{ fontSize: "var(--text-lg)" }}>
-                {event.title}
+              <div className="flex items-start justify-between flex-wrap" style={{ gap: "var(--space-3)" }}>
+                <div className="card-title" style={{ fontSize: "var(--text-lg)" }}>
+                  {event.title}
+                </div>
+                {isCoordenacao && (
+                  <div className="flex" style={{ gap: "var(--space-2)" }}>
+                    <EventForm event={event} />
+                    <DeleteEventButton eventId={event.id} eventTitle={event.title} />
+                  </div>
+                )}
               </div>
               <div style={{ fontSize: "var(--text-sm)", color: "var(--color-text-muted)", marginBottom: "var(--space-2)" }}>
                 {new Date(event.date).toLocaleString("pt-BR", {

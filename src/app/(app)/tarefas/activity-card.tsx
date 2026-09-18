@@ -30,6 +30,10 @@ export type ActivityCardData = {
   event: { id: string; title: string } | null;
   ministry: { id: string; name: string } | null;
   comments: CommentData[];
+  // Só populado no modo "Todos" (ver tarefas/page.tsx) - numa área
+  // específica já dá pra ver pelas abas, então fica null e o badge não
+  // aparece.
+  area?: { id: string; name: string } | null;
 };
 
 function initials(name: string) {
@@ -156,6 +160,7 @@ export function ActivityCard({
         onClick={() => setOpen(true)}
       >
         <div className="flex flex-wrap items-center" style={{ gap: "var(--space-2)", marginBottom: "var(--space-3)" }}>
+          {activity.area && <span className="badge badge-neutral">{activity.area.name}</span>}
           {activity.is_urgent && <UrgentBadge />}
           {activity.source === "pedido_externo" && <span className="badge badge-accent">Pedido externo</span>}
           <span className={`badge ${PRIORITY_BADGE[activity.priority] ?? "badge-neutral"}`}>
@@ -217,6 +222,7 @@ export function ActivityCard({
           </div>
           <div className="modal-body">
             <div className="flex flex-wrap" style={{ gap: "var(--space-2)", marginBottom: "var(--space-5)" }}>
+              {activity.area && <span className="badge badge-neutral">{activity.area.name}</span>}
               {activity.is_urgent && <UrgentBadge />}
               {activity.source === "pedido_externo" && <span className="badge badge-accent">Pedido externo</span>}
               <span className={`badge ${PRIORITY_BADGE[activity.priority] ?? "badge-neutral"}`}>

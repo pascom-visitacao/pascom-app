@@ -43,19 +43,30 @@ export default async function AtividadesPage({
 
   const { data: areas } = await supabase.from("areas").select("id, name").order("name");
 
-  const selectedAreaId = areaParam ?? myAreaIds[0] ?? areas?.[0]?.id ?? null;
+  const showAllAreas = areaParam === "todos";
+  const selectedAreaId = showAllAreas ? null : (areaParam ?? myAreaIds[0] ?? areas?.[0]?.id ?? null);
 
-  const { data: rawActivities } = selectedAreaId
-    ? await supabase
-        .from("activities")
-        .select(
-          "id, title, description, status, due_date, source, priority, is_urgent, assignee:users(id, name, avatar_url), request:external_requests(attachment_urls), event:events(id, title), parish_ministry:parish_ministries(id, name), comments:activity_comments(id, body, created_at, author:users(id, name))",
-        )
-        .eq("area_id", selectedAreaId)
-        .order("created_at", { ascending: true })
-    : { data: [] };
+  const activitiesSelect =
+    "id, title, description, status, due_date, source, priority, is_urgent, area_id, area:areas(id, name), assignee:users(id, name, avatar_url), request:external_requests(attachment_urls), event:events(id, title), parish_ministry:parish_ministries(id, name), comments:activity_comments(id, body, created_at, author:users(id, name))";
 
-  const activities: ActivityCardData[] = (rawActivities ?? []).map((a) => ({
+  const { data: rawActivities } = showAllAreas
+    ? await supabase.from("activities").select(activitiesSelect).order("created_at", { ascending: true })
+    : selectedAreaId
+      ? await supabase.from("activities").select(activitiesSelect).eq("area_id", selectedAreaId).order("created_at", { ascending: true })
+      : { data: [] };
+
+  // members: sempre a lista completa (sem filtro), pra poder recalcular
+  // por área em cada card no modo "Todos" - no modo área única, filtra
+  // pra essa área só, igual antes.
+  const { data: rawAllMembers } =
+    showAllAreas || selectedAreaId
+      ? await supabase
+          .from("users")
+          .select("id, name, area_ids, pending_area_ids, areas_submitted_at")
+          .order("name")
+      : { data: [] };
+
+  const activities: (ActivityCardData & { area_id: string })[] = (rawActivities ?? []).map((a) => ({
     id: a.id,
     title: a.title,
     description: a.description,
@@ -64,6 +75,8 @@ export default async function AtividadesPage({
     source: a.source,
     priority: a.priority,
     is_urgent: a.is_urgent,
+    area_id: a.area_id,
+    area: showAllAreas ? normalizeOne(a.area) : null,
     assignee: normalizeOne(a.assignee),
     attachments: normalizeOne<{ attachment_urls: string[] }>(a.request)?.attachment_urls ?? [],
     event: normalizeOne(a.event),
@@ -73,18 +86,15 @@ export default async function AtividadesPage({
       .sort((x, y) => x.created_at.localeCompare(y.created_at)),
   }));
 
-  const { data: rawAreaMembers } = selectedAreaId
-    ? await supabase
-        .from("users")
-        .select("id, name, area_ids, pending_area_ids, areas_submitted_at")
-        .order("name")
-    : { data: [] };
-  const areaMembers = (rawAreaMembers ?? []).filter((m) => effectiveAreaIds(m).includes(selectedAreaId ?? ""));
+  const areaMembers = (rawAllMembers ?? []).filter((m) => effectiveAreaIds(m).includes(selectedAreaId ?? ""));
 
-  const { data: events } = await supabase.from("events").select("id, title").order("date");
+  const { data: events } = await supabase.from("events").select("id, title, date").order("date");
   const { data: ministries } = await supabase.from("parish_ministries").select("id, name").order("name");
 
-  const canWrite = isCoordenacao || myAreaIds.includes(selectedAreaId ?? "");
+  // Modo "Todos": criar exige escolher uma área específica, então o
+  // formulário fica escondido; edição por card usa canWrite calculado
+  // por atividade logo abaixo, não esse booleano único.
+  const canWrite = !showAllAreas && (isCoordenacao || myAreaIds.includes(selectedAreaId ?? ""));
 
   return (
     <div style={{ padding: "var(--space-9)" }}>
@@ -96,11 +106,17 @@ export default async function AtividadesPage({
 
         {areas && areas.length > 0 && (
           <div className="flex flex-wrap" style={{ gap: "var(--space-2)" }}>
+            <Link
+              href="/tarefas?area=todos"
+              className={`btn btn-sm ${showAllAreas ? "btn-primary" : "btn-outline"}`}
+            >
+              Todos
+            </Link>
             {areas.map((area) => (
               <Link
                 key={area.id}
                 href={`/tarefas?area=${area.id}`}
-                className={`btn btn-sm ${area.id === selectedAreaId ? "btn-primary" : "btn-outline"}`}
+                className={`btn btn-sm ${!showAllAreas && area.id === selectedAreaId ? "btn-primary" : "btn-outline"}`}
               >
                 {area.name}
               </Link>
@@ -109,7 +125,7 @@ export default async function AtividadesPage({
         )}
       </div>
 
-      {!selectedAreaId ? (
+      {!selectedAreaId && !showAllAreas ? (
         <div className="alert alert-info">
           <div>
             <div className="alert-title">Nenhuma área cadastrada</div>
@@ -118,7 +134,7 @@ export default async function AtividadesPage({
         </div>
       ) : (
         <>
-          {canWrite ? (
+          {canWrite && selectedAreaId ? (
             <div style={{ marginBottom: "var(--space-8)" }}>
               <NewActivityForm
                 areaId={selectedAreaId}
@@ -167,16 +183,22 @@ export default async function AtividadesPage({
                         Nenhuma tarefa por aqui — quando sua área tiver algo pra fazer, aparece aqui.
                       </p>
                     ) : (
-                      columnActivities.map((activity) => (
-                        <ActivityCard
-                          key={activity.id}
-                          activity={activity}
-                          canWrite={canWrite}
-                          isCoordenacao={isCoordenacao}
-                          currentUserId={user.id}
-                          members={areaMembers ?? []}
-                        />
-                      ))
+                      columnActivities.map((activity) => {
+                        const cardCanWrite = isCoordenacao || myAreaIds.includes(activity.area_id);
+                        const cardMembers = showAllAreas
+                          ? (rawAllMembers ?? []).filter((m) => effectiveAreaIds(m).includes(activity.area_id))
+                          : (areaMembers ?? []);
+                        return (
+                          <ActivityCard
+                            key={activity.id}
+                            activity={activity}
+                            canWrite={cardCanWrite}
+                            isCoordenacao={isCoordenacao}
+                            currentUserId={user.id}
+                            members={cardMembers}
+                          />
+                        );
+                      })
                     )}
                   </div>
                 </div>

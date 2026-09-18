@@ -2,7 +2,7 @@
 
 import { useTransition } from "react";
 import Image from "next/image";
-import { assumeSchedule, releaseSchedule } from "./actions";
+import { assumeSchedule, releaseSchedule, deleteSchedule } from "./actions";
 
 export type ScheduleRowData = {
   id: string;
@@ -27,6 +27,16 @@ export function ScheduleRow({
   const isMine = schedule.user?.id === currentUserId;
   const canClaim = isCoordenacao || sameArea;
   const canRelease = isCoordenacao || isMine;
+
+  function handleDelete() {
+    // Vaga aberta: exclui direto. Vaga já assumida: confirmação
+    // explícita, já que remove o compromisso de alguém sem aviso prévio.
+    if (schedule.confirmed) {
+      const name = schedule.user?.name ?? "alguém";
+      if (!window.confirm(`Essa vaga já foi assumida por ${name}. Excluir mesmo assim?`)) return;
+    }
+    startTransition(() => deleteSchedule(schedule.id));
+  }
 
   return (
     <div
@@ -81,6 +91,11 @@ export function ScheduleRow({
           onClick={() => startTransition(() => releaseSchedule(schedule.id))}
         >
           Liberar
+        </button>
+      )}
+      {isCoordenacao && (
+        <button type="button" className="btn btn-outline btn-sm" disabled={isPending} onClick={handleDelete}>
+          Excluir
         </button>
       )}
     </div>

@@ -2,6 +2,7 @@
 
 import { useRef, useState, useTransition } from "react";
 import { createActivity } from "./actions";
+import { EventSearchField, type SearchableEvent } from "./event-search-field";
 
 export function NewActivityForm({
   areaId,
@@ -13,7 +14,7 @@ export function NewActivityForm({
 }: {
   areaId: string;
   members: { id: string; name: string }[];
-  events: { id: string; title: string }[];
+  events: SearchableEvent[];
   ministries: { id: string; name: string }[];
   isCoordenacao: boolean;
   currentUserId: string;
@@ -97,16 +98,7 @@ export function NewActivityForm({
 
       <div className="field">
         <label className="field-label">Evento relacionado</label>
-        <div className="input-wrap select-wrap">
-          <select name="event_id" defaultValue="">
-            <option value="">Nenhum</option>
-            {events.map((event) => (
-              <option key={event.id} value={event.id}>
-                {event.title}
-              </option>
-            ))}
-          </select>
-        </div>
+        <EventSearchField name="event_id" events={events} />
       </div>
 
       <div className="field">

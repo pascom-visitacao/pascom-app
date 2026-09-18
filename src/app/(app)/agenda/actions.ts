@@ -4,11 +4,14 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { createCalendarEvent } from "@/lib/google-calendar";
 
+export type EventColor = "verde" | "azul" | "ambar" | "vermelho" | "neutro";
+
 export async function createEvent(formData: FormData) {
   const title = String(formData.get("title") ?? "").trim();
   const date = String(formData.get("date") ?? "");
   const location = String(formData.get("location") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
+  const color = String(formData.get("color") ?? "azul") as EventColor;
 
   if (!title || !date) return;
 
@@ -17,6 +20,7 @@ export async function createEvent(formData: FormData) {
     date: new Date(date).toISOString(),
     location: location || null,
     description: description || null,
+    color,
   };
 
   const supabase = await createClient();
@@ -33,6 +37,61 @@ export async function createEvent(formData: FormData) {
   } catch (syncError) {
     console.error("Falha ao sincronizar evento com o Google Calendar", { eventId: inserted.id, syncError });
   }
+
+  revalidatePath("/agenda");
+}
+
+// Edição/exclusão de evento não sincroniza com o Google Calendar de
+// propósito (mesma decisão de adiamento já registrada em
+// lib/google-calendar.ts pra Etapa 1) - o evento lá fica órfão/desatualizado
+// até uma Etapa 2 cuidar disso.
+export async function updateEvent(eventId: string, formData: FormData) {
+  const title = String(formData.get("title") ?? "").trim();
+  const date = String(formData.get("date") ?? "");
+  const location = String(formData.get("location") ?? "").trim();
+  const description = String(formData.get("description") ?? "").trim();
+  const color = String(formData.get("color") ?? "azul") as EventColor;
+
+  if (!title || !date) return;
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("events")
+    .update({
+      title,
+      date: new Date(date).toISOString(),
+      location: location || null,
+      description: description || null,
+      color,
+    })
+    .eq("id", eventId);
+
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/agenda");
+}
+
+// Chamado antes da confirmação de exclusão, pra mostrar quantas vagas e
+// atividades serão afetadas. schedules.event_id é "on delete cascade"
+// (excluídas junto) e activities.event_id é "on delete set null" (só
+// desvincula) - contagens só informativas, o próprio banco já garante
+// esse comportamento na hora do delete.
+export async function getEventDeletionImpact(eventId: string) {
+  const supabase = await createClient();
+
+  const [{ count: scheduleCount }, { count: activityCount }] = await Promise.all([
+    supabase.from("schedules").select("id", { count: "exact", head: true }).eq("event_id", eventId),
+    supabase.from("activities").select("id", { count: "exact", head: true }).eq("event_id", eventId),
+  ]);
+
+  return { scheduleCount: scheduleCount ?? 0, activityCount: activityCount ?? 0 };
+}
+
+export async function deleteEvent(eventId: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.from("events").delete().eq("id", eventId);
+
+  if (error) throw new Error(error.message);
 
   revalidatePath("/agenda");
 }
@@ -83,6 +142,19 @@ export async function releaseSchedule(scheduleId: string) {
     .from("schedules")
     .update({ user_id: null, confirmed: false })
     .eq("id", scheduleId);
+
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/agenda");
+}
+
+// Distinta de releaseSchedule (libera a vaga, continua existindo) - essa
+// remove a vaga em si. RLS já restringe a coordenação (mesmo padrão de
+// "schedules: exclusão só coordenação"); a confirmação de vaga já
+// assumida é responsabilidade da UI (ScheduleRow), não daqui.
+export async function deleteSchedule(scheduleId: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.from("schedules").delete().eq("id", scheduleId);
 
   if (error) throw new Error(error.message);
 
