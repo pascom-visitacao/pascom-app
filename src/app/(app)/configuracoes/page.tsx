@@ -97,7 +97,7 @@ export default async function ConfiguracoesPage() {
                   </div>
                 )}
               </div>
-              <DeleteSocialMediaButton id={account.id} />
+              <DeleteSocialMediaButton id={account.id} platformName={account.platform_name} />
             </div>
           ))}
           {(accounts ?? []).length === 0 && (

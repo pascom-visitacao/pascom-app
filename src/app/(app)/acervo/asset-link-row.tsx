@@ -1,6 +1,9 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { Trash2 } from "lucide-react";
+import { Icon } from "@/components/icon";
+import { ConfirmDeleteModal } from "@/components/confirm-delete-modal";
 import { updateAssetLink, deleteAssetLink } from "./actions";
 
 export type AssetLinkData = {
@@ -12,7 +15,15 @@ export type AssetLinkData = {
 
 export function AssetLinkRow({ asset, isCoordenacao }: { asset: AssetLinkData; isCoordenacao: boolean }) {
   const [isEditing, setIsEditing] = useState(false);
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
+
+  function handleConfirmDelete() {
+    startTransition(async () => {
+      await deleteAssetLink(asset.id);
+      setConfirmOpen(false);
+    });
+  }
 
   if (isEditing) {
     return (
@@ -75,16 +86,20 @@ export function AssetLinkRow({ asset, isCoordenacao }: { asset: AssetLinkData; i
           <button type="button" className="btn btn-outline btn-sm" onClick={() => setIsEditing(true)}>
             Editar
           </button>
-          <button
-            type="button"
-            className="btn btn-outline btn-sm"
-            disabled={isPending}
-            onClick={() => startTransition(() => deleteAssetLink(asset.id))}
-          >
-            Remover
+          <button type="button" className="btn btn-danger btn-sm" disabled={isPending} onClick={() => setConfirmOpen(true)}>
+            <Icon icon={Trash2} size={16} />
+            Remover arquivo
           </button>
         </div>
       )}
+      <ConfirmDeleteModal
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title={`Remover ${asset.name}?`}
+        confirmLabel="Remover"
+        isPending={isPending}
+      />
     </div>
   );
 }

@@ -1,6 +1,9 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
+import { Trash2 } from "lucide-react";
+import { Icon } from "@/components/icon";
+import { ConfirmDeleteModal } from "@/components/confirm-delete-modal";
 import { addComment, deleteComment } from "./actions";
 
 export type CommentData = {
@@ -40,7 +43,17 @@ export function CommentsSection({
 }) {
   const [isPending, startTransition] = useTransition();
   const [text, setText] = useState("");
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
+
+  function handleConfirmDelete() {
+    const id = confirmingId;
+    if (!id) return;
+    startTransition(async () => {
+      await deleteComment(id);
+      setConfirmingId(null);
+    });
+  }
 
   return (
     <div style={{ marginTop: "var(--space-6)", borderTop: "1px solid var(--color-border)", paddingTop: "var(--space-5)" }}>
@@ -61,11 +74,12 @@ export function CommentsSection({
             {(comment.author?.id === currentUserId || isCoordenacao) && (
               <button
                 type="button"
-                className="btn btn-outline btn-sm"
+                className="btn btn-danger btn-sm"
                 disabled={isPending}
-                onClick={() => startTransition(() => deleteComment(comment.id))}
+                onClick={() => setConfirmingId(comment.id)}
               >
-                Apagar
+                <Icon icon={Trash2} size={16} />
+                Apagar comentário
               </button>
             )}
           </div>
@@ -76,6 +90,15 @@ export function CommentsSection({
           </span>
         )}
       </div>
+
+      <ConfirmDeleteModal
+        open={confirmingId !== null}
+        onClose={() => setConfirmingId(null)}
+        onConfirm={handleConfirmDelete}
+        title="Apagar comentário?"
+        confirmLabel="Apagar"
+        isPending={isPending}
+      />
 
       <form
         ref={formRef}

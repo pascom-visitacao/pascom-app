@@ -1,8 +1,11 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
+import { ImagePlus } from "lucide-react";
+import { Icon } from "@/components/icon";
 import { submitExternalRequest } from "./actions";
 import { compressImage } from "@/lib/compress-image";
+import "./solicitar.css";
 
 type Category = { id: string; name: string };
 type EventOption = { id: string; title: string };
@@ -25,17 +28,29 @@ export function RequestForm({
   const [error, setError] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
-  const [fileNames, setFileNames] = useState<string[]>([]);
   const [files, setFiles] = useState<File[]>([]);
+  const [previews, setPreviews] = useState<{ name: string; url: string; size: number }[]>([]);
   const [isCompressing, setIsCompressing] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // revoga as object URLs das miniaturas ao desmontar, pra não vazar
+  // memória - o próprio handleFilesChange já revoga as antigas a cada
+  // nova seleção.
+  useEffect(() => {
+    return () => {
+      previews.forEach((p) => URL.revokeObjectURL(p.url));
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- só limpeza no unmount, não a cada mudança de previews
+  }, []);
 
   function handleFilesChange(e: React.ChangeEvent<HTMLInputElement>) {
     const selected = Array.from(e.target.files ?? []);
-    setFileNames(selected.map((f) => f.name));
+    previews.forEach((p) => URL.revokeObjectURL(p.url));
 
     if (selected.length > 5) {
       setFileError("Envie no máximo 5 imagens.");
       setFiles([]);
+      setPreviews([]);
       return;
     }
     const invalidType = selected.find(
@@ -44,10 +59,12 @@ export function RequestForm({
     if (invalidType) {
       setFileError(`"${invalidType.name}" não é uma imagem aceita (use JPG, PNG, WEBP ou GIF).`);
       setFiles([]);
+      setPreviews([]);
       return;
     }
     setFileError(null);
     setFiles(selected);
+    setPreviews(selected.map((f) => ({ name: f.name, url: URL.createObjectURL(f), size: f.size })));
   }
 
   if (token) {
@@ -158,15 +175,31 @@ export function RequestForm({
       <div className="field">
         <label className="field-label">Imagens de referência (opcional)</label>
         <input
+          ref={inputRef}
           type="file"
           name="attachments"
           accept="image/jpeg,image/png,image/webp,image/gif"
           multiple
           onChange={handleFilesChange}
+          style={{ display: "none" }}
         />
+        <div>
+          <button type="button" className="btn btn-outline btn-md" onClick={() => inputRef.current?.click()}>
+            <Icon icon={ImagePlus} size={18} />
+            Escolher imagens
+          </button>
+        </div>
         <span className="field-hint">Até 5 imagens (JPG, PNG, WEBP ou GIF) — comprimidas automaticamente ao enviar.</span>
-        {fileNames.length > 0 && !fileError && (
-          <span className="field-hint">{fileNames.join(", ")}</span>
+        {previews.length > 0 && !fileError && (
+          <div className="solicitar-grid" style={{ marginTop: "var(--space-2)" }}>
+            {previews.map((p) => (
+              <div key={p.url} className="solicitar-thumb">
+                {/* eslint-disable-next-line @next/next/no-img-element -- object URL local (blob:), next/image não suporta */}
+                <img src={p.url} alt={p.name} />
+                <div className="solicitar-thumb-name">{p.name}</div>
+              </div>
+            ))}
+          </div>
         )}
         {fileError && <span className="field-hint is-error">{fileError}</span>}
       </div>

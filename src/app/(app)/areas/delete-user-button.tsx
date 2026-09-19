@@ -1,12 +1,17 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
+import { Trash2 } from "lucide-react";
+import { Icon } from "@/components/icon";
+import { ConfirmDeleteModal } from "@/components/confirm-delete-modal";
 import { getUserDeletionImpact, softDeleteUser } from "./actions";
 
 export function DeleteUserButton({ userId, userName }: { userId: string; userName: string }) {
   const [isPending, startTransition] = useTransition();
+  const [open, setOpen] = useState(false);
+  const [impact, setImpact] = useState<string | null>(null);
 
-  function handleClick() {
+  function handleOpen() {
     startTransition(async () => {
       const { activityCount, scheduleCount } = await getUserDeletionImpact(userId);
 
@@ -14,20 +19,36 @@ export function DeleteUserButton({ userId, userName }: { userId: string; userNam
       if (activityCount > 0) parts.push(`${activityCount} tarefa${activityCount === 1 ? "" : "s"}`);
       if (scheduleCount > 0) parts.push(`${scheduleCount} vaga${scheduleCount === 1 ? "" : "s"} de escala`);
 
-      const impact =
+      setImpact(
         parts.length > 0
           ? `${userName} está vinculado(a) a ${parts.join(" e ")}. Esses vínculos continuam existindo, só passam a mostrar "Usuário excluído".`
-          : `${userName} não tem tarefa nem vaga vinculada.`;
+          : `${userName} não tem tarefa nem vaga vinculada.`,
+      );
+      setOpen(true);
+    });
+  }
 
-      if (!window.confirm(`Excluir ${userName}?\n\n${impact}`)) return;
-
+  function handleConfirm() {
+    startTransition(async () => {
       await softDeleteUser(userId);
+      setOpen(false);
     });
   }
 
   return (
-    <button type="button" className="btn btn-outline btn-sm" disabled={isPending} onClick={handleClick}>
-      {isPending ? "..." : "Excluir"}
-    </button>
+    <>
+      <button type="button" className="btn btn-danger btn-sm" disabled={isPending} onClick={handleOpen}>
+        <Icon icon={Trash2} size={16} />
+        Excluir pasconeiro
+      </button>
+      <ConfirmDeleteModal
+        open={open}
+        onClose={() => setOpen(false)}
+        onConfirm={handleConfirm}
+        title={`Excluir ${userName}?`}
+        body={impact ? <p>{impact}</p> : undefined}
+        isPending={isPending}
+      />
+    </>
   );
 }

@@ -104,6 +104,7 @@
 
   --color-danger:        var(--color-red-500);
   --color-danger-hover:  var(--color-red-600);
+  --color-danger-active: var(--color-red-700);
   --color-danger-subtle: var(--color-red-50);
   --color-danger-text:   var(--color-red-800);
 
@@ -215,5 +216,6 @@
   --z-sidebar: 100;
   --z-header: 200;
   --z-modal: 300;
+  --z-modal-confirm: 350;
   --z-tooltip: 400;
 }

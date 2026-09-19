@@ -1,0 +1,35 @@
+/* Miniaturas das imagens selecionadas - mesmo padrão visual de
+   src/app/(app)/materiais/materiais.css, duplicado aqui (não importado
+   direto) porque /solicitar é uma rota pública, fora do app autenticado -
+   não faz sentido esse formulário depender do CSS de uma feature interna. */
+
+.solicitar-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: var(--space-3);
+}
+
+.solicitar-thumb {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+}
+
+.solicitar-thumb img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+}
+
+.solicitar-thumb-name {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

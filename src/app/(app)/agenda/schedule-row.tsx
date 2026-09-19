@@ -1,7 +1,10 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import Image from "next/image";
+import { Trash2 } from "lucide-react";
+import { Icon } from "@/components/icon";
+import { ConfirmDeleteModal } from "@/components/confirm-delete-modal";
 import { assumeSchedule, releaseSchedule, deleteSchedule } from "./actions";
 
 export type ScheduleRowData = {
@@ -24,18 +27,26 @@ export function ScheduleRow({
   sameArea: boolean;
 }) {
   const [isPending, startTransition] = useTransition();
+  const [confirmOpen, setConfirmOpen] = useState(false);
   const isMine = schedule.user?.id === currentUserId;
   const canClaim = isCoordenacao || sameArea;
   const canRelease = isCoordenacao || isMine;
 
-  function handleDelete() {
+  function handleDeleteClick() {
     // Vaga aberta: exclui direto. Vaga já assumida: confirmação
     // explícita, já que remove o compromisso de alguém sem aviso prévio.
     if (schedule.confirmed) {
-      const name = schedule.user?.name ?? "alguém";
-      if (!window.confirm(`Essa vaga já foi assumida por ${name}. Excluir mesmo assim?`)) return;
+      setConfirmOpen(true);
+      return;
     }
     startTransition(() => deleteSchedule(schedule.id));
+  }
+
+  function handleConfirmDelete() {
+    startTransition(async () => {
+      await deleteSchedule(schedule.id);
+      setConfirmOpen(false);
+    });
   }
 
   return (
@@ -100,10 +111,19 @@ export function ScheduleRow({
         </button>
       )}
       {isCoordenacao && (
-        <button type="button" className="btn btn-outline btn-sm" disabled={isPending} onClick={handleDelete}>
-          Excluir
+        <button type="button" className="btn btn-danger btn-sm" disabled={isPending} onClick={handleDeleteClick}>
+          <Icon icon={Trash2} size={16} />
+          Excluir vaga
         </button>
       )}
+      <ConfirmDeleteModal
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        onConfirm={handleConfirmDelete}
+        title="Excluir vaga?"
+        body={<p>Essa vaga já foi assumida por {schedule.user?.name ?? "alguém"}. Excluir mesmo assim?</p>}
+        isPending={isPending}
+      />
     </div>
   );
 }

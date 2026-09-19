@@ -1,7 +1,10 @@
 "use client";
 
-import { useTransition } from "react";
+import { useState, useTransition } from "react";
 import Image from "next/image";
+import { UserX } from "lucide-react";
+import { Icon } from "@/components/icon";
+import { ConfirmDeleteModal } from "@/components/confirm-delete-modal";
 import { approveUser, rejectUser } from "./actions";
 
 export type PendingUser = {
@@ -24,10 +27,13 @@ function initials(name: string) {
 
 export function PendingApprovalRow({ user }: { user: PendingUser }) {
   const [isPending, startTransition] = useTransition();
+  const [confirmOpen, setConfirmOpen] = useState(false);
 
-  function handleReject() {
-    if (!window.confirm(`Recusar ${user.name}? A conta é excluída permanentemente.`)) return;
-    startTransition(() => rejectUser(user.id));
+  function handleConfirmReject() {
+    startTransition(async () => {
+      await rejectUser(user.id);
+      setConfirmOpen(false);
+    });
   }
 
   return (
@@ -65,10 +71,25 @@ export function PendingApprovalRow({ user }: { user: PendingUser }) {
         >
           Aprovar
         </button>
-        <button type="button" className="btn btn-outline btn-sm" disabled={isPending} onClick={handleReject}>
-          Recusar
+        <button
+          type="button"
+          className="btn btn-danger btn-sm"
+          disabled={isPending}
+          onClick={() => setConfirmOpen(true)}
+        >
+          <Icon icon={UserX} size={16} />
+          Recusar conta
         </button>
       </div>
+      <ConfirmDeleteModal
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        onConfirm={handleConfirmReject}
+        title={`Recusar ${user.name}?`}
+        body={<p>A conta é excluída permanentemente — nome, e-mail e o acesso de login, tudo removido.</p>}
+        confirmLabel="Recusar"
+        isPending={isPending}
+      />
     </div>
   );
 }
