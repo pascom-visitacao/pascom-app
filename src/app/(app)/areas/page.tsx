@@ -4,6 +4,7 @@ import { createArea, createCategory } from "./actions";
 import { UserAssignmentRow } from "./user-assignment-row";
 import { DeleteUserButton } from "./delete-user-button";
 import { effectiveAreaIds } from "@/lib/effective-areas";
+import "./areas.css";
 
 function areaName(raw: unknown): string {
   const area = Array.isArray(raw) ? raw[0] : raw;
@@ -151,7 +152,7 @@ export default async function AreasPage() {
                   </div>
                 </div>
                 {isDeleted ? null : (
-                  <div className="flex items-center" style={{ gap: "var(--space-3)" }}>
+                  <div className="areas-member-actions flex items-center flex-wrap" style={{ gap: "var(--space-3)" }}>
                     <UserAssignmentRow
                       userId={member.id}
                       role={member.role}
@@ -162,7 +163,9 @@ export default async function AreasPage() {
                       isProtected={member.is_protected}
                     />
                     {member.role === "pasconeiro" && !member.is_protected && (
-                      <DeleteUserButton userId={member.id} userName={member.name} />
+                      <div className="areas-delete-wrap">
+                        <DeleteUserButton userId={member.id} userName={member.name} />
+                      </div>
                     )}
                   </div>
                 )}

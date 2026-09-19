@@ -1,0 +1,15 @@
+/* Card de membro (seção "Equipe"): o botão "Excluir pasconeiro" cortava
+   em telas estreitas porque tentava ficar ao lado das tags de área + do
+   seletor de papel (que já tem largura fixa própria). Em mobile, ele
+   quebra pra linha própria, ocupando a largura toda. */
+@media (max-width: 640px) {
+  .areas-member-actions {
+    width: 100%;
+  }
+  .areas-member-actions .areas-delete-wrap {
+    flex-basis: 100%;
+  }
+  .areas-member-actions .areas-delete-wrap .btn {
+    width: 100%;
+  }
+}

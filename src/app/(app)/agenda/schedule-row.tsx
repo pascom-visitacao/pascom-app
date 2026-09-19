@@ -111,9 +111,14 @@ export function ScheduleRow({
         </button>
       )}
       {isCoordenacao && (
-        <button type="button" className="btn btn-danger btn-sm" disabled={isPending} onClick={handleDeleteClick}>
+        <button
+          type="button"
+          className="btn btn-danger btn-icon"
+          aria-label="Excluir vaga"
+          disabled={isPending}
+          onClick={handleDeleteClick}
+        >
           <Icon icon={Trash2} size={16} />
-          Excluir vaga
         </button>
       )}
       <ConfirmDeleteModal

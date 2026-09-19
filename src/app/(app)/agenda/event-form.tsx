@@ -1,6 +1,8 @@
 "use client";
 
 import { useRef, useState, useTransition } from "react";
+import { Pencil } from "lucide-react";
+import { Icon } from "@/components/icon";
 import { createEvent, updateEvent, type EventColor } from "./actions";
 import { EVENT_COLOR_LABELS } from "./event-color";
 
@@ -29,8 +31,13 @@ export function EventForm({ event }: { event?: EventFormData }) {
 
   if (!open) {
     return isEdit ? (
-      <button type="button" className="btn btn-outline btn-sm" onClick={() => setOpen(true)}>
-        Editar
+      <button
+        type="button"
+        className="btn btn-outline btn-icon"
+        aria-label="Editar evento"
+        onClick={() => setOpen(true)}
+      >
+        <Icon icon={Pencil} size={16} />
       </button>
     ) : (
       <button type="button" className="btn btn-primary btn-md" onClick={() => setOpen(true)}>

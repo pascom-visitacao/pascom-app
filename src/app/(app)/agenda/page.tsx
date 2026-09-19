@@ -399,7 +399,7 @@ export default async function CalendarioPage({
                   {event.title}
                 </div>
                 {isCoordenacao && (
-                  <div className="flex" style={{ gap: "var(--space-2)" }}>
+                  <div className="flex items-start" style={{ gap: "var(--space-2)" }}>
                     <EventForm event={event} />
                     <DeleteEventButton eventId={event.id} eventTitle={event.title} />
                   </div>

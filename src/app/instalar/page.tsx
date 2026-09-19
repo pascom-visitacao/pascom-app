@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { Share, MoreVertical, SquarePlus, CheckCircle2 } from "lucide-react";
 import { Icon } from "@/components/icon";
+import { BackButton } from "./back-button";
 
 function Step({ number, children }: { number: number; children: React.ReactNode }) {
   return (
@@ -23,6 +24,7 @@ export default function InstalarPage() {
       style={{ background: "var(--color-bg-subtle)", minHeight: "100vh", padding: "var(--space-9)" }}
     >
       <div style={{ maxWidth: 720, width: "100%", display: "flex", flexDirection: "column", gap: "var(--space-7)" }}>
+        <BackButton />
         <div style={{ textAlign: "center" }}>
           <Image
             src="/brand/pascom-icon.svg"
