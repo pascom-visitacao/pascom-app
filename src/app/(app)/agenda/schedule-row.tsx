@@ -9,7 +9,7 @@ export type ScheduleRowData = {
   role_needed: string;
   confirmed: boolean;
   area: { id: string; name: string } | null;
-  user: { id: string; name: string; avatar_url: string | null } | null;
+  user: { id: string; name: string; avatar_url: string | null; account_status: string } | null;
 };
 
 export function ScheduleRow({
@@ -51,7 +51,13 @@ export function ScheduleRow({
       <div className="flex items-center" style={{ gap: "var(--space-3)", fontSize: "var(--text-sm)" }}>
         <span style={{ fontWeight: "var(--weight-medium)" }}>{schedule.role_needed}</span>
         {schedule.area && <span className="badge badge-neutral">{schedule.area.name}</span>}
-        {schedule.user ? (
+        {schedule.user?.account_status === "deleted" ? (
+          <span className="flex items-center" style={{ gap: "var(--space-2)" }}>
+            <span className="avatar avatar-sm">?</span>
+            <span style={{ color: "var(--color-text-subtle)" }}>Usuário excluído</span>
+            {schedule.confirmed && <span className="badge badge-success">Confirmado</span>}
+          </span>
+        ) : schedule.user ? (
           <span className="flex items-center" style={{ gap: "var(--space-2)" }}>
             {schedule.user.avatar_url ? (
               <Image

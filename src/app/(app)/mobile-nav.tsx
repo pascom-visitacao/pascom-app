@@ -64,10 +64,12 @@ export function MobileNav({
   isCoordenacao,
   userName,
   avatarUrl,
+  pendingApprovalsCount = 0,
 }: {
   isCoordenacao: boolean;
   userName: string;
   avatarUrl: string | null;
+  pendingApprovalsCount?: number;
 }) {
   const [gridOpen, setGridOpen] = useState(false);
   const pathname = usePathname();
@@ -150,6 +152,26 @@ export function MobileNav({
             >
               {ICONS[item.icon]}
               <span>{item.label}</span>
+              {item.href === "/configuracoes" && pendingApprovalsCount > 0 && (
+                <span
+                  style={{
+                    marginLeft: "var(--space-2)",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    minWidth: 20,
+                    height: 20,
+                    padding: "0 6px",
+                    borderRadius: "var(--radius-full)",
+                    background: "var(--color-green-700)",
+                    color: "#fff",
+                    fontSize: "var(--text-xs)",
+                    fontWeight: "var(--weight-semibold)",
+                  }}
+                >
+                  {pendingApprovalsCount}
+                </span>
+              )}
             </Link>
           ))}
         </div>

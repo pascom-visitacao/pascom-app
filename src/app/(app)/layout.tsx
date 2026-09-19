@@ -21,11 +21,25 @@ export default async function AppLayout({ children }: { children: React.ReactNod
 
   const { data: profile } = await supabase
     .from("users")
-    .select("role, areas_submitted_at, name, avatar_url, onboarding_seen")
+    .select("role, areas_submitted_at, name, avatar_url, onboarding_seen, account_status")
     .eq("id", user.id)
     .single();
 
+  // Guard único pros dois casos - autenticado no Supabase não é o mesmo
+  // que liberado no app. Vive só aqui, antes de qualquer lógica de
+  // onboarding: pendente/excluído não deve nem entrar nesse fluxo.
+  if (profile?.account_status === "pending") {
+    redirect("/aguardando-aprovacao");
+  }
+  if (profile?.account_status === "deleted") {
+    redirect("/conta-desativada");
+  }
+
   const isCoordenacao = profile?.role === "coordenacao_geral";
+
+  const { count: pendingApprovalsCount } = isCoordenacao
+    ? await supabase.from("users").select("id", { count: "exact", head: true }).eq("account_status", "pending")
+    : { count: 0 };
   const onboardingSeen = (profile?.onboarding_seen ?? {}) as Record<string, boolean>;
   const needsInitialOnboarding = !onboardingSeen.initial;
   // Nunca empilha modal: o conceitual (pulável) sempre vem antes do de
@@ -66,7 +80,29 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             <div className="ds-nav-group">
               <div className="ds-nav-group-title">Administração</div>
               <NavLink href="/areas">Equipe &amp; Áreas</NavLink>
-              <NavLink href="/configuracoes">Configurações</NavLink>
+              <NavLink href="/configuracoes">
+                Configurações
+                {(pendingApprovalsCount ?? 0) > 0 && (
+                  <span
+                    style={{
+                      marginLeft: "var(--space-2)",
+                      display: "inline-flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      minWidth: 20,
+                      height: 20,
+                      padding: "0 6px",
+                      borderRadius: "var(--radius-full)",
+                      background: "var(--color-green-700)",
+                      color: "#fff",
+                      fontSize: "var(--text-xs)",
+                      fontWeight: "var(--weight-semibold)",
+                    }}
+                  >
+                    {pendingApprovalsCount}
+                  </span>
+                )}
+              </NavLink>
             </div>
           )}
         </nav>
@@ -79,6 +115,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
         isCoordenacao={isCoordenacao}
         userName={profile?.name ?? user.email ?? "Usuário"}
         avatarUrl={profile?.avatar_url ?? null}
+        pendingApprovalsCount={pendingApprovalsCount ?? 0}
       />
       {needsInitialOnboarding ? (
         <InitialOnboardingModal firstName={(profile?.name ?? user.email ?? "Usuário").split(" ")[0]} />

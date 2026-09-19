@@ -19,18 +19,25 @@ export type EquipmentData = {
   name: string;
   model: string | null;
   photo_url: string | null;
-  holder: { id: string; name: string; avatar_url: string | null } | null;
+  holder: { id: string; name: string; avatar_url: string | null; account_status: string } | null;
 };
 
 export function EquipmentCard({
   equipment,
   currentUserId,
+  isCoordenacao,
 }: {
   equipment: EquipmentData;
   currentUserId: string;
+  isCoordenacao: boolean;
 }) {
   const [isPending, startTransition] = useTransition();
   const isHeldByMe = equipment.holder?.id === currentUserId;
+  const holderDeleted = equipment.holder?.account_status === "deleted";
+  // Se quem está com o equipamento foi excluído, ninguém mais é
+  // "isHeldByMe" - sem isso, o equipamento ficaria preso pra sempre sem
+  // ninguém conseguir devolver. Coordenação pode liberar por essa via.
+  const canReturn = isHeldByMe || (isCoordenacao && holderDeleted);
 
   return (
     <div
@@ -55,7 +62,9 @@ export function EquipmentCard({
           )}
           {equipment.holder ? (
             <div className="flex items-center" style={{ gap: "var(--space-2)", marginTop: "var(--space-2)" }}>
-              {equipment.holder.avatar_url ? (
+              {holderDeleted ? (
+                <span className="avatar avatar-sm">?</span>
+              ) : equipment.holder.avatar_url ? (
                 <Image
                   src={equipment.holder.avatar_url}
                   alt={equipment.holder.name}
@@ -67,7 +76,9 @@ export function EquipmentCard({
               ) : (
                 <span className="avatar avatar-sm">{initials(equipment.holder.name)}</span>
               )}
-              <span style={{ fontSize: "var(--text-sm)" }}>{equipment.holder.name}</span>
+              <span style={{ fontSize: "var(--text-sm)", color: holderDeleted ? "var(--color-text-subtle)" : undefined }}>
+                {holderDeleted ? "Usuário excluído" : equipment.holder.name}
+              </span>
               <span className="badge badge-warning">Indisponível</span>
             </div>
           ) : (
@@ -79,7 +90,7 @@ export function EquipmentCard({
       </div>
 
       {equipment.holder ? (
-        isHeldByMe && (
+        canReturn && (
           <button
             type="button"
             className="btn btn-outline btn-sm"

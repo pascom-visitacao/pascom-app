@@ -27,11 +27,14 @@ export default async function EquipePage() {
   // is_protected marca a conta institucional (pascomvisitacao@gmail.com) -
   // não é uma pessoa real da equipe, não deve aparecer aqui. Inclui os
   // dois papéis (pasconeiro e coordenacao_geral), diferente da query
-  // antiga que filtrava só pasconeiro.
+  // antiga que filtrava só pasconeiro. account_status active só -
+  // pendente ainda não faz parte do time, excluído não é mais ninguém
+  // pra listar aqui (esse aqui é o diretório, não a tela administrativa).
   const { data: members } = await supabase
     .from("users")
     .select("id, name, role, avatar_url, area_ids, pending_area_ids, areas_submitted_at")
     .eq("is_protected", false)
+    .eq("account_status", "active")
     .order("name");
 
   return (

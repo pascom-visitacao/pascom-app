@@ -25,7 +25,7 @@ export default async function EquipamentosPage() {
 
   const { data: rawEquipment } = await supabase
     .from("equipment")
-    .select("id, name, model, photo_url, holder:users(id, name, avatar_url)")
+    .select("id, name, model, photo_url, holder:users(id, name, avatar_url, account_status)")
     .order("name");
 
   const equipment: EquipmentData[] = (rawEquipment ?? []).map((e) => ({
@@ -45,7 +45,7 @@ export default async function EquipamentosPage() {
 
       <div className="flex flex-col" style={{ gap: "var(--space-4)" }}>
         {equipment.map((item) => (
-          <EquipmentCard key={item.id} equipment={item} currentUserId={user.id} />
+          <EquipmentCard key={item.id} equipment={item} currentUserId={user.id} isCoordenacao={isCoordenacao} />
         ))}
         {equipment.length === 0 && (
           <span style={{ color: "var(--color-text-muted)", fontSize: "var(--text-sm)" }}>

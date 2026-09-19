@@ -47,7 +47,7 @@ export default async function AtividadesPage({
   const selectedAreaId = showAllAreas ? null : (areaParam ?? myAreaIds[0] ?? areas?.[0]?.id ?? null);
 
   const activitiesSelect =
-    "id, title, description, status, due_date, source, priority, is_urgent, area_id, area:areas(id, name), assignee:users(id, name, avatar_url), request:external_requests(attachment_urls), event:events(id, title), parish_ministry:parish_ministries(id, name), comments:activity_comments(id, body, created_at, author:users(id, name))";
+    "id, title, description, status, due_date, source, priority, is_urgent, area_id, area:areas(id, name), assignee:users(id, name, avatar_url, account_status), request:external_requests(attachment_urls), event:events(id, title), parish_ministry:parish_ministries(id, name), comments:activity_comments(id, body, created_at, author:users(id, name, account_status))";
 
   const { data: rawActivities } = showAllAreas
     ? await supabase.from("activities").select(activitiesSelect).order("created_at", { ascending: true })
@@ -63,6 +63,7 @@ export default async function AtividadesPage({
       ? await supabase
           .from("users")
           .select("id, name, area_ids, pending_area_ids, areas_submitted_at")
+          .eq("account_status", "active")
           .order("name")
       : { data: [] };
 
@@ -82,7 +83,7 @@ export default async function AtividadesPage({
     event: normalizeOne(a.event),
     ministry: normalizeOne(a.parish_ministry),
     comments: (a.comments ?? [])
-      .map((c) => ({ ...c, author: normalizeOne<{ id: string; name: string }>(c.author) }))
+      .map((c) => ({ ...c, author: normalizeOne<{ id: string; name: string; account_status: string }>(c.author) }))
       .sort((x, y) => x.created_at.localeCompare(y.created_at)),
   }));
 

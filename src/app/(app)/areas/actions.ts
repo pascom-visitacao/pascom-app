@@ -35,3 +35,30 @@ export async function updateUserRole(userId: string, role: "coordenacao_geral" |
 
   revalidatePath("/areas");
 }
+
+// Contagem informativa pra confirmação antes de excluir - o soft-delete
+// em si não toca nem apaga nenhuma dessas linhas (assignee_id/user_id
+// continuam apontando pra essa pessoa, só account_status muda).
+export async function getUserDeletionImpact(userId: string) {
+  const supabase = await createClient();
+
+  const [{ count: activityCount }, { count: scheduleCount }] = await Promise.all([
+    supabase.from("activities").select("id", { count: "exact", head: true }).eq("assignee_id", userId),
+    supabase.from("schedules").select("id", { count: "exact", head: true }).eq("user_id", userId),
+  ]);
+
+  return { activityCount: activityCount ?? 0, scheduleCount: scheduleCount ?? 0 };
+}
+
+// Soft-delete: NUNCA apaga a linha (preserva assignee_id/user_id/
+// holder_id/author_id já referenciados, sem quebrar histórico nem
+// reabrir tarefas/vagas como se estivessem sem dono). RLS + o trigger
+// enforce_users_self_update já impedem isso numa conta de coordenação
+// ou protegida - sem checagem extra aqui.
+export async function softDeleteUser(userId: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.from("users").update({ account_status: "deleted" }).eq("id", userId);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/areas");
+}

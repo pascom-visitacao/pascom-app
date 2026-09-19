@@ -18,7 +18,8 @@ async function pasconeiroEmails(supabase: ServiceRoleClient, areaId: string): Pr
   const { data } = await supabase
     .from("users")
     .select("email, area_ids, pending_area_ids, areas_submitted_at")
-    .eq("role", "pasconeiro");
+    .eq("role", "pasconeiro")
+    .eq("account_status", "active");
   return (data ?? []).filter((u) => effectiveAreaIds(u).includes(areaId)).map((u) => u.email);
 }
 

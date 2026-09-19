@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createSocialMediaAccount } from "./actions";
 import { DeleteSocialMediaButton } from "./delete-social-media-button";
+import { PendingApprovalRow } from "./pending-approval-row";
 
 export default async function ConfiguracoesPage() {
   const supabase = await createClient();
@@ -27,9 +28,34 @@ export default async function ConfiguracoesPage() {
     .select("id, platform_name, reference_link, notes")
     .order("platform_name");
 
+  const { data: pendingUsers } = await supabase
+    .from("users")
+    .select("id, name, email, avatar_url, created_at")
+    .eq("account_status", "pending")
+    .order("created_at");
+
   return (
     <div style={{ padding: "var(--space-9)", maxWidth: 880 }}>
       <h1 style={{ fontSize: "var(--text-xl)", marginBottom: "var(--space-7)" }}>Configurações</h1>
+
+      <section style={{ marginBottom: "var(--space-10)" }}>
+        <h2 style={{ fontSize: "var(--text-md)", marginBottom: "var(--space-4)" }}>Aprovações pendentes</h2>
+        <p style={{ color: "var(--color-text-muted)", fontSize: "var(--text-sm)", marginBottom: "var(--space-5)" }}>
+          Quem faz login pela primeira vez fica aqui até ser aprovado — entra como Pasconeiro, sem área
+          definida (atribua depois em Equipe &amp; Áreas).
+        </p>
+
+        <div className="flex flex-col" style={{ gap: "var(--space-3)" }}>
+          {(pendingUsers ?? []).map((pending) => (
+            <PendingApprovalRow key={pending.id} user={pending} />
+          ))}
+          {(pendingUsers ?? []).length === 0 && (
+            <span style={{ color: "var(--color-text-muted)", fontSize: "var(--text-sm)" }}>
+              Nenhuma aprovação pendente.
+            </span>
+          )}
+        </div>
+      </section>
 
       <section style={{ marginBottom: "var(--space-10)" }}>
         <h2 style={{ fontSize: "var(--text-md)", marginBottom: "var(--space-4)" }}>Áreas e equipe</h2>

@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createArea, createCategory } from "./actions";
 import { UserAssignmentRow } from "./user-assignment-row";
+import { DeleteUserButton } from "./delete-user-button";
 import { effectiveAreaIds } from "@/lib/effective-areas";
 
 function areaName(raw: unknown): string {
@@ -30,9 +31,13 @@ export default async function AreasPage() {
   const { data: areas } = await supabase.from("areas").select("id, name").order("name");
   const areaNameById = new Map((areas ?? []).map((a) => [a.id, a.name]));
 
+  // Pendente ainda não foi aprovado - fica só na seção dedicada em
+  // Configurações, não faz sentido aparecer aqui como se já fosse parte
+  // do time.
   const { data: users } = await supabase
     .from("users")
-    .select("id, name, email, role, area_ids, pending_area_ids, areas_submitted_at, is_protected")
+    .select("id, name, email, role, area_ids, pending_area_ids, areas_submitted_at, is_protected, account_status")
+    .neq("account_status", "pending")
     .order("name");
   const { data: categories } = await supabase
     .from("request_categories")
@@ -128,29 +133,42 @@ export default async function AreasPage() {
         <h2 style={{ fontSize: "var(--text-md)", marginBottom: "var(--space-4)" }}>Equipe</h2>
 
         <div className="flex flex-col" style={{ gap: "var(--space-4)" }}>
-          {(users ?? []).map((member) => (
-            <div
-              key={member.id}
-              className="card flex items-center justify-between flex-wrap"
-              style={{ padding: "var(--space-5)", gap: "var(--space-4)" }}
-            >
-              <div>
-                <div style={{ fontWeight: "var(--weight-semibold)" }}>{member.name}</div>
-                <div style={{ fontSize: "var(--text-sm)", color: "var(--color-text-muted)" }}>
-                  {member.email}
+          {(users ?? []).map((member) => {
+            const isDeleted = member.account_status === "deleted";
+            return (
+              <div
+                key={member.id}
+                className="card flex items-center justify-between flex-wrap"
+                style={{ padding: "var(--space-5)", gap: "var(--space-4)", opacity: isDeleted ? 0.5 : 1 }}
+              >
+                <div>
+                  <div style={{ fontWeight: "var(--weight-semibold)", textDecoration: isDeleted ? "line-through" : "none" }}>
+                    {member.name}
+                  </div>
+                  <div style={{ fontSize: "var(--text-sm)", color: "var(--color-text-muted)" }}>
+                    {member.email}
+                    {isDeleted && " · Excluído"}
+                  </div>
                 </div>
+                {isDeleted ? null : (
+                  <div className="flex items-center" style={{ gap: "var(--space-3)" }}>
+                    <UserAssignmentRow
+                      userId={member.id}
+                      role={member.role}
+                      areaNames={effectiveAreaIds(member)
+                        .map((id) => areaNameById.get(id))
+                        .filter((name): name is string => Boolean(name))}
+                      disableSelf={member.id === user.id}
+                      isProtected={member.is_protected}
+                    />
+                    {member.role === "pasconeiro" && !member.is_protected && (
+                      <DeleteUserButton userId={member.id} userName={member.name} />
+                    )}
+                  </div>
+                )}
               </div>
-              <UserAssignmentRow
-                userId={member.id}
-                role={member.role}
-                areaNames={effectiveAreaIds(member)
-                  .map((id) => areaNameById.get(id))
-                  .filter((name): name is string => Boolean(name))}
-                disableSelf={member.id === user.id}
-                isProtected={member.is_protected}
-              />
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
     </div>

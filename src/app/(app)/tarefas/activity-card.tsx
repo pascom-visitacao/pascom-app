@@ -25,7 +25,7 @@ export type ActivityCardData = {
   source: "interna" | "pedido_externo";
   priority: string;
   is_urgent: boolean;
-  assignee: { id: string; name: string; avatar_url: string | null } | null;
+  assignee: { id: string; name: string; avatar_url: string | null; account_status: string } | null;
   attachments: string[];
   event: { id: string; title: string } | null;
   ministry: { id: string; name: string } | null;
@@ -56,6 +56,15 @@ function UrgentBadge() {
 }
 
 function AssigneeLine({ assignee }: { assignee: ActivityCardData["assignee"] }) {
+  if (assignee?.account_status === "deleted") {
+    return (
+      <span className="flex items-center" style={{ gap: "var(--space-2)", fontSize: "var(--text-sm)" }}>
+        <span className="avatar avatar-sm">?</span>
+        <span style={{ color: "var(--color-text-subtle)" }}>Usuário excluído</span>
+      </span>
+    );
+  }
+
   return assignee ? (
     <span className="flex items-center" style={{ gap: "var(--space-2)", fontSize: "var(--text-sm)" }}>
       {assignee.avatar_url ? (

@@ -25,7 +25,7 @@ async function notifyDeadlines(supabase: ReturnType<typeof createServiceRoleClie
 
   const { data: activities, error } = await supabase
     .from("activities")
-    .select("id, title, due_date, assignee:users(email)")
+    .select("id, title, due_date, assignee:users(email, account_status)")
     .not("assignee_id", "is", null)
     .not("due_date", "is", null)
     .lte("due_date", thresholdDate)
@@ -39,10 +39,14 @@ async function notifyDeadlines(supabase: ReturnType<typeof createServiceRoleClie
 
   let sent = 0;
   for (const activity of activities ?? []) {
-    const assignee = normalizeOne<{ email: string }>(activity.assignee);
+    const assignee = normalizeOne<{ email: string; account_status: string }>(activity.assignee);
     let delivered = true;
 
-    if (assignee?.email) {
+    // Responsável excluído: não tem pra quem mandar - trata como
+    // "entregue" (marca sent_at) pra não tentar de novo pro sempre.
+    if (assignee?.account_status === "deleted") {
+      delivered = true;
+    } else if (assignee?.email) {
       try {
         await sendEmail({
           to: [assignee.email],
@@ -100,7 +104,7 @@ async function notifyScheduleReminders(supabase: ReturnType<typeof createService
 
   const { data: schedules, error } = await supabase
     .from("schedules")
-    .select("id, event_id, role_needed, user:users(email)")
+    .select("id, event_id, role_needed, user:users(email, account_status)")
     .in("event_id", eventIds)
     .eq("confirmed", true)
     .not("user_id", "is", null)
@@ -113,11 +117,13 @@ async function notifyScheduleReminders(supabase: ReturnType<typeof createService
 
   let sent = 0;
   for (const schedule of schedules ?? []) {
-    const user = normalizeOne<{ email: string }>(schedule.user);
+    const user = normalizeOne<{ email: string; account_status: string }>(schedule.user);
     const event = eventById.get(schedule.event_id);
     let delivered = true;
 
-    if (user?.email && event) {
+    if (user?.account_status === "deleted") {
+      delivered = true;
+    } else if (user?.email && event) {
       try {
         await sendEmail({
           to: [user.email],

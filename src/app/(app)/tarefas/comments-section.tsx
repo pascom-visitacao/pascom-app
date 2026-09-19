@@ -7,8 +7,14 @@ export type CommentData = {
   id: string;
   body: string;
   created_at: string;
-  author: { id: string; name: string } | null;
+  author: { id: string; name: string; account_status: string } | null;
 };
+
+function authorLabel(author: CommentData["author"]) {
+  if (!author) return "Ex-membro da equipe";
+  if (author.account_status === "deleted") return "Usuário excluído";
+  return author.name;
+}
 
 function timeAgo(dateStr: string): string {
   const diffMs = Date.now() - new Date(dateStr).getTime();
@@ -47,7 +53,7 @@ export function CommentsSection({
           <div key={comment.id} className="flex items-start justify-between" style={{ gap: "var(--space-3)" }}>
             <div>
               <div style={{ fontSize: "var(--text-sm)" }}>
-                <strong>{comment.author?.name ?? "Ex-membro da equipe"}</strong>{" "}
+                <strong>{authorLabel(comment.author)}</strong>{" "}
                 <span style={{ color: "var(--color-text-muted)" }}>{timeAgo(comment.created_at)}</span>
               </div>
               <div style={{ fontSize: "var(--text-sm)" }}>{comment.body}</div>
