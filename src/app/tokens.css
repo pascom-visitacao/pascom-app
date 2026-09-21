@@ -68,6 +68,7 @@
   --color-neutral-200: #e0e0e0;
   --color-neutral-300: #c1c0c1;
   --color-neutral-400: #9c9a9b;
+  --color-neutral-450: #918f90; /* borda de controle: 3,21:1 sobre branco */
   --color-neutral-500: #777475;
   --color-neutral-600: #535051;
   --color-neutral-700: #393536;
@@ -103,8 +104,12 @@
   --color-warning-text:   var(--color-amber-900);
 
   --color-danger:        var(--color-red-500);
-  --color-danger-hover:  var(--color-red-600);
-  --color-danger-active: var(--color-red-700);
+  /* Preenchimento sólido com texto branco (botão destrutivo): red-500 só dá
+     3,98:1 com branco; red-600 dá 5,29:1. hover/active escurecem a partir
+     daqui. --color-danger segue valendo pra bordas, ícones e detalhes. */
+  --color-danger-solid:  var(--color-red-600);
+  --color-danger-hover:  var(--color-red-700);
+  --color-danger-active: var(--color-red-800);
   --color-danger-subtle: var(--color-red-50);
   --color-danger-text:   var(--color-red-800);
 
@@ -118,7 +123,9 @@
   --color-bg-inset:      var(--color-neutral-100);
   --color-surface:       var(--color-neutral-0);
   --color-border:        var(--color-neutral-200);
-  --color-border-strong: var(--color-neutral-300);
+  /* Limite de campos e botões outline: precisa de 3:1 contra o fundo
+     (WCAG 1.4.11). neutral-300 dava 1,81:1. */
+  --color-border-strong: var(--color-neutral-450);
 
   --color-text:          var(--color-neutral-900);
   --color-text-muted:    var(--color-neutral-600);
