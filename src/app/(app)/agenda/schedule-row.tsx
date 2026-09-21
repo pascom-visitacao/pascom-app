@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import Image from "next/image";
 import { Trash2 } from "lucide-react";
 import { Icon } from "@/components/icon";
+import { Assignees } from "@/components/assignees";
 import { ConfirmDeleteModal } from "@/components/confirm-delete-modal";
 import { assumeSchedule, releaseSchedule, deleteSchedule } from "./actions";
 
@@ -70,19 +70,12 @@ export function ScheduleRow({
           </span>
         ) : schedule.user ? (
           <span className="flex items-center" style={{ gap: "var(--space-2)" }}>
-            {schedule.user.avatar_url ? (
-              <Image
-                src={schedule.user.avatar_url}
-                alt={schedule.user.name}
-                width={32}
-                height={32}
-                className="avatar-photo"
-                style={{ width: 32, height: 32 }}
-              />
-            ) : (
-              <span className="avatar avatar-sm">{schedule.user.name.slice(0, 2).toUpperCase()}</span>
-            )}
-            {schedule.user.name}
+            <Assignees
+              readOnly
+              showNames
+              people={[{ id: schedule.user.id, name: schedule.user.name, avatarUrl: schedule.user.avatar_url }]}
+              value={[schedule.user.id]}
+            />
             {schedule.confirmed && <span className="badge badge-success">Confirmado</span>}
           </span>
         ) : (

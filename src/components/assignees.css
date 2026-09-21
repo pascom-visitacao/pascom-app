@@ -1,0 +1,235 @@
+/* Assignees - CSS do componente (assignees.tsx). Adaptado do Bencho (MIT,
+   (c) 2026 Lorenzo Cabra), ver THIRD_PARTY_NOTICES.md.
+
+   Custom properties do original -> design system do Pascom:
+     --card, --fill-slab   -> var(--color-surface)       (fundo da pílula e da lista)
+     --ink, --fill-on      -> var(--color-text)          (texto e marca de selecionado)
+     --font-ui             -> var(--font-body)           (Hanken Grotesk)
+     --pane-edge           -> var(--color-border-strong) na pílula (é um controle: precisa
+                              de 3:1 contra o fundo) e var(--color-border) na lista
+     --ink-rgb, --fill-on-rgb -> --pik-ink-rgb, definido local em .pik: não existe token
+                              de "três números soltos", e o rgba() abaixo precisa deles.
+   As transparências de texto do original (45% e 40% de tinta) davam contraste
+   abaixo de 4,5:1 sobre branco; texto e seta usam --color-text-muted. */
+
+.pik {
+  /* R, G, B de var(--color-neutral-900) (o --color-text). Só pros fundos
+     translúcidos de hover/foco; se o token mudar, mude aqui junto. */
+  --pik-ink-rgb: 35, 31, 32;
+
+  position: relative;
+  box-sizing: border-box;
+  font-family: var(--font-body);
+  color: var(--color-text);
+  /* Os z-index de dentro (pílula 2, lista 1) ficam locais ao componente. */
+  isolation: isolate;
+}
+
+/* A lista flutua sobre o que vem depois da pílula (outros campos, outra
+   pílula). Sem isso, um irmão posicionado que venha depois no DOM pintaria
+   por cima dela. */
+.pik[data-raised] {
+  z-index: 10;
+}
+
+.pik-pill {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  height: 44px;
+  padding: 0 12px 0 8px;
+  border: 0;
+  background: var(--color-surface);
+  color: inherit;
+  font: inherit;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+  /* No original o contorno só existia com data-stroke="on" (o "muro" do
+     Bencho); aqui a pílula é um botão e sempre precisa dele. */
+  box-shadow: 0 0 0 1.5px var(--color-border-strong);
+  cursor: pointer;
+}
+
+.pik-pill:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* No original o foco era um anel de 2px a 45% de tinta com outline: none.
+   Aqui vale o anel padrão do design system (:focus-visible global). */
+.pik-pill:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Só leitura (as vagas da Agenda): sem caixa, sem contorno, sem clique. */
+.pik[data-readonly] .pik-pill {
+  height: auto;
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+  cursor: default;
+}
+
+.pik-rail {
+  position: relative;
+  flex: none;
+  height: 28px;
+  transition: width 300ms cubic-bezier(0.33, 0.55, 0.2, 1);
+}
+
+.pik-face {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  box-shadow: 0 0 0 2px var(--color-surface);
+}
+
+.pik-face img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Sem foto: o círculo de iniciais do design system (.avatar) preenche a face. */
+.pik-face .avatar {
+  width: 100%;
+  height: 100%;
+}
+
+.pik-say {
+  margin-left: -6px;
+  color: var(--color-text);
+}
+/* Só leitura com nomes: o texto vem depois das faces, sem o recuo da pílula. */
+.pik[data-readonly] .pik-say {
+  margin-left: 0;
+}
+
+.pik-chev {
+  flex: none;
+  margin-left: -2px;
+  color: var(--color-text-muted);
+  transition: rotate 240ms cubic-bezier(0.33, 0.55, 0.2, 1), color 150ms ease;
+}
+
+.pik-pill:hover .pik-chev {
+  color: var(--color-text);
+}
+
+.pik-pill[aria-expanded="true"] .pik-chev {
+  rotate: 180deg;
+}
+
+.pik-card {
+  position: absolute;
+  top: 54px;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  box-sizing: border-box;
+  padding: 6px;
+  background: var(--color-surface);
+  transform-origin: 0 0;
+  box-shadow: 0 0 0 1px var(--color-border), var(--shadow-lg);
+  /* Uma equipe inteira não cabe numa lista de altura livre. */
+  max-height: min(352px, 60vh);
+  overflow-y: auto;
+}
+
+.pik-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  height: 48px;
+  padding: 0 8px;
+  border: 0;
+  border-radius: var(--pik-row-r, 16px);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background 140ms ease;
+}
+
+.pik-row:hover {
+  background: rgba(var(--pik-ink-rgb), 0.05);
+}
+
+/* No original só o fundo mudava (7% de tinta); com teclado isso não basta
+   pra ver onde está o foco, então entra também o anel padrão, por dentro. */
+.pik-row:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: -2px;
+  background: rgba(var(--pik-ink-rgb), 0.07);
+}
+
+.pik-av {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-full);
+  object-fit: cover;
+  display: block;
+}
+
+.pik-who {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+  flex: 1;
+}
+
+.pik-name {
+  font-size: var(--text-sm);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pik-role {
+  font-size: var(--text-xs);
+  color: var(--color-text-muted);
+}
+
+.pik-mark {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  border-radius: 5.5px;
+  box-shadow: inset 0 0 0 1.5px var(--color-border-strong);
+  transition: background 160ms ease, box-shadow 160ms ease;
+}
+
+/* Um responsável só é uma escolha, não uma lista de caixas: a marca vira
+   redonda (o original, que era só multisseleção, tinha apenas a quadrada). */
+.pik:not([data-multiple]) .pik-mark {
+  border-radius: var(--radius-full);
+}
+
+.pik-row[data-on] .pik-mark {
+  background: var(--color-text);
+  box-shadow: inset 0 0 0 1.5px var(--color-text);
+}
+
+.pik-tick {
+  display: grid;
+  place-items: center;
+  color: var(--color-surface);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pik-rail, .pik-chev { transition-duration: 1ms; }
+}

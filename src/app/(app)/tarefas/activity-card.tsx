@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import Image from "next/image";
 import { Zap } from "lucide-react";
 import { Icon } from "@/components/icon";
+import { Assignees, type AssigneePerson } from "@/components/assignees";
 import { StatusSelect } from "./status-select";
 import { DeleteActivityButton } from "./delete-activity-button";
 import { assumeActivity, reassignActivity, toggleUrgent, type ActivityStatus } from "./actions";
@@ -86,38 +87,41 @@ function AssigneeLine({ assignee }: { assignee: ActivityCardData["assignee"] }) 
   );
 }
 
-function ReassignSelect({
+type Member = { id: string; name: string; avatar_url?: string | null };
+
+// Troca o antigo <select> "Atribuir a...": o caminho é o mesmo
+// (reassignActivity, que já cuida da RLS, do trigger
+// enforce_activity_reassignment e do e-mail pro novo responsável). Continua
+// sem "remover responsável" - a action não tem esse caminho -, por isso o
+// Assignees fica sem `clearable`.
+function AssigneePicker({
   activityId,
-  currentAssigneeId,
+  assignee,
   members,
 }: {
   activityId: string;
-  currentAssigneeId: string | null;
-  members: { id: string; name: string }[];
+  assignee: ActivityCardData["assignee"];
+  members: Member[];
 }) {
   const [isPending, startTransition] = useTransition();
 
+  const people: AssigneePerson[] = members.map((m) => ({ id: m.id, name: m.name, avatarUrl: m.avatar_url }));
+  const current = assignee && assignee.account_status !== "deleted" ? assignee : null;
+  // Quem já é o responsável entra na lista mesmo fora da área (trocou de
+  // área depois): sem isso a pílula diria "Sem responsável".
+  if (current && !people.some((p) => p.id === current.id)) {
+    people.push({ id: current.id, name: current.name, avatarUrl: current.avatar_url });
+  }
+
   return (
-    <div className="input-wrap select-wrap" style={{ display: "inline-flex", width: "auto" }}>
-      <select
-        value={currentAssigneeId ?? ""}
-        disabled={isPending}
-        onChange={(e) => {
-          const userId = e.target.value;
-          if (!userId) return;
-          startTransition(() => reassignActivity(activityId, userId));
-        }}
-      >
-        <option value="" disabled>
-          Atribuir a...
-        </option>
-        {members.map((member) => (
-          <option key={member.id} value={member.id}>
-            {member.name}
-          </option>
-        ))}
-      </select>
-    </div>
+    <Assignees
+      people={people}
+      value={current ? [current.id] : []}
+      disabled={isPending}
+      onChange={([userId]) => {
+        if (userId) startTransition(() => reassignActivity(activityId, userId));
+      }}
+    />
   );
 }
 
@@ -156,7 +160,7 @@ export function ActivityCard({
   canWrite: boolean;
   isCoordenacao: boolean;
   currentUserId: string;
-  members: { id: string; name: string }[];
+  members: Member[];
 }) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -246,13 +250,23 @@ export function ActivityCard({
             <Attachments attachments={activity.attachments} size={80} />
 
             <div className="flex flex-col" style={{ gap: "var(--space-3)" }}>
-              <div className="flex items-center" style={{ gap: "var(--space-3)" }}>
+              <div className="flex flex-wrap items-center" style={{ gap: "var(--space-3)" }}>
                 <strong>Responsável:</strong>
                 {isCoordenacao ? (
-                  <ReassignSelect
-                    activityId={activity.id}
-                    currentAssigneeId={activity.assignee?.id ?? null}
-                    members={members}
+                  <>
+                    {/* Responsável que foi excluído não é uma opção da lista,
+                        mas a tela precisa dizer que ele existiu. */}
+                    {activity.assignee?.account_status === "deleted" && <AssigneeLine assignee={activity.assignee} />}
+                    <AssigneePicker activityId={activity.id} assignee={activity.assignee} members={members} />
+                  </>
+                ) : activity.assignee && activity.assignee.account_status !== "deleted" ? (
+                  <Assignees
+                    readOnly
+                    showNames
+                    people={[
+                      { id: activity.assignee.id, name: activity.assignee.name, avatarUrl: activity.assignee.avatar_url },
+                    ]}
+                    value={[activity.assignee.id]}
                   />
                 ) : (
                   <AssigneeLine assignee={activity.assignee} />

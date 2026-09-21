@@ -74,7 +74,7 @@ export default async function AtividadesPage({
     showAllAreas || selectedAreaId
       ? supabase
           .from("users")
-          .select("id, name, area_ids, pending_area_ids, areas_submitted_at")
+          .select("id, name, avatar_url, area_ids, pending_area_ids, areas_submitted_at")
           .eq("account_status", "active")
           .order("name")
       : Promise.resolve({ data: [] }),
