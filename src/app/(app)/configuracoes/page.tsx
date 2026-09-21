@@ -1,8 +1,9 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentProfile, getCurrentUser, getSupabase } from "@/lib/supabase/request";
-import { createSocialMediaAccount } from "./actions";
+import { createPrayerEntry, createSocialMediaAccount, updatePrayerEntry } from "./actions";
 import { DeleteSocialMediaButton } from "./delete-social-media-button";
+import { DeletePrayerEntryButton } from "./delete-prayer-entry-button";
 import { PendingApprovalRow } from "./pending-approval-row";
 
 export default async function ConfiguracoesPage() {
@@ -11,8 +12,9 @@ export default async function ConfiguracoesPage() {
 
   const supabase = await getSupabase();
 
-  const [profile, { data: accounts }, { data: pendingUsers }] = await Promise.all([
+  const [profile, { data: prayerEntries }, { data: accounts }, { data: pendingUsers }] = await Promise.all([
     getCurrentProfile(),
+    supabase.from("prayer_fixed_entries").select("id, name").order("name"),
     supabase
       .from("social_media_accounts")
       .select("id, platform_name, reference_link, notes")
@@ -59,6 +61,53 @@ export default async function ConfiguracoesPage() {
         <Link href="/areas" className="btn btn-outline btn-md">
           Ir para Equipe &amp; Áreas
         </Link>
+      </section>
+
+      <section style={{ marginBottom: "var(--space-10)" }}>
+        <h2 style={{ fontSize: "var(--text-md)", marginBottom: "var(--space-4)" }}>Intenções fixas de oração</h2>
+        <p style={{ color: "var(--color-text-muted)", fontSize: "var(--text-sm)", marginBottom: "var(--space-5)" }}>
+          O cartão do painel sorteia a intenção do dia entre a equipe, as pastorais e estas entradas fixas
+          (ex: o padre da paróquia, o Papa) — que aparecem com mais frequência. Renomeie pra colocar o nome
+          da pessoa, se preferir.
+        </p>
+
+        <div className="flex flex-col" style={{ gap: "var(--space-3)", marginBottom: "var(--space-6)" }}>
+          {(prayerEntries ?? []).map((entry) => (
+            <div
+              key={entry.id}
+              className="card flex items-center justify-between flex-wrap"
+              style={{ padding: "var(--space-5)", gap: "var(--space-4)" }}
+            >
+              <form action={updatePrayerEntry} className="flex items-center flex-wrap" style={{ gap: "var(--space-3)" }}>
+                <input type="hidden" name="id" value={entry.id} />
+                <div className="input-wrap" style={{ width: 260 }}>
+                  <input type="text" name="name" defaultValue={entry.name} aria-label="Nome da intenção" required />
+                </div>
+                <button type="submit" className="btn btn-outline btn-sm">
+                  Salvar
+                </button>
+              </form>
+              <DeletePrayerEntryButton id={entry.id} name={entry.name} />
+            </div>
+          ))}
+          {(prayerEntries ?? []).length === 0 && (
+            <span style={{ color: "var(--color-text-muted)", fontSize: "var(--text-sm)" }}>
+              Nenhuma intenção fixa cadastrada.
+            </span>
+          )}
+        </div>
+
+        <form action={createPrayerEntry} className="flex items-end flex-wrap" style={{ gap: "var(--space-3)" }}>
+          <div className="field" style={{ maxWidth: 280 }}>
+            <label className="field-label">Nova intenção fixa</label>
+            <div className="input-wrap">
+              <input type="text" name="name" placeholder="Ex: Bispo da diocese" required />
+            </div>
+          </div>
+          <button type="submit" className="btn btn-primary btn-md">
+            Adicionar
+          </button>
+        </form>
       </section>
 
       <section>

@@ -6,6 +6,7 @@ import { getCurrentProfile, getCurrentUser, getSupabase } from "@/lib/supabase/r
 import { signOut } from "./actions";
 import { CoordenacaoBento } from "./coordenacao-bento";
 import { PasconeiroBento } from "./pasconeiro-bento";
+import { PrayerCard } from "./prayer-card";
 import { AutoFitName } from "./auto-fit-name";
 import { effectiveAreaIds } from "@/lib/effective-areas";
 import "./bento.css";
@@ -90,6 +91,10 @@ export default async function DashboardPage() {
           </button>
         </form>
       </div>
+
+      <Suspense fallback={null}>
+        <PrayerCard currentUserId={user.id} />
+      </Suspense>
 
       <Suspense fallback={<div className="skeleton" style={{ height: 320 }} />}>
         {isCoordenacao ? (

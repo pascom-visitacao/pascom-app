@@ -31,6 +31,39 @@ export async function deleteSocialMediaAccount(id: string) {
   revalidatePath("/configuracoes");
 }
 
+// Intenções fixas do cartão de oração (padre, Papa...): a RLS de
+// prayer_fixed_entries já restringe a escrita à coordenação.
+export async function createPrayerEntry(formData: FormData) {
+  const name = String(formData.get("name") ?? "").trim();
+  if (!name) return;
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("prayer_fixed_entries").insert({ name });
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/configuracoes");
+}
+
+export async function updatePrayerEntry(formData: FormData) {
+  const id = String(formData.get("id") ?? "");
+  const name = String(formData.get("name") ?? "").trim();
+  if (!id || !name) return;
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("prayer_fixed_entries").update({ name }).eq("id", id);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/configuracoes");
+}
+
+export async function deletePrayerEntry(id: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.from("prayer_fixed_entries").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/configuracoes");
+}
+
 // Aprovação de conta (primeiro login): pending -> active. RLS + o
 // trigger enforce_users_self_update já garantem que só coordenação
 // consegue - sem checagem extra aqui.
