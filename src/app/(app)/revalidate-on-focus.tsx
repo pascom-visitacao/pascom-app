@@ -3,33 +3,42 @@
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 
-// PWA instalado fica aberto muito mais tempo que uma aba normal - o
-// SO/navegador pode congelar a aba em segundo plano, deixando os dados
-// visivelmente desatualizados quando o usuário volta. Sem isso, a única
-// forma de "destravar" era deslogar/logar de novo (força uma navegação
-// cheia). Só atualiza depois de um tempo mínimo escondido, pra não gerar
-// refresh a cada troca rápida de aba.
-const MIN_HIDDEN_MS = 60_000;
+// Ao voltar pro app (aba visível, janela em foco, ou restaurada do
+// bfcache), busca dados frescos do servidor - inclusive o layout, que
+// não é reenviado nas navegações por clique. Antes só atualizava depois
+// de 60s escondido; agora qualquer volta após MIN_INTERVAL_MS refaz a
+// renderização (mantém estado de formulários e modais abertos).
+// O throttle evita refresh em cascata: visibilitychange + focus disparam
+// quase juntos ao trocar de aba.
+const MIN_INTERVAL_MS = 30_000;
 
 export function RevalidateOnFocus() {
   const router = useRouter();
-  const hiddenAtRef = useRef<number | null>(null);
+  const lastRefreshRef = useRef<number>(0);
 
   useEffect(() => {
-    function handleVisibilityChange() {
-      if (document.visibilityState === "hidden") {
-        hiddenAtRef.current = Date.now();
-        return;
-      }
-      const hiddenAt = hiddenAtRef.current;
-      hiddenAtRef.current = null;
-      if (hiddenAt !== null && Date.now() - hiddenAt >= MIN_HIDDEN_MS) {
-        router.refresh();
-      }
+    lastRefreshRef.current = Date.now();
+
+    function maybeRefresh() {
+      if (document.visibilityState !== "visible") return;
+      const now = Date.now();
+      if (now - lastRefreshRef.current < MIN_INTERVAL_MS) return;
+      lastRefreshRef.current = now;
+      router.refresh();
     }
 
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+    function handlePageShow(e: PageTransitionEvent) {
+      if (e.persisted) maybeRefresh();
+    }
+
+    document.addEventListener("visibilitychange", maybeRefresh);
+    window.addEventListener("focus", maybeRefresh);
+    window.addEventListener("pageshow", handlePageShow);
+    return () => {
+      document.removeEventListener("visibilitychange", maybeRefresh);
+      window.removeEventListener("focus", maybeRefresh);
+      window.removeEventListener("pageshow", handlePageShow);
+    };
   }, [router]);
 
   return null;

@@ -2,7 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Zap } from "lucide-react";
 import { Icon } from "@/components/icon";
-import { createClient } from "@/lib/supabase/server";
+import { getCurrentUser, getSupabase } from "@/lib/supabase/request";
 import { ProfileForm } from "./profile-form";
 import { AreaAdjustment } from "./area-adjustment";
 import { effectiveAreaIds } from "@/lib/effective-areas";
@@ -30,12 +30,10 @@ function normalizeOne<T>(raw: unknown): T | null {
 }
 
 export default async function PerfilPage() {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (!user) redirect("/login");
+
+  const supabase = await getSupabase();
 
   const [{ data: profile }, { data: areas }, { data: myActivities }] = await Promise.all([
     supabase

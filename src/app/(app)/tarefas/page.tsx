@@ -1,17 +1,19 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getCurrentProfile, getCurrentUser, getSupabase } from "@/lib/supabase/request";
 import { NewActivityForm } from "./new-activity-form";
 import { ActivityCard, type ActivityCardData } from "./activity-card";
 import type { ActivityStatus } from "./actions";
 import { effectiveAreaIds } from "@/lib/effective-areas";
 import "./kanban.css";
 
-const COLUMNS: { status: ActivityStatus; label: string }[] = [
+const DONE_WINDOW_DAYS = 30;
+
+const COLUMNS: { status: ActivityStatus; label: string; note?: string }[] = [
   { status: "a_fazer", label: "A fazer" },
   { status: "em_producao", label: "Em produção" },
   { status: "revisao", label: "Revisão" },
-  { status: "concluido", label: "Concluído" },
+  { status: "concluido", label: "Concluído", note: `Últimos ${DONE_WINDOW_DAYS} dias` },
 ];
 
 function normalizeOne<T>(raw: unknown): T | null {
@@ -27,23 +29,19 @@ export default async function AtividadesPage({
   const { area: areaParam, origem: origemParam } = await searchParams;
   const onlyExternal = origemParam === "pedido_externo";
   const originQs = onlyExternal ? "&origem=pedido_externo" : "";
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  const { data: profile } = await supabase
-    .from("users")
-    .select("role, area_ids, pending_area_ids, areas_submitted_at")
-    .eq("id", user.id)
-    .single();
+  const supabase = await getSupabase();
+
+  // 1ª rodada: só o que define a área selecionada.
+  const [profile, { data: areas }] = await Promise.all([
+    getCurrentProfile(),
+    supabase.from("areas").select("id, name").order("name"),
+  ]);
 
   const isCoordenacao = profile?.role === "coordenacao_geral";
   const myAreaIds = profile ? effectiveAreaIds(profile) : [];
-
-  const { data: areas } = await supabase.from("areas").select("id, name").order("name");
 
   const showAllAreas = areaParam === "todos";
   const selectedAreaId = showAllAreas ? null : (areaParam ?? myAreaIds[0] ?? areas?.[0]?.id ?? null);
@@ -51,26 +49,38 @@ export default async function AtividadesPage({
   const activitiesSelect =
     "id, title, description, status, due_date, source, priority, is_urgent, area_id, area:areas(id, name), assignee:users(id, name, avatar_url, account_status), request:external_requests(attachment_urls), event:events(id, title), parish_ministry:parish_ministries(id, name), comments:activity_comments(id, body, created_at, author:users(id, name, account_status))";
 
-  let activitiesQuery = supabase.from("activities").select(activitiesSelect).order("created_at", { ascending: true });
+  // Concluídas só dos últimos DONE_WINDOW_DAYS dias: a coluna só crescia
+  // (todo o histórico, com comentários embutidos, a cada clique).
+  const doneSinceDate = new Date();
+  doneSinceDate.setDate(doneSinceDate.getDate() - DONE_WINDOW_DAYS);
+  const doneSince = doneSinceDate.toISOString();
+  let activitiesQuery = supabase
+    .from("activities")
+    .select(activitiesSelect)
+    .or(`status.neq.concluido,updated_at.gte.${doneSince}`)
+    .order("created_at", { ascending: true });
   if (onlyExternal) activitiesQuery = activitiesQuery.eq("source", "pedido_externo");
 
-  const { data: rawActivities } = showAllAreas
-    ? await activitiesQuery
-    : selectedAreaId
-      ? await activitiesQuery.eq("area_id", selectedAreaId)
-      : { data: [] };
-
+  // 2ª rodada: tudo independente entre si, em paralelo.
   // members: sempre a lista completa (sem filtro), pra poder recalcular
   // por área em cada card no modo "Todos" - no modo área única, filtra
   // pra essa área só, igual antes.
-  const { data: rawAllMembers } =
+  const [{ data: rawActivities }, { data: rawAllMembers }, { data: events }, { data: ministries }] = await Promise.all([
+    showAllAreas
+      ? activitiesQuery
+      : selectedAreaId
+        ? activitiesQuery.eq("area_id", selectedAreaId)
+        : Promise.resolve({ data: [] }),
     showAllAreas || selectedAreaId
-      ? await supabase
+      ? supabase
           .from("users")
           .select("id, name, area_ids, pending_area_ids, areas_submitted_at")
           .eq("account_status", "active")
           .order("name")
-      : { data: [] };
+      : Promise.resolve({ data: [] }),
+    supabase.from("events").select("id, title, date").order("date"),
+    supabase.from("parish_ministries").select("id, name").order("name"),
+  ]);
 
   const activities: (ActivityCardData & { area_id: string })[] = (rawActivities ?? []).map((a) => ({
     id: a.id,
@@ -93,9 +103,6 @@ export default async function AtividadesPage({
   }));
 
   const areaMembers = (rawAllMembers ?? []).filter((m) => effectiveAreaIds(m).includes(selectedAreaId ?? ""));
-
-  const { data: events } = await supabase.from("events").select("id, title, date").order("date");
-  const { data: ministries } = await supabase.from("parish_ministries").select("id, name").order("name");
 
   // Modo "Todos": criar exige escolher uma área específica, então o
   // formulário fica escondido; edição por card usa canWrite calculado
@@ -189,9 +196,14 @@ export default async function AtividadesPage({
               const columnActivities = activities.filter((a) => a.status === column.status);
               return (
                 <div key={column.status} className="kanban-column" data-status={column.status}>
-                  <div className="card-stat-label" style={{ marginBottom: "var(--space-4)" }}>
+                  <div className="card-stat-label" style={{ marginBottom: column.note ? "var(--space-1)" : "var(--space-4)" }}>
                     {column.label} · {columnActivities.length}
                   </div>
+                  {column.note && (
+                    <div style={{ fontSize: "var(--text-xs)", color: "var(--color-text-subtle)", marginBottom: "var(--space-4)" }}>
+                      {column.note}
+                    </div>
+                  )}
                   <div className="flex flex-col" style={{ gap: "var(--space-4)" }}>
                     {columnActivities.length === 0 ? (
                       <p style={{ fontSize: "var(--text-sm)", color: "var(--color-text-subtle)" }}>

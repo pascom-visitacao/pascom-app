@@ -1,27 +1,19 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getCurrentProfile, getCurrentUser, getSupabase } from "@/lib/supabase/request";
 import { createAssetLink } from "./actions";
 import { AssetLinkRow } from "./asset-link-row";
 
 export default async function AcervoPage() {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  const { data: profile } = await supabase
-    .from("users")
-    .select("role")
-    .eq("id", user.id)
-    .single();
-  const isCoordenacao = profile?.role === "coordenacao_geral";
+  const supabase = await getSupabase();
 
-  const { data: assets } = await supabase
-    .from("asset_links")
-    .select("id, name, reference_link, notes")
-    .order("name");
+  const [profile, { data: assets }] = await Promise.all([
+    getCurrentProfile(),
+    supabase.from("asset_links").select("id, name, reference_link, notes").order("name"),
+  ]);
+  const isCoordenacao = profile?.role === "coordenacao_geral";
 
   return (
     <div style={{ padding: "var(--space-9)", maxWidth: 720 }}>

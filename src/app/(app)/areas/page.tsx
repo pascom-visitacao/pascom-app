@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getCurrentProfile, getCurrentUser, getSupabase } from "@/lib/supabase/request";
 import { createArea, createCategory } from "./actions";
 import { UserAssignmentRow } from "./user-assignment-row";
 import { DeleteUserButton } from "./delete-user-button";
@@ -12,38 +12,30 @@ function areaName(raw: unknown): string {
 }
 
 export default async function AreasPage() {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  const { data: profile } = await supabase
-    .from("users")
-    .select("role")
-    .eq("id", user.id)
-    .single();
+  const supabase = await getSupabase();
+
+  // Pendente ainda não foi aprovado - fica só na seção dedicada em
+  // Configurações, não faz sentido aparecer aqui como se já fosse parte
+  // do time.
+  const [profile, { data: areas }, { data: users }, { data: categories }] = await Promise.all([
+    getCurrentProfile(),
+    supabase.from("areas").select("id, name").order("name"),
+    supabase
+      .from("users")
+      .select("id, name, email, role, area_ids, pending_area_ids, areas_submitted_at, is_protected, account_status")
+      .neq("account_status", "pending")
+      .order("name"),
+    supabase.from("request_categories").select("id, name, area:areas(name)").order("name"),
+  ]);
 
   if (profile?.role !== "coordenacao_geral") {
     redirect("/inicio");
   }
 
-  const { data: areas } = await supabase.from("areas").select("id, name").order("name");
   const areaNameById = new Map((areas ?? []).map((a) => [a.id, a.name]));
-
-  // Pendente ainda não foi aprovado - fica só na seção dedicada em
-  // Configurações, não faz sentido aparecer aqui como se já fosse parte
-  // do time.
-  const { data: users } = await supabase
-    .from("users")
-    .select("id, name, email, role, area_ids, pending_area_ids, areas_submitted_at, is_protected, account_status")
-    .neq("account_status", "pending")
-    .order("name");
-  const { data: categories } = await supabase
-    .from("request_categories")
-    .select("id, name, area:areas(name)")
-    .order("name");
 
   return (
     <div style={{ padding: "var(--space-9)", maxWidth: 880 }}>

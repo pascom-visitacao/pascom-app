@@ -1,14 +1,12 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getCurrentUser, getSupabase } from "@/lib/supabase/request";
 import { EnviarFotosForm } from "./enviar-fotos-form";
 
 export default async function MateriaisPage() {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (!user) redirect("/login");
+
+  const supabase = await getSupabase();
 
   const { data: events } = await supabase
     .from("events")

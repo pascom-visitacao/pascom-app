@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getCurrentProfile, getCurrentUser, getSupabase } from "@/lib/supabase/request";
 import { EquipmentCard, type EquipmentData } from "./equipment-card";
 import { NewEquipmentForm } from "./new-equipment-form";
 
@@ -9,24 +9,19 @@ function normalizeOne<T>(raw: unknown): T | null {
 }
 
 export default async function EquipamentosPage() {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  const { data: profile } = await supabase
-    .from("users")
-    .select("role")
-    .eq("id", user.id)
-    .single();
-  const isCoordenacao = profile?.role === "coordenacao_geral";
+  const supabase = await getSupabase();
 
-  const { data: rawEquipment } = await supabase
-    .from("equipment")
-    .select("id, name, model, photo_url, holder:users(id, name, avatar_url, account_status)")
-    .order("name");
+  const [profile, { data: rawEquipment }] = await Promise.all([
+    getCurrentProfile(),
+    supabase
+      .from("equipment")
+      .select("id, name, model, photo_url, holder:users(id, name, avatar_url, account_status)")
+      .order("name"),
+  ]);
+  const isCoordenacao = profile?.role === "coordenacao_geral";
 
   const equipment: EquipmentData[] = (rawEquipment ?? []).map((e) => ({
     ...e,

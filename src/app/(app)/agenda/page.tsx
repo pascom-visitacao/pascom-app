@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getCurrentProfile, getCurrentUser, getSupabase } from "@/lib/supabase/request";
 import { EventForm } from "./event-form";
 import { DeleteEventButton } from "./delete-event-button";
 import { ScheduleForm } from "./schedule-form";
@@ -47,33 +47,34 @@ export default async function CalendarioPage({
   const { view: viewParam, month: monthParam, date: dateParam } = await searchParams;
   const view = VIEWS.some((v) => v.key === viewParam) ? viewParam! : "mes";
 
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  const { data: profile } = await supabase
-    .from("users")
-    .select("role, area_ids, pending_area_ids, areas_submitted_at")
-    .eq("id", user.id)
-    .single();
+  const supabase = await getSupabase();
+
+  // Tudo em paralelo - eram 5+ idas à rede em série. Os arquivos do
+  // calendário só são usados pela coordenação (a RLS já devolve vazio pros
+  // demais, então buscar sempre custa quase nada).
+  const [profile, { data: areas }, { data: rawEvents }, { data: rawSchedules }, { data: rawFiles }] = await Promise.all([
+    getCurrentProfile(),
+    supabase.from("areas").select("id, name").order("name"),
+    supabase
+      .from("events")
+      .select("id, title, date, location, description, color")
+      .order("date", { ascending: true }),
+    supabase
+      .from("schedules")
+      .select("id, event_id, role_needed, confirmed, area:areas(id, name), user:users(id, name, avatar_url, account_status)")
+      .order("role_needed", { ascending: true }),
+    supabase
+      .from("parish_calendar_files")
+      .select("id, period_type, reference_year, reference_month, file_path")
+      .order("reference_year", { ascending: false })
+      .order("reference_month", { ascending: false }),
+  ]);
 
   const isCoordenacao = profile?.role === "coordenacao_geral";
   const myAreaIds = profile ? effectiveAreaIds(profile) : [];
-
-  const { data: areas } = await supabase.from("areas").select("id, name").order("name");
-
-  const { data: rawEvents } = await supabase
-    .from("events")
-    .select("id, title, date, location, description, color")
-    .order("date", { ascending: true });
-
-  const { data: rawSchedules } = await supabase
-    .from("schedules")
-    .select("id, event_id, role_needed, confirmed, area:areas(id, name), user:users(id, name, avatar_url, account_status)")
-    .order("role_needed", { ascending: true });
 
   const schedulesByEvent = new Map<string, ScheduleRowData[]>();
   for (const s of rawSchedules ?? []) {
@@ -91,12 +92,6 @@ export default async function CalendarioPage({
 
   let calendarFiles: { id: string; period_type: string; reference_year: number; reference_month: number | null; url: string | null }[] = [];
   if (isCoordenacao) {
-    const { data: rawFiles } = await supabase
-      .from("parish_calendar_files")
-      .select("id, period_type, reference_year, reference_month, file_path")
-      .order("reference_year", { ascending: false })
-      .order("reference_month", { ascending: false });
-
     calendarFiles = await Promise.all(
       (rawFiles ?? []).map(async (f) => {
         const { data } = await supabase.storage

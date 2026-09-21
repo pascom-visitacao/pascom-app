@@ -5,17 +5,15 @@ export async function PasconeiroBento({
   supabase,
   userId,
   areaIds,
-  areaName,
   roleLabel,
 }: {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any -- sem tipos gerados do banco
   supabase: SupabaseClient<any>;
   userId: string;
   areaIds: string[];
-  areaName: string;
   roleLabel: string;
 }) {
-  const [{ count: myPendingCount }, { count: myScheduleCount }, { count: openScheduleCount }] = await Promise.all([
+  const [{ count: myPendingCount }, { count: myScheduleCount }, { count: openScheduleCount }, { data: myAreas }] = await Promise.all([
     supabase
       .from("activities")
       .select("id", { count: "exact", head: true })
@@ -33,7 +31,12 @@ export async function PasconeiroBento({
           .in("area_id", areaIds)
           .is("user_id", null)
       : Promise.resolve({ count: 0 }),
+    areaIds.length > 0
+      ? supabase.from("areas").select("name").in("id", areaIds)
+      : Promise.resolve({ data: [] as { name: string }[] }),
   ]);
+
+  const areaName = (myAreas ?? []).map((a) => a.name).join(", ") || "Nenhuma área selecionada ainda";
 
   return (
     <div className="bento" style={{ gridAutoRows: 160 }}>

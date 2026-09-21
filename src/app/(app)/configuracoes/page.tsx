@@ -1,38 +1,32 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getCurrentProfile, getCurrentUser, getSupabase } from "@/lib/supabase/request";
 import { createSocialMediaAccount } from "./actions";
 import { DeleteSocialMediaButton } from "./delete-social-media-button";
 import { PendingApprovalRow } from "./pending-approval-row";
 
 export default async function ConfiguracoesPage() {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  const { data: profile } = await supabase
-    .from("users")
-    .select("role")
-    .eq("id", user.id)
-    .single();
+  const supabase = await getSupabase();
+
+  const [profile, { data: accounts }, { data: pendingUsers }] = await Promise.all([
+    getCurrentProfile(),
+    supabase
+      .from("social_media_accounts")
+      .select("id, platform_name, reference_link, notes")
+      .order("platform_name"),
+    supabase
+      .from("users")
+      .select("id, name, email, avatar_url, created_at")
+      .eq("account_status", "pending")
+      .order("created_at"),
+  ]);
 
   if (profile?.role !== "coordenacao_geral") {
     redirect("/inicio");
   }
-
-  const { data: accounts } = await supabase
-    .from("social_media_accounts")
-    .select("id, platform_name, reference_link, notes")
-    .order("platform_name");
-
-  const { data: pendingUsers } = await supabase
-    .from("users")
-    .select("id, name, email, avatar_url, created_at")
-    .eq("account_status", "pending")
-    .order("created_at");
 
   return (
     <div style={{ padding: "var(--space-9)", maxWidth: 880 }}>

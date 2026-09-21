@@ -1,7 +1,8 @@
+import { Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getCurrentProfile, getCurrentUser, getSupabase } from "@/lib/supabase/request";
 import { signOut } from "./actions";
 import { CoordenacaoBento } from "./coordenacao-bento";
 import { PasconeiroBento } from "./pasconeiro-bento";
@@ -37,32 +38,20 @@ function greeting() {
 }
 
 export default async function DashboardPage() {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
 
   if (!user) {
     redirect("/login");
   }
 
-  const { data: profile } = await supabase
-    .from("users")
-    .select("name, avatar_url, role, area_ids, pending_area_ids, areas_submitted_at")
-    .eq("id", user.id)
-    .single();
+  const supabase = await getSupabase();
+  const profile = await getCurrentProfile();
 
   const displayName = (profile?.name ?? user.email ?? "Usuário").split(" ")[0];
   const isCoordenacao = profile?.role === "coordenacao_geral";
   const roleLabel = profile?.role ? (ROLE_LABEL[profile.role] ?? profile.role) : "—";
 
   const myAreaIds = profile ? effectiveAreaIds(profile) : [];
-  const { data: myAreas } =
-    myAreaIds.length > 0
-      ? await supabase.from("areas").select("name").in("id", myAreaIds)
-      : { data: [] };
-  const areaName = (myAreas ?? []).map((a) => a.name).join(", ") || "Nenhuma área selecionada ainda";
 
   return (
     <div style={{ padding: "var(--space-9)" }}>
@@ -102,17 +91,13 @@ export default async function DashboardPage() {
         </form>
       </div>
 
-      {isCoordenacao ? (
-        <CoordenacaoBento supabase={supabase} />
-      ) : (
-        <PasconeiroBento
-          supabase={supabase}
-          userId={user.id}
-          areaIds={myAreaIds}
-          areaName={areaName}
-          roleLabel={roleLabel}
-        />
-      )}
+      <Suspense fallback={<div className="skeleton" style={{ height: 320 }} />}>
+        {isCoordenacao ? (
+          <CoordenacaoBento supabase={supabase} />
+        ) : (
+          <PasconeiroBento supabase={supabase} userId={user.id} areaIds={myAreaIds} roleLabel={roleLabel} />
+        )}
+      </Suspense>
     </div>
   );
 }

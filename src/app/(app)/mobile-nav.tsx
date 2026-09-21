@@ -3,9 +3,9 @@
 import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import { Home, Columns3, Calendar, Image as ImageIcon, Users, Settings, LayoutGrid, X, Camera, User, ChevronRight, Download, Info, Archive } from "lucide-react";
 import { Icon } from "@/components/icon";
+import { ApprovalsBadge, useNavActive } from "./nav-state";
 
 function initials(name: string) {
   return name
@@ -64,27 +64,26 @@ export function MobileNav({
   isCoordenacao,
   userName,
   avatarUrl,
-  pendingApprovalsCount = 0,
 }: {
   isCoordenacao: boolean;
   userName: string;
   avatarUrl: string | null;
-  pendingApprovalsCount?: number;
 }) {
   const [gridOpen, setGridOpen] = useState(false);
-  const pathname = usePathname();
+  const { isActive, startNav } = useNavActive();
   const gridItems = isCoordenacao ? GRID_ITEMS_COORDENACAO : GRID_ITEMS_PASCONEIRO;
-
-  function isActive(href: string) {
-    return pathname === href || pathname.startsWith(`${href}/`);
-  }
 
   return (
     <>
       <div className="mobile-nav-bar">
         <div className="bar">
           {BAR_ITEMS.map((item) => (
-            <Link key={item.href} href={item.href} className={`mobile-nav-item${isActive(item.href) ? " is-active" : ""}`}>
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`mobile-nav-item${isActive(item.href) ? " is-active" : ""}`}
+              onClick={() => startNav(item.href)}
+            >
               {ICONS[item.icon]}
               <span>{item.label}</span>
             </Link>
@@ -148,30 +147,14 @@ export function MobileNav({
               key={item.href}
               href={item.href}
               className={`item${isActive(item.href) ? " is-active" : ""}`}
-              onClick={() => setGridOpen(false)}
+              onClick={() => {
+                startNav(item.href);
+                setGridOpen(false);
+              }}
             >
               {ICONS[item.icon]}
               <span>{item.label}</span>
-              {item.href === "/configuracoes" && pendingApprovalsCount > 0 && (
-                <span
-                  style={{
-                    marginLeft: "var(--space-2)",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    minWidth: 20,
-                    height: 20,
-                    padding: "0 6px",
-                    borderRadius: "var(--radius-full)",
-                    background: "var(--color-green-700)",
-                    color: "#fff",
-                    fontSize: "var(--text-xs)",
-                    fontWeight: "var(--weight-semibold)",
-                  }}
-                >
-                  {pendingApprovalsCount}
-                </span>
-              )}
+              {item.href === "/configuracoes" && <ApprovalsBadge />}
             </Link>
           ))}
         </div>

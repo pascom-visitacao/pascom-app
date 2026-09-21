@@ -30,11 +30,14 @@ export async function updateSession(request: NextRequest) {
     },
   );
 
-  // IMPORTANT: getUser() (not getSession()) re-validates the token against
-  // Supabase Auth on every request — required for middleware to trust it.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // getClaims() (não getSession()) valida a assinatura do JWT contra a
+  // chave pública do projeto (ES256, cacheada) sem ida à rede, e ainda
+  // renova o token expirado. Se o projeto voltasse a chaves simétricas, o
+  // SDK cai sozinho pra getUser. Trade-off: uma sessão revogada só é
+  // percebida quando o token expira (~1h) - o guard de conta pendente/
+  // excluída no layout lê o banco a cada carga, então não depende disso.
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const user = claimsData?.claims?.sub ? claimsData.claims : null;
 
   const isPublicPath = PUBLIC_PATHS.some((path) =>
     request.nextUrl.pathname.startsWith(path),

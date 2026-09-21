@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { getCurrentUser, getSupabase } from "@/lib/supabase/request";
 import { effectiveAreaIds } from "@/lib/effective-areas";
 
 function initials(name: string) {
@@ -14,15 +14,10 @@ function initials(name: string) {
 }
 
 export default async function EquipePage() {
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getCurrentUser();
   if (!user) redirect("/login");
 
-  const { data: areas } = await supabase.from("areas").select("id, name").order("name");
-  const areaNameById = new Map((areas ?? []).map((a) => [a.id, a.name]));
+  const supabase = await getSupabase();
 
   // is_protected marca a conta institucional (pascomvisitacao@gmail.com) -
   // não é uma pessoa real da equipe, não deve aparecer aqui. Inclui os
@@ -30,12 +25,16 @@ export default async function EquipePage() {
   // antiga que filtrava só pasconeiro. account_status active só -
   // pendente ainda não faz parte do time, excluído não é mais ninguém
   // pra listar aqui (esse aqui é o diretório, não a tela administrativa).
-  const { data: members } = await supabase
-    .from("users")
-    .select("id, name, role, avatar_url, area_ids, pending_area_ids, areas_submitted_at")
-    .eq("is_protected", false)
-    .eq("account_status", "active")
-    .order("name");
+  const [{ data: areas }, { data: members }] = await Promise.all([
+    supabase.from("areas").select("id, name").order("name"),
+    supabase
+      .from("users")
+      .select("id, name, role, avatar_url, area_ids, pending_area_ids, areas_submitted_at")
+      .eq("is_protected", false)
+      .eq("account_status", "active")
+      .order("name"),
+  ]);
+  const areaNameById = new Map((areas ?? []).map((a) => [a.id, a.name]));
 
   return (
     <div style={{ padding: "var(--space-9)", maxWidth: 720 }}>
