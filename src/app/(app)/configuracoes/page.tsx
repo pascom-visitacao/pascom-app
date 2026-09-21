@@ -1,9 +1,10 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentProfile, getCurrentUser, getSupabase } from "@/lib/supabase/request";
-import { createPrayerEntry, createSocialMediaAccount, updatePrayerEntry } from "./actions";
+import { createSocialMediaAccount } from "./actions";
 import { DeleteSocialMediaButton } from "./delete-social-media-button";
 import { DeletePrayerEntryButton } from "./delete-prayer-entry-button";
+import { EditPrayerEntryForm, NewPrayerEntryForm } from "./prayer-entry-forms";
 import { PendingApprovalRow } from "./pending-approval-row";
 
 export default async function ConfiguracoesPage() {
@@ -78,15 +79,7 @@ export default async function ConfiguracoesPage() {
               className="card flex items-center justify-between flex-wrap"
               style={{ padding: "var(--space-5)", gap: "var(--space-4)" }}
             >
-              <form action={updatePrayerEntry} className="flex items-center flex-wrap" style={{ gap: "var(--space-3)" }}>
-                <input type="hidden" name="id" value={entry.id} />
-                <div className="input-wrap" style={{ width: 260 }}>
-                  <input type="text" name="name" defaultValue={entry.name} aria-label="Nome da intenção" required />
-                </div>
-                <button type="submit" className="btn btn-outline btn-sm">
-                  Salvar
-                </button>
-              </form>
+              <EditPrayerEntryForm id={entry.id} name={entry.name} />
               <DeletePrayerEntryButton id={entry.id} name={entry.name} />
             </div>
           ))}
@@ -97,17 +90,7 @@ export default async function ConfiguracoesPage() {
           )}
         </div>
 
-        <form action={createPrayerEntry} className="flex items-end flex-wrap" style={{ gap: "var(--space-3)" }}>
-          <div className="field" style={{ maxWidth: 280 }}>
-            <label className="field-label">Nova intenção fixa</label>
-            <div className="input-wrap">
-              <input type="text" name="name" placeholder="Ex: Bispo da diocese" required />
-            </div>
-          </div>
-          <button type="submit" className="btn btn-primary btn-md">
-            Adicionar
-          </button>
-        </form>
+        <NewPrayerEntryForm />
       </section>
 
       <section>

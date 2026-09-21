@@ -22,7 +22,7 @@ export async function PrayerCard({ currentUserId }: { currentUserId: string }) {
   const picked = pickDailyEntry(saoPauloDateKey(), entries);
   if (!picked) return null;
 
-  const label = picked.userId === currentUserId ? "você" : picked.label;
+  const label = picked.userId === currentUserId ? "mim" : picked.label;
 
   return (
     <div

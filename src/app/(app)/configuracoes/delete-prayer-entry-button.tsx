@@ -27,7 +27,7 @@ export function DeletePrayerEntryButton({ id, name }: { id: string; name: string
         open={open}
         onClose={() => setOpen(false)}
         onConfirm={handleConfirm}
-        title={`Remover "${name}"?`}
+        title={`Remover “${name}”?`}
         body={<p>Essa intenção deixa de entrar no sorteio do cartão de oração.</p>}
         confirmLabel="Remover"
         isPending={isPending}

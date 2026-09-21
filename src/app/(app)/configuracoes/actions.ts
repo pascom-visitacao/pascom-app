@@ -33,27 +33,53 @@ export async function deleteSocialMediaAccount(id: string) {
 
 // Intenções fixas do cartão de oração (padre, Papa...): a RLS de
 // prayer_fixed_entries já restringe a escrita à coordenação.
-export async function createPrayerEntry(formData: FormData) {
+//
+// Nome vazio e nome repetido (coluna `name` é unique) são erros esperados:
+// voltam como estado do formulário, em vez de derrubar a página. `name`
+// volta junto pra o campo não perder o que a pessoa digitou (o React
+// reseta o formulário depois da action).
+export type PrayerEntryFormState = { error?: string; name?: string } | null;
+
+const PRAYER_EMPTY_ERROR = "Informe o nome da intenção.";
+const PRAYER_DUPLICATE_ERROR = "Já existe uma intenção com esse nome.";
+const PG_UNIQUE_VIOLATION = "23505";
+
+export async function createPrayerEntry(
+  _prevState: PrayerEntryFormState,
+  formData: FormData,
+): Promise<PrayerEntryFormState> {
   const name = String(formData.get("name") ?? "").trim();
-  if (!name) return;
+  if (!name) return { error: PRAYER_EMPTY_ERROR, name };
 
   const supabase = await createClient();
   const { error } = await supabase.from("prayer_fixed_entries").insert({ name });
-  if (error) throw new Error(error.message);
+  if (error) {
+    if (error.code === PG_UNIQUE_VIOLATION) return { error: PRAYER_DUPLICATE_ERROR, name };
+    throw new Error(error.message);
+  }
 
   revalidatePath("/configuracoes");
+  return { name: "" };
 }
 
-export async function updatePrayerEntry(formData: FormData) {
+export async function updatePrayerEntry(
+  _prevState: PrayerEntryFormState,
+  formData: FormData,
+): Promise<PrayerEntryFormState> {
   const id = String(formData.get("id") ?? "");
   const name = String(formData.get("name") ?? "").trim();
-  if (!id || !name) return;
+  if (!id) return null;
+  if (!name) return { error: PRAYER_EMPTY_ERROR, name };
 
   const supabase = await createClient();
   const { error } = await supabase.from("prayer_fixed_entries").update({ name }).eq("id", id);
-  if (error) throw new Error(error.message);
+  if (error) {
+    if (error.code === PG_UNIQUE_VIOLATION) return { error: PRAYER_DUPLICATE_ERROR, name };
+    throw new Error(error.message);
+  }
 
   revalidatePath("/configuracoes");
+  return { name };
 }
 
 export async function deletePrayerEntry(id: string) {

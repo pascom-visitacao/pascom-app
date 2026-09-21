@@ -92,7 +92,7 @@ export default async function DashboardPage() {
         </form>
       </div>
 
-      <Suspense fallback={null}>
+      <Suspense fallback={<div className="skeleton" style={{ height: 74, marginBottom: "var(--space-6)" }} />}>
         <PrayerCard currentUserId={user.id} />
       </Suspense>
 

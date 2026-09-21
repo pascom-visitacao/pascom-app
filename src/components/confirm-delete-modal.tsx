@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useId, type ReactNode } from "react";
 
 // Modal de confirmação genérico pra qualquer ação destrutiva do app -
 // cada botão que usa isso mantém sua própria lógica (buscar contagem de
@@ -24,6 +24,10 @@ export function ConfirmDeleteModal({
   isPending?: boolean;
   confirmLabel?: string;
 }) {
+  // Um id por instância: uma página pode montar vários modais (um por linha)
+  // e um id fixo faria todos herdarem o título do primeiro.
+  const titleId = useId();
+
   return (
     <div
       className={`modal-overlay${open ? " is-open" : ""}`}
@@ -34,11 +38,11 @@ export function ConfirmDeleteModal({
         className="modal modal-sm"
         role="dialog"
         aria-modal="true"
-        aria-labelledby="confirm-delete-title"
+        aria-labelledby={titleId}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="modal-header">
-          <h3 className="modal-title" id="confirm-delete-title">
+          <h3 className="modal-title" id={titleId}>
             {title}
           </h3>
           <button type="button" className="modal-close" aria-label="Fechar" onClick={onClose}>
