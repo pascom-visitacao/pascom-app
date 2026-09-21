@@ -1,7 +1,8 @@
 import Image from "next/image";
 import { redirect } from "next/navigation";
 import { getCurrentProfile, getCurrentUser, getSupabase } from "@/lib/supabase/request";
-import { NavLink } from "./nav-link";
+import type { BounceSidebarItem } from "./bounce-sidebar";
+import { SidebarNav } from "./sidebar-nav";
 import { MobileNav } from "./mobile-nav";
 import { NavStateProvider, ApprovalsBadge } from "./nav-state";
 import { AreaOnboardingModal } from "./area-onboarding-modal";
@@ -49,6 +50,27 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     ? await supabase.from("areas").select("id, name").order("name")
     : { data: [] };
 
+  const sidebarItems: BounceSidebarItem[] = [
+    { label: "Geral", heading: true },
+    { label: "Início", href: "/inicio" },
+    { label: "Tarefas", href: "/tarefas" },
+    { label: "Agenda", href: "/agenda" },
+    { label: "Equipamentos", href: "/equipamentos" },
+    { label: "Enviar fotos", href: "/materiais" },
+    { label: "Acervo", href: "/acervo" },
+    { label: "Equipe", href: "/equipe" },
+    { label: "Meu perfil", href: "/perfil" },
+    { label: "Instalar app", href: "/instalar" },
+    { label: "Sobre o app", href: "/sobre" },
+    ...(isCoordenacao
+      ? ([
+          { label: "Administração", heading: true },
+          { label: "Equipe & Áreas", href: "/areas" },
+          { label: "Configurações", href: "/configuracoes", trailing: <ApprovalsBadge /> },
+        ] satisfies BounceSidebarItem[])
+      : []),
+  ];
+
   return (
     <NavStateProvider initialApprovals={pendingApprovalsCount} isCoordenacao={isCoordenacao}>
       <div className="ds-shell">
@@ -61,30 +83,8 @@ export default async function AppLayout({ children }: { children: React.ReactNod
             height={35}
             className="ds-sidebar-logo"
           />
-          <nav>
-            <div className="ds-nav-group">
-              <div className="ds-nav-group-title">Geral</div>
-              <NavLink href="/inicio">Início</NavLink>
-              <NavLink href="/tarefas">Tarefas</NavLink>
-              <NavLink href="/agenda">Agenda</NavLink>
-              <NavLink href="/equipamentos">Equipamentos</NavLink>
-              <NavLink href="/materiais">Enviar fotos</NavLink>
-              <NavLink href="/acervo">Acervo</NavLink>
-              <NavLink href="/equipe">Equipe</NavLink>
-              <NavLink href="/perfil">Meu perfil</NavLink>
-              <NavLink href="/instalar">Instalar app</NavLink>
-              <NavLink href="/sobre">Sobre o app</NavLink>
-            </div>
-            {isCoordenacao && (
-              <div className="ds-nav-group">
-                <div className="ds-nav-group-title">Administração</div>
-                <NavLink href="/areas">Equipe &amp; Áreas</NavLink>
-                <NavLink href="/configuracoes">
-                  Configurações
-                  <ApprovalsBadge />
-                </NavLink>
-              </div>
-            )}
+          <nav aria-label="Navegação principal">
+            <SidebarNav items={sidebarItems} />
           </nav>
         </aside>
         <main className="ds-main">
