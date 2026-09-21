@@ -22,9 +22,11 @@ function normalizeOne<T>(raw: unknown): T | null {
 export default async function AtividadesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ area?: string }>;
+  searchParams: Promise<{ area?: string; origem?: string }>;
 }) {
-  const { area: areaParam } = await searchParams;
+  const { area: areaParam, origem: origemParam } = await searchParams;
+  const onlyExternal = origemParam === "pedido_externo";
+  const originQs = onlyExternal ? "&origem=pedido_externo" : "";
   const supabase = await createClient();
 
   const {
@@ -49,10 +51,13 @@ export default async function AtividadesPage({
   const activitiesSelect =
     "id, title, description, status, due_date, source, priority, is_urgent, area_id, area:areas(id, name), assignee:users(id, name, avatar_url, account_status), request:external_requests(attachment_urls), event:events(id, title), parish_ministry:parish_ministries(id, name), comments:activity_comments(id, body, created_at, author:users(id, name, account_status))";
 
+  let activitiesQuery = supabase.from("activities").select(activitiesSelect).order("created_at", { ascending: true });
+  if (onlyExternal) activitiesQuery = activitiesQuery.eq("source", "pedido_externo");
+
   const { data: rawActivities } = showAllAreas
-    ? await supabase.from("activities").select(activitiesSelect).order("created_at", { ascending: true })
+    ? await activitiesQuery
     : selectedAreaId
-      ? await supabase.from("activities").select(activitiesSelect).eq("area_id", selectedAreaId).order("created_at", { ascending: true })
+      ? await activitiesQuery.eq("area_id", selectedAreaId)
       : { data: [] };
 
   // members: sempre a lista completa (sem filtro), pra poder recalcular
@@ -108,7 +113,7 @@ export default async function AtividadesPage({
         {areas && areas.length > 0 && (
           <div className="flex flex-wrap" style={{ gap: "var(--space-2)" }}>
             <Link
-              href="/tarefas?area=todos"
+              href={`/tarefas?area=todos${originQs}`}
               className={`btn btn-sm ${showAllAreas ? "btn-primary" : "btn-outline"}`}
             >
               Todos
@@ -116,7 +121,7 @@ export default async function AtividadesPage({
             {areas.map((area) => (
               <Link
                 key={area.id}
-                href={`/tarefas?area=${area.id}`}
+                href={`/tarefas?area=${area.id}${originQs}`}
                 className={`btn btn-sm ${!showAllAreas && area.id === selectedAreaId ? "btn-primary" : "btn-outline"}`}
               >
                 {area.name}
@@ -125,6 +130,15 @@ export default async function AtividadesPage({
           </div>
         )}
       </div>
+
+      {onlyExternal && (
+        <div className="flex items-center" style={{ gap: "var(--space-3)", marginBottom: "var(--space-6)" }}>
+          <span className="badge badge-primary">Só pedidos externos</span>
+          <Link href={areaParam ? `/tarefas?area=${areaParam}` : "/tarefas"} className="btn btn-ghost btn-sm">
+            Limpar filtro
+          </Link>
+        </div>
+      )}
 
       {!selectedAreaId && !showAllAreas ? (
         <div className="alert alert-info">

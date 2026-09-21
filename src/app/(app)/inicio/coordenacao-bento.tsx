@@ -55,7 +55,7 @@ export async function CoordenacaoBento({ supabase }: { supabase: SupabaseClient<
     supabase
       .from("external_requests")
       .select("id, requester_name, status, activity:activities(status)")
-      .neq("status", "cancelado")
+      .eq("status", "recebido")
       .order("created_at", { ascending: false }),
     supabase.from("events").select("date").gte("date", weekStart.toISOString()).lt("date", weekEnd.toISOString()),
     supabase.from("activities").select("id", { count: "exact", head: true }).is("assignee_id", null),
@@ -78,10 +78,7 @@ export async function CoordenacaoBento({ supabase }: { supabase: SupabaseClient<
     supabase.from("schedules").select("id, event_id").is("user_id", null),
   ]);
 
-  const pending = (rawRequests ?? []).filter((r) => {
-    const activity = normalizeOne<{ status: string }>(r.activity);
-    return !activity || activity.status !== "concluido";
-  });
+  const pending = rawRequests ?? [];
 
   const eventDays = new Set((eventsThisWeek ?? []).map((e) => new Date(e.date).toDateString()));
 
@@ -104,22 +101,28 @@ export async function CoordenacaoBento({ supabase }: { supabase: SupabaseClient<
 
   return (
     <div className="bento">
-      <Link href="/solicitar" target="_blank" className="bento-tile tile-pedidos">
+      <Link href="/tarefas?area=todos&origem=pedido_externo" className="bento-tile tile-pedidos">
         <div className="tile-label">Pedidos externos pendentes</div>
-        <div className="tile-number">{pending.length}</div>
-        <div className="tile-list">
-          {pending.slice(0, 2).map((r) => {
-            const activity = normalizeOne<{ status: string }>(r.activity);
-            const label = activity ? STATUS_LABELS[activity.status] ?? activity.status : "Recebido";
-            return (
-              <div key={r.id} className="tile-list-item">
-                <span>{r.requester_name}</span>
-                <span className="badge">{label}</span>
-              </div>
-            );
-          })}
-        </div>
-        <div className="tile-cta">Ver formulário público →</div>
+        {pending.length === 0 ? (
+          <div className="tile-empty">Nenhum pedido pendente no momento</div>
+        ) : (
+          <>
+            <div className="tile-number">{pending.length}</div>
+            <div className="tile-list">
+              {pending.slice(0, 2).map((r) => {
+                const activity = normalizeOne<{ status: string }>(r.activity);
+                const label = activity ? STATUS_LABELS[activity.status] ?? activity.status : "Recebido";
+                return (
+                  <div key={r.id} className="tile-list-item">
+                    <span>{r.requester_name}</span>
+                    <span className="badge">{label}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </>
+        )}
+        <div className="tile-cta">Ver pedidos →</div>
       </Link>
 
       <div className="bento-tile tile-semana is-light">

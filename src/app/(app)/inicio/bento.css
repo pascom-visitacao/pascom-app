@@ -28,6 +28,7 @@
 .tile-pedidos .tile-list-item { display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.12); border-radius: var(--radius-md); padding: var(--space-3) var(--space-4); font-size: var(--text-sm); color: #fff; }
 .tile-pedidos .tile-list-item span:first-child { font-weight: var(--weight-medium); }
 .tile-pedidos .tile-list-item .badge { background: rgba(255,255,255,0.85); color: var(--color-green-800); }
+.tile-pedidos .tile-empty { flex: 1; display: flex; align-items: center; font-family: var(--font-display); font-size: var(--text-xl); font-weight: 600; line-height: 1.25; color: #fff; }
 
 .tile-semana { grid-column: span 2; }
 .tile-semana .week-row { display: flex; gap: var(--space-2); margin-top: var(--space-3); }
