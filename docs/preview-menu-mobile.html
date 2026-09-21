@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pascom App — Comparação de Menu Mobile</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500..800&family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --color-green-50:  #f6fbf4;
+  --color-green-100: #eaf6e6;
+  --color-green-200: #d2ecc9;
+  --color-green-300: #b4dfa5;
+  --color-green-400: #8fcf78;
+  --color-green-500: #6abf4b;
+  --color-green-600: #5ca041;
+  --color-green-700: #4d8236;
+  --color-green-800: #3f632c;
+  --color-green-900: #324823;
+  --color-blue-50:  #f0f7fb;
+  --color-blue-100: #dbedf5;
+  --color-blue-200: #b2d8ea;
+  --color-blue-300: #80bedc;
+  --color-blue-400: #409dcb;
+  --color-blue-500: #007cba;
+  --color-blue-600: #05699c;
+  --color-blue-700: #09577e;
+  --color-blue-800: #0e445f;
+  --color-blue-900: #123444;
+  --color-amber-50:  #fffbf1;
+  --color-amber-100: #fff5de;
+  --color-amber-200: #fee9b9;
+  --color-amber-300: #feda8a;
+  --color-amber-400: #fec850;
+  --color-amber-500: #fdb615;
+  --color-amber-600: #d49914;
+  --color-amber-700: #ab7c14;
+  --color-amber-800: #825f13;
+  --color-amber-900: #5e4513;
+  --color-red-50:  #fdf4f3;
+  --color-red-100: #fbe6e4;
+  --color-red-200: #f6c9c5;
+  --color-red-300: #f0a59e;
+  --color-red-400: #e8786e;
+  --color-red-500: #e14b3d;
+  --color-red-600: #bd4135;
+  --color-red-700: #99382e;
+  --color-red-800: #762e26;
+  --color-red-900: #56251f;
+  --color-neutral-0:   #ffffff;
+  --color-neutral-50:  #faf9f9;
+  --color-neutral-100: #f2f2f2;
+  --color-neutral-200: #e0e0e0;
+  --color-neutral-300: #c1c0c1;
+  --color-neutral-400: #9c9a9b;
+  --color-neutral-500: #777475;
+  --color-neutral-600: #535051;
+  --color-neutral-700: #393536;
+  --color-neutral-800: #2c2829;
+  --color-neutral-900: #231f20;
+  --color-neutral-950: #151313;
+  --color-primary:         var(--color-blue-500);
+  --color-primary-hover:   var(--color-blue-600);
+  --color-primary-active:  var(--color-blue-700);
+  --color-primary-subtle:  var(--color-blue-50);
+  --color-secondary:        var(--color-green-500);
+  --color-secondary-hover:  var(--color-green-600);
+  --color-secondary-active: var(--color-green-700);
+  --color-secondary-subtle: var(--color-green-50);
+  --color-accent:        var(--color-amber-500);
+  --color-accent-hover:  var(--color-amber-600);
+  --color-accent-subtle: var(--color-amber-50);
+  --color-success:        var(--color-green-500);
+  --color-success-subtle: var(--color-green-50);
+  --color-success-text:   var(--color-green-800);
+  --color-warning:        var(--color-amber-500);
+  --color-warning-subtle: var(--color-amber-50);
+  --color-warning-text:   var(--color-amber-900);
+  --color-danger:        var(--color-red-500);
+  --color-danger-hover:  var(--color-red-600);
+  --color-danger-subtle: var(--color-red-50);
+  --color-danger-text:   var(--color-red-800);
+  --color-info:        var(--color-blue-500);
+  --color-info-subtle: var(--color-blue-50);
+  --color-info-text:   var(--color-blue-800);
+  --color-bg:            var(--color-neutral-0);
+  --color-bg-subtle:     var(--color-neutral-50);
+  --color-bg-inset:      var(--color-neutral-100);
+  --color-surface:       var(--color-neutral-0);
+  --color-border:        var(--color-neutral-200);
+  --color-border-strong: var(--color-neutral-300);
+  --color-text:          var(--color-neutral-900);
+  --color-text-muted:    var(--color-neutral-600);
+  --color-text-subtle:   var(--color-neutral-500);
+  --color-text-inverse:  var(--color-neutral-0);
+  --color-text-link:     var(--color-blue-600);
+  --color-dark-bg:      var(--color-neutral-900);
+  --color-dark-bg-alt:  var(--color-neutral-950);
+  --color-dark-border:  var(--color-neutral-700);
+  --color-dark-text:    var(--color-neutral-0);
+  --color-dark-text-muted: var(--color-neutral-400);
+  --font-display: 'Bricolage Grotesque', ui-rounded, 'Segoe UI', sans-serif;
+  --font-body:    'Hanken Grotesk', -apple-system, 'Segoe UI', sans-serif;
+  --font-mono:    'JetBrains Mono', ui-monospace, 'SF Mono', monospace;
+  --text-xs:   0.75rem;
+  --text-sm:   0.875rem;
+  --text-base: 1rem;
+  --text-md:   1.125rem;
+  --text-lg:   1.25rem;
+  --text-xl:   1.5rem;
+  --text-2xl:  2rem;
+  --text-3xl:  2.5rem;
+  --text-4xl:  3rem;
+  --text-5xl:  4rem;
+  --leading-tight:  1.1;
+  --leading-snug:   1.3;
+  --leading-normal: 1.5;
+  --leading-loose:  1.7;
+  --weight-regular:  400;
+  --weight-medium:   500;
+  --weight-semibold: 600;
+  --weight-bold:     700;
+  --space-0:   0;
+  --space-1:   0.125rem;
+  --space-2:   0.25rem;
+  --space-3:   0.5rem;
+  --space-4:   0.75rem;
+  --space-5:   1rem;
+  --space-6:   1.25rem;
+  --space-7:   1.5rem;
+  --space-8:   2rem;
+  --space-9:   2.5rem;
+  --space-10:  3rem;
+  --space-11:  4rem;
+  --space-12:  5rem;
+  --space-13:  6rem;
+  --radius-none: 0;
+  --radius-xs:   0.125rem;
+  --radius-sm:   0.25rem;
+  --radius-md:   0.5rem;
+  --radius-lg:   0.75rem;
+  --radius-xl:   1rem;
+  --radius-2xl:  1.25rem;
+  --radius-full: 9999px;
+  --shadow-sm: 0 1px 2px rgba(35, 31, 32, 0.06), 0 1px 1px rgba(35, 31, 32, 0.04);
+  --shadow-md: 0 4px 10px rgba(35, 31, 32, 0.08), 0 2px 4px rgba(35, 31, 32, 0.04);
+  --shadow-lg: 0 12px 24px rgba(35, 31, 32, 0.10), 0 4px 8px rgba(35, 31, 32, 0.05);
+  --shadow-xl: 0 24px 48px rgba(35, 31, 32, 0.14), 0 8px 16px rgba(35, 31, 32, 0.06);
+  --shadow-focus: 0 0 0 4px rgba(0, 124, 186, 0.25);
+  --ease-out:    cubic-bezier(0.16, 1, 0.3, 1);
+  --duration-fast: 120ms;
+  --duration-base: 200ms;
+  --duration-slow: 320ms;
+  --sidebar-width: 272px;
+  --content-max-width: 920px;
+  --z-sidebar: 100;
+  --z-header: 200;
+  --z-modal: 300;
+  --z-tooltip: 400;
+}
+*, *::before, *::after { box-sizing: border-box; }
+* { margin: 0; }
+html { scroll-behavior: smooth; scroll-padding-top: 24px; }
+body {
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  color: var(--color-text);
+  background: var(--color-bg);
+  -webkit-font-smoothing: antialiased;
+}
+img, svg { display: block; max-width: 100%; }
+a { color: var(--color-text-link); text-decoration: none; }
+a:hover { text-decoration: underline; }
+button { font: inherit; }
+:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; border-radius: var(--radius-xs); }
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  font-weight: var(--weight-semibold);
+  line-height: var(--leading-tight);
+  color: var(--color-text);
+}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body { margin: 0; background: var(--color-bg-subtle); overflow-x: hidden; }
+.switcher { position: sticky; top: 0; z-index: 500; display: flex; gap: var(--space-2); padding: var(--space-4); background: var(--color-surface); border-bottom: 1px solid var(--color-border); }
+.switcher button { flex: 1; border: 1px solid var(--color-border); background: var(--color-surface); border-radius: var(--radius-md); padding: var(--space-3) var(--space-2); font-family: var(--font-body); font-size: 12px; font-weight: var(--weight-medium); color: var(--color-text-muted); }
+.switcher button.is-active { background: var(--color-primary); color: #fff; border-color: var(--color-primary); }
+.phone { max-width: 420px; margin: 0 auto; position: relative; min-height: 100vh; background: var(--color-bg); }
+.fake-header { background: var(--color-dark-bg); color: #fff; padding: var(--space-6) var(--space-6) var(--space-7); }
+.fake-header .greet { font-family: var(--font-display); font-size: var(--text-xl); font-weight: 600; }
+.fake-header .sub { color: rgba(255,255,255,0.55); font-size: var(--text-sm); margin-top: 2px; }
+.fake-content { padding: var(--space-6); display: flex; flex-direction: column; gap: var(--space-4); padding-bottom: 140px; }
+.fake-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: var(--radius-lg); padding: var(--space-5); }
+.fake-card .lbl { font-size: var(--text-xs); text-transform: uppercase; letter-spacing: .05em; color: var(--color-text-subtle); margin-bottom: var(--space-2); }
+.fake-card .val { font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 600; }
+.nav-float { display: none; position: fixed; left: 0; right: 0; bottom: 18px; justify-content: center; z-index: 400; }
+.nav-float .bar { display: flex; gap: var(--space-2); background: var(--color-dark-bg); padding: var(--space-2); border-radius: var(--radius-full); box-shadow: var(--shadow-xl); }
+.nav-float .item { display: flex; flex-direction: column; align-items: center; gap: 2px; width: 62px; padding: var(--space-2) 0; border-radius: var(--radius-full); color: rgba(255,255,255,0.55); }
+.nav-float .item svg { width: 20px; height: 20px; }
+.nav-float .item span { font-size: 10px; font-weight: var(--weight-medium); }
+.nav-float .item.is-active { background: var(--color-primary); color: #fff; }
+.nav-rail { display: none; position: fixed; left: 0; top: 0; bottom: 0; width: 60px; background: var(--color-dark-bg); flex-direction: column; align-items: center; padding-top: var(--space-8); gap: var(--space-3); z-index: 400; }
+.nav-rail .item { display: flex; flex-direction: column; align-items: center; gap: 3px; width: 44px; padding: var(--space-2) 0; border-radius: var(--radius-md); color: rgba(255,255,255,0.55); }
+.nav-rail .item svg { width: 19px; height: 19px; }
+.nav-rail .item span { font-size: 9px; font-weight: var(--weight-medium); }
+.nav-rail .item.is-active { background: var(--color-primary); color: #fff; }
+body[data-menu="rail"] .phone { padding-left: 60px; }
+.nav-grid-trigger { display: none; position: fixed; top: 18px; left: 18px; z-index: 450; width: 44px; height: 44px; border-radius: var(--radius-full); background: var(--color-dark-bg); color: #fff; align-items: center; justify-content: center; box-shadow: var(--shadow-lg); }
+.nav-grid-trigger svg { width: 20px; height: 20px; }
+.nav-grid-overlay { display: none; position: fixed; inset: 0; background: var(--color-dark-bg); z-index: 600; padding: var(--space-8) var(--space-6); }
+.nav-grid-overlay.is-open { display: block; }
+.nav-grid-overlay .close { position: absolute; top: 18px; right: 18px; width: 40px; height: 40px; border-radius: var(--radius-full); background: rgba(255,255,255,0.1); color: #fff; display: flex; align-items: center; justify-content: center; }
+.nav-grid-overlay .close svg { width: 18px; height: 18px; }
+.nav-grid-overlay .title { color: rgba(255,255,255,0.5); font-size: var(--text-xs); text-transform: uppercase; letter-spacing: .06em; margin: var(--space-8) 0 var(--space-5); }
+.nav-grid-overlay .grid { display: grid; grid-template-columns: 1fr 1fr; gap: var(--space-4); }
+.nav-grid-overlay .item { display: flex; flex-direction: column; gap: var(--space-3); background: rgba(255,255,255,0.06); border-radius: var(--radius-xl); padding: var(--space-6) var(--space-5); color: #fff; }
+.nav-grid-overlay .item.is-active { background: var(--color-primary); }
+.nav-grid-overlay .item svg { width: 24px; height: 24px; }
+.nav-grid-overlay .item span { font-family: var(--font-body); font-weight: var(--weight-medium); font-size: var(--text-sm); }
+body[data-menu="float"] .nav-float { display: flex; }
+body[data-menu="rail"] .nav-rail { display: flex; }
+body[data-menu="grid"] .nav-grid-trigger { display: flex; }
+</style>
+</head>
+<body data-menu="float">
+
+<svg style="display:none">
+  <symbol id="i-home" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11.5 12 4l8 7.5"/><path d="M6 10v9a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-9"/><path d="M10 20v-5h4v5"/></symbol>
+  <symbol id="i-cols" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="5" height="14" rx="1"/><rect x="9.5" y="5" width="5" height="9" rx="1"/><rect x="16" y="5" width="5" height="11" rx="1"/></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15.5" rx="2"/><line x1="3.5" y1="9.5" x2="20.5" y2="9.5"/><line x1="8" y1="2.7" x2="8" y2="6.3"/><line x1="16" y1="2.7" x2="16" y2="6.3"/></symbol>
+  <symbol id="i-cam" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1Z"/><circle cx="12" cy="13" r="3.3"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></symbol>
+  <symbol id="i-grid" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="7" height="7" rx="1.3"/><rect x="13" y="4" width="7" height="7" rx="1.3"/><rect x="4" y="13" width="7" height="7" rx="1.3"/><rect x="13" y="13" width="7" height="7" rx="1.3"/></symbol>
+</svg>
+
+<div class="switcher">
+  <button class="is-active" onclick="setMenu('float', this)">A · Flutuante</button>
+  <button onclick="setMenu('rail', this)">B · Rail lateral</button>
+  <button onclick="setMenu('grid', this)">C · Grid</button>
+</div>
+
+<div class="phone">
+  <div class="fake-header">
+    <div class="greet">Bom dia, Matheus</div>
+    <div class="sub">Aqui está o panorama da Pascom hoje.</div>
+  </div>
+  <div class="fake-content">
+    <div class="fake-card"><div class="lbl">Minhas atividades pendentes</div><div class="val">3</div></div>
+    <div class="fake-card"><div class="lbl">Vagas abertas na minha área</div><div class="val">2</div></div>
+    <div class="fake-card"><div class="lbl">Equipamento comigo</div><div class="val">Câmera Canon T7</div></div>
+  </div>
+</div>
+
+<div class="nav-float">
+  <div class="bar">
+    <div class="item is-active"><svg><use href="#i-home"/></svg><span>Painel</span></div>
+    <div class="item"><svg><use href="#i-cols"/></svg><span>Atividades</span></div>
+    <div class="item"><svg><use href="#i-cal"/></svg><span>Calendário</span></div>
+    <div class="item"><svg><use href="#i-cam"/></svg><span>Equip.</span></div>
+  </div>
+</div>
+
+<div class="nav-rail">
+  <div class="item is-active"><svg><use href="#i-home"/></svg><span>Painel</span></div>
+  <div class="item"><svg><use href="#i-cols"/></svg><span>Ativid.</span></div>
+  <div class="item"><svg><use href="#i-cal"/></svg><span>Calend.</span></div>
+  <div class="item"><svg><use href="#i-cam"/></svg><span>Equip.</span></div>
+</div>
+
+<div class="nav-grid-trigger" onclick="document.getElementById('gridOverlay').classList.add('is-open')"><svg><use href="#i-grid"/></svg></div>
+<div class="nav-grid-overlay" id="gridOverlay">
+  <div class="close" onclick="document.getElementById('gridOverlay').classList.remove('is-open')"><svg><use href="#i-close"/></svg></div>
+  <div class="title">Navegar</div>
+  <div class="grid">
+    <div class="item is-active"><svg><use href="#i-home"/></svg><span>Painel</span></div>
+    <div class="item"><svg><use href="#i-cols"/></svg><span>Atividades</span></div>
+    <div class="item"><svg><use href="#i-cal"/></svg><span>Calendário</span></div>
+    <div class="item"><svg><use href="#i-cam"/></svg><span>Equipamentos</span></div>
+  </div>
+</div>
+
+<script>
+function setMenu(name, btn) {
+  document.body.setAttribute('data-menu', name);
+  document.querySelectorAll('.switcher button').forEach(b => b.classList.remove('is-active'));
+  btn.classList.add('is-active');
+  document.getElementById('gridOverlay').classList.remove('is-open');
+}
+</script>
+</body>
+</html>
