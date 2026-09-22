@@ -1,13 +1,15 @@
 "use client";
 
 import { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { Zap } from "lucide-react";
 import { Icon } from "@/components/icon";
 import { Assignees, type AssigneePerson } from "@/components/assignees";
+import { ActivityAttachments, type ActivityMaterial } from "@/components/activity-attachments";
 import { StatusSelect } from "./status-select";
 import { DeleteActivityButton } from "./delete-activity-button";
-import { assumeActivity, reassignActivity, toggleUrgent, type ActivityStatus } from "./actions";
+import { assumeActivity, reassignActivity, toggleUrgent, updateActivityArea, type ActivityStatus } from "./actions";
 import { CommentsSection, type CommentData } from "./comments-section";
 
 const PRIORITY_LABELS: Record<string, string> = { baixa: "Baixa", media: "Média", alta: "Alta" };
@@ -28,9 +30,13 @@ export type ActivityCardData = {
   is_urgent: boolean;
   assignee: { id: string; name: string; avatar_url: string | null; account_status: string } | null;
   attachments: string[];
+  materials: ActivityMaterial[];
   event: { id: string; title: string } | null;
   ministry: { id: string; name: string } | null;
   comments: CommentData[];
+  // Sempre presente (é a área "dona" da atividade) - diferente de `area`
+  // abaixo, que é só o objeto {id,name} pra exibir o badge.
+  area_id: string;
   // Só populado no modo "Todos" (ver tarefas/page.tsx) - numa área
   // específica já dá pra ver pelas abas, então fica null e o badge não
   // aparece.
@@ -125,6 +131,39 @@ function AssigneePicker({
   );
 }
 
+// Só renderizado pra coordenação (ver ActivityCard abaixo) - Pasconeiro
+// assume, libera e comenta, mas não reestrutura a atividade pra outra
+// área. O trigger enforce_activity_reassignment (fase8) é o backstop
+// real contra alguém chamando updateActivityArea direto sem passar pela
+// UI; aqui é só a tela deixando de oferecer o controle a quem não pode.
+function AreaPicker({
+  activityId,
+  areaId,
+  areas,
+}: {
+  activityId: string;
+  areaId: string;
+  areas: { id: string; name: string }[];
+}) {
+  const [isPending, startTransition] = useTransition();
+
+  return (
+    <div className="input-wrap select-wrap" style={{ width: 200, flexShrink: 0 }}>
+      <select
+        value={areaId}
+        disabled={isPending}
+        onChange={(e) => startTransition(() => updateActivityArea(activityId, e.target.value))}
+      >
+        {areas.map((area) => (
+          <option key={area.id} value={area.id}>
+            {area.name}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
 function Attachments({ attachments, size }: { attachments: string[]; size: number }) {
   if (attachments.length === 0) return null;
   return (
@@ -155,15 +194,18 @@ export function ActivityCard({
   isCoordenacao,
   currentUserId,
   members,
+  areas,
 }: {
   activity: ActivityCardData;
   canWrite: boolean;
   isCoordenacao: boolean;
   currentUserId: string;
   members: Member[];
+  areas: { id: string; name: string }[];
 }) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
   return (
     <>
@@ -251,6 +293,16 @@ export function ActivityCard({
 
             <div className="flex flex-col" style={{ gap: "var(--space-3)" }}>
               <div className="flex flex-wrap items-center" style={{ gap: "var(--space-3)" }}>
+                <strong>Área:</strong>
+                {isCoordenacao ? (
+                  <AreaPicker activityId={activity.id} areaId={activity.area_id} areas={areas} />
+                ) : (
+                  <span className="badge badge-neutral">
+                    {activity.area?.name ?? areas.find((a) => a.id === activity.area_id)?.name ?? "—"}
+                  </span>
+                )}
+              </div>
+              <div className="flex flex-wrap items-center" style={{ gap: "var(--space-3)" }}>
                 <strong>Responsável:</strong>
                 {isCoordenacao ? (
                   <>
@@ -288,6 +340,18 @@ export function ActivityCard({
                   <strong>Ministério / pastoral:</strong> {activity.ministry.name}
                 </div>
               )}
+            </div>
+
+            <div style={{ marginTop: "var(--space-6)" }}>
+              <div className="card-title" style={{ marginBottom: "var(--space-3)" }}>
+                Anexos
+              </div>
+              <ActivityAttachments
+                activityId={activity.id}
+                materials={activity.materials}
+                canUpload={canWrite}
+                onUploaded={() => router.refresh()}
+              />
             </div>
 
             <CommentsSection

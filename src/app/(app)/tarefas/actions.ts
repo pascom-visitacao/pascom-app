@@ -7,7 +7,10 @@ import { sendEmail, activityAssignedEmail } from "@/lib/email";
 export type ActivityStatus = "a_fazer" | "em_producao" | "revisao" | "concluido";
 export type ActivityPriority = "baixa" | "media" | "alta";
 
-export async function createActivity(formData: FormData) {
+// Retorna o id da atividade criada (não só void) - o form precisa dele
+// pra anexar imagens logo em seguida (materials.related_activity_id só
+// aceita um activity_id que já existe, ver new-activity-form.tsx).
+export async function createActivity(formData: FormData): Promise<{ error: string } | { id: string }> {
   const title = String(formData.get("title") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
   const areaId = String(formData.get("area_id") ?? "");
@@ -17,19 +20,38 @@ export async function createActivity(formData: FormData) {
   const eventId = String(formData.get("event_id") ?? "");
   const parishMinistryId = String(formData.get("parish_ministry_id") ?? "");
 
-  if (!title || !areaId) return;
+  if (!title || !areaId) return { error: "Preencha o título e a área." };
 
   const supabase = await createClient();
-  const { error } = await supabase.from("activities").insert({
-    title,
-    description: description || null,
-    area_id: areaId,
-    assignee_id: assigneeId || null,
-    due_date: dueDate || null,
-    priority,
-    event_id: eventId || null,
-    parish_ministry_id: parishMinistryId || null,
-  });
+  const { data, error } = await supabase
+    .from("activities")
+    .insert({
+      title,
+      description: description || null,
+      area_id: areaId,
+      assignee_id: assigneeId || null,
+      due_date: dueDate || null,
+      priority,
+      event_id: eventId || null,
+      parish_ministry_id: parishMinistryId || null,
+    })
+    .select("id")
+    .single();
+
+  if (error) return { error: error.message };
+
+  revalidatePath("/tarefas");
+  return { id: data.id };
+}
+
+// Só coordenação geral pode mudar a área depois de criada - a UI já
+// esconde o controle pra quem não é, mas o trigger
+// enforce_activity_reassignment (20260922090000_fase8_kanban_area_edit_lock.sql)
+// é o backstop real, igual o padrão já usado pra reatribuição de
+// responsável.
+export async function updateActivityArea(activityId: string, areaId: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.from("activities").update({ area_id: areaId }).eq("id", activityId);
 
   if (error) throw new Error(error.message);
 

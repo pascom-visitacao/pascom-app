@@ -56,3 +56,85 @@
     display: block;
   }
 }
+
+/* Miniaturas de imagem escolhida (ainda não enviada) no "+Nova tarefa" e
+   no modal de detalhe - mesmo padrão visual de
+   src/app/(app)/materiais/materiais.css (.materiais-thumb-remove) e de
+   src/app/solicitar/solicitar.css (.solicitar-thumb-remove), duplicado
+   aqui com nome próprio porque esse arquivo já é o CSS compartilhado do
+   Kanban (importado 1x em tarefas/page.tsx, então tanto o form quanto o
+   card do modal enxergam essas classes sem precisar importar de outra
+   feature). */
+.activity-attach-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+  gap: var(--space-3);
+}
+
+.activity-attach-thumb {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+}
+
+.activity-attach-thumb img {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+}
+
+.activity-attach-thumb-name {
+  font-size: var(--text-xs);
+  font-weight: var(--weight-medium);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.activity-attach-thumb-remove {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  width: 22px;
+  height: 22px;
+  border-radius: var(--radius-full);
+  border: none;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+  font-size: var(--text-sm);
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* Materiais já anexados (existentes) - link pro Drive, não tem preview
+   de imagem embutido porque o arquivo mora no Drive institucional, não
+   num bucket público como os anexos de pedido externo (ver
+   Attachments em activity-card.tsx). */
+.activity-attach-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.activity-attach-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: var(--text-sm);
+}
+
+.activity-attach-item-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

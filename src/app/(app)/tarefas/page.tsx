@@ -47,7 +47,7 @@ export default async function AtividadesPage({
   const selectedAreaId = showAllAreas ? null : (areaParam ?? myAreaIds[0] ?? areas?.[0]?.id ?? null);
 
   const activitiesSelect =
-    "id, title, description, status, due_date, source, priority, is_urgent, area_id, area:areas(id, name), assignee:users(id, name, avatar_url, account_status), request:external_requests(attachment_urls), event:events(id, title), parish_ministry:parish_ministries(id, name), comments:activity_comments(id, body, created_at, author:users(id, name, account_status))";
+    "id, title, description, status, due_date, source, priority, is_urgent, area_id, area:areas(id, name), assignee:users(id, name, avatar_url, account_status), request:external_requests(attachment_urls), event:events(id, title), parish_ministry:parish_ministries(id, name), comments:activity_comments(id, body, created_at, author:users(id, name, account_status)), materials:materials(id, name, drive_file_id)";
 
   // Concluídas só dos últimos DONE_WINDOW_DAYS dias: a coluna só crescia
   // (todo o histórico, com comentários embutidos, a cada clique).
@@ -82,7 +82,7 @@ export default async function AtividadesPage({
     supabase.from("parish_ministries").select("id, name").order("name"),
   ]);
 
-  const activities: (ActivityCardData & { area_id: string })[] = (rawActivities ?? []).map((a) => ({
+  const activities: ActivityCardData[] = (rawActivities ?? []).map((a) => ({
     id: a.id,
     title: a.title,
     description: a.description,
@@ -95,6 +95,7 @@ export default async function AtividadesPage({
     area: showAllAreas ? normalizeOne(a.area) : null,
     assignee: normalizeOne(a.assignee),
     attachments: normalizeOne<{ attachment_urls: string[] }>(a.request)?.attachment_urls ?? [],
+    materials: (a.materials ?? []).map((m) => ({ id: m.id, name: m.name, driveFileId: m.drive_file_id })),
     event: normalizeOne(a.event),
     ministry: normalizeOne(a.parish_ministry),
     comments: (a.comments ?? [])
@@ -104,10 +105,17 @@ export default async function AtividadesPage({
 
   const areaMembers = (rawAllMembers ?? []).filter((m) => effectiveAreaIds(m).includes(selectedAreaId ?? ""));
 
-  // Modo "Todos": criar exige escolher uma área específica, então o
-  // formulário fica escondido; edição por card usa canWrite calculado
-  // por atividade logo abaixo, não esse booleano único.
-  const canWrite = !showAllAreas && (isCoordenacao || myAreaIds.includes(selectedAreaId ?? ""));
+  // Criar não depende mais de estar numa aba de área específica (o
+  // form ganhou um campo "Área" próprio) - só depende de ter pelo menos
+  // 1 área possível pra usar como padrão. Edição por card usa
+  // cardCanWrite calculado por atividade logo abaixo, não esse booleano.
+  const canCreateActivity = isCoordenacao || myAreaIds.length > 0;
+  const defaultAreaId = selectedAreaId ?? myAreaIds[0] ?? areas?.[0]?.id ?? "";
+  const allMembersWithAreas = (rawAllMembers ?? []).map((m) => ({
+    id: m.id,
+    name: m.name,
+    areaIds: effectiveAreaIds(m),
+  }));
 
   return (
     <div style={{ padding: "var(--space-9)" }}>
@@ -156,11 +164,13 @@ export default async function AtividadesPage({
         </div>
       ) : (
         <>
-          {canWrite && selectedAreaId ? (
+          {canCreateActivity ? (
             <div style={{ marginBottom: "var(--space-8)" }}>
               <NewActivityForm
-                areaId={selectedAreaId}
-                members={areaMembers ?? []}
+                areas={areas ?? []}
+                defaultAreaId={defaultAreaId}
+                myAreaIds={myAreaIds}
+                members={allMembersWithAreas}
                 events={events ?? []}
                 ministries={ministries ?? []}
                 isCoordenacao={isCoordenacao}
@@ -223,6 +233,7 @@ export default async function AtividadesPage({
                             isCoordenacao={isCoordenacao}
                             currentUserId={user.id}
                             members={cardMembers}
+                            areas={areas ?? []}
                           />
                         );
                       })
