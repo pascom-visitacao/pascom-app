@@ -84,7 +84,7 @@ export function AreaAdjustment({
       )}
 
       {error && (
-        <div className="alert alert-danger">
+        <div className="alert alert-danger" role="alert">
           <div>{error}</div>
         </div>
       )}

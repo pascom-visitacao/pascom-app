@@ -67,6 +67,17 @@ export function RequestForm({
     setPreviews(selected.map((f) => ({ name: f.name, url: URL.createObjectURL(f), size: f.size })));
   }
 
+  // Tira só 1 arquivo da seleção sem precisar reabrir o seletor nativo
+  // e escolher os 5 de novo (o SO não pré-marca a seleção anterior).
+  function removeFile(index: number) {
+    setFiles((prev) => prev.filter((_, i) => i !== index));
+    setPreviews((prev) => {
+      const removed = prev[index];
+      if (removed) URL.revokeObjectURL(removed.url);
+      return prev.filter((_, i) => i !== index);
+    });
+  }
+
   if (token) {
     const trackingUrl = `${window.location.origin}/acompanhar/${token}`;
     return (
@@ -137,17 +148,17 @@ export function RequestForm({
       </div>
 
       {error && (
-        <div className="alert alert-danger">
+        <div className="alert alert-danger" role="alert">
           <div>{error}</div>
         </div>
       )}
 
       <div className="field">
-        <label className="field-label">
+        <label className="field-label" htmlFor="category_id">
           Categoria <span className="req">*</span>
         </label>
         <div className="input-wrap select-wrap">
-          <select name="category_id" required defaultValue="">
+          <select id="category_id" name="category_id" required defaultValue="">
             <option value="" disabled>
               Selecione...
             </option>
@@ -161,10 +172,11 @@ export function RequestForm({
       </div>
 
       <div className="field">
-        <label className="field-label">
+        <label className="field-label" htmlFor="description">
           Descrição do pedido <span className="req">*</span>
         </label>
         <textarea
+          id="description"
           className="ds-textarea"
           name="description"
           placeholder="Descreva o que você precisa..."
@@ -173,8 +185,9 @@ export function RequestForm({
       </div>
 
       <div className="field">
-        <label className="field-label">Imagens de referência (opcional)</label>
+        <label className="field-label" htmlFor="attachments">Imagens de referência (opcional)</label>
         <input
+          id="attachments"
           ref={inputRef}
           type="file"
           name="attachments"
@@ -192,11 +205,19 @@ export function RequestForm({
         <span className="field-hint">Até 5 imagens (JPG, PNG, WEBP ou GIF) — comprimidas automaticamente ao enviar.</span>
         {previews.length > 0 && !fileError && (
           <div className="solicitar-grid" style={{ marginTop: "var(--space-2)" }}>
-            {previews.map((p) => (
+            {previews.map((p, index) => (
               <div key={p.url} className="solicitar-thumb">
                 {/* eslint-disable-next-line @next/next/no-img-element -- object URL local (blob:), next/image não suporta */}
                 <img src={p.url} alt={p.name} />
                 <div className="solicitar-thumb-name">{p.name}</div>
+                <button
+                  type="button"
+                  className="solicitar-thumb-remove"
+                  onClick={() => removeFile(index)}
+                  aria-label={`Remover ${p.name}`}
+                >
+                  ×
+                </button>
               </div>
             ))}
           </div>
@@ -205,16 +226,16 @@ export function RequestForm({
       </div>
 
       <div className="field">
-        <label className="field-label">Prazo desejado</label>
+        <label className="field-label" htmlFor="deadline">Prazo desejado</label>
         <div className="input-wrap">
-          <input type="date" name="deadline" />
+          <input id="deadline" type="date" name="deadline" />
         </div>
       </div>
 
       <div className="field">
-        <label className="field-label">Evento relacionado</label>
+        <label className="field-label" htmlFor="event_id">Evento relacionado</label>
         <div className="input-wrap select-wrap">
-          <select name="event_id" defaultValue="">
+          <select id="event_id" name="event_id" defaultValue="">
             <option value="">Nenhum / não se aplica</option>
             {events.map((event) => (
               <option key={event.id} value={event.id}>
@@ -226,20 +247,20 @@ export function RequestForm({
       </div>
 
       <div className="field">
-        <label className="field-label">
+        <label className="field-label" htmlFor="requester_name">
           Seu nome <span className="req">*</span>
         </label>
         <div className="input-wrap">
-          <input type="text" name="requester_name" placeholder="Nome completo" required />
+          <input id="requester_name" type="text" name="requester_name" placeholder="Nome completo" required />
         </div>
       </div>
 
       <div className="field">
-        <label className="field-label">
+        <label className="field-label" htmlFor="requester_contact">
           Contato (e-mail ou WhatsApp) <span className="req">*</span>
         </label>
         <div className="input-wrap">
-          <input type="text" name="requester_contact" placeholder="Como te encontramos" required />
+          <input id="requester_contact" type="text" name="requester_contact" placeholder="Como te encontramos" required />
         </div>
       </div>
 

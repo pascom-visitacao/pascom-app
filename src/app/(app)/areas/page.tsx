@@ -59,9 +59,9 @@ export default async function AreasPage() {
 
         <form action={createArea} className="flex items-end" style={{ gap: "var(--space-3)" }}>
           <div className="field" style={{ maxWidth: 240 }}>
-            <label className="field-label">Nova área</label>
+            <label className="field-label" htmlFor="new-area-name">Nova área</label>
             <div className="input-wrap">
-              <input type="text" name="name" placeholder="Ex: Redes sociais" required />
+              <input id="new-area-name" type="text" name="name" placeholder="Ex: Redes sociais" required />
             </div>
           </div>
           <button type="submit" className="btn btn-primary btn-md">
@@ -96,15 +96,15 @@ export default async function AreasPage() {
 
         <form action={createCategory} className="flex items-end flex-wrap" style={{ gap: "var(--space-3)" }}>
           <div className="field" style={{ maxWidth: 220 }}>
-            <label className="field-label">Nova categoria</label>
+            <label className="field-label" htmlFor="new-category-name">Nova categoria</label>
             <div className="input-wrap">
-              <input type="text" name="name" placeholder="Ex: Transmissão" required />
+              <input id="new-category-name" type="text" name="name" placeholder="Ex: Transmissão" required />
             </div>
           </div>
           <div className="field" style={{ maxWidth: 200 }}>
-            <label className="field-label">Área dona</label>
+            <label className="field-label" htmlFor="new-category-area">Área dona</label>
             <div className="input-wrap select-wrap" style={{ width: 200, flexShrink: 0 }}>
-              <select name="area_id" required defaultValue="">
+              <select id="new-category-area" name="area_id" required defaultValue="">
                 <option value="" disabled>
                   Selecione...
                 </option>

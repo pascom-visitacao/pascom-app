@@ -120,7 +120,7 @@ export function ProfileForm({ profile }: { profile: ProfileData }) {
       </div>
 
       {error && (
-        <div className="alert alert-danger">
+        <div className="alert alert-danger" role="alert">
           <div>{error}</div>
         </div>
       )}
@@ -136,22 +136,22 @@ export function ProfileForm({ profile }: { profile: ProfileData }) {
         </div>
 
         <div className="field" style={{ maxWidth: "none" }}>
-          <label className="field-label">Nome</label>
+          <label className="field-label" htmlFor="name">Nome</label>
           <div className="input-wrap">
-            <input type="text" name="name" defaultValue={profile.name} required />
+            <input id="name" type="text" name="name" defaultValue={profile.name} required />
           </div>
         </div>
 
         <div className="field" style={{ maxWidth: "none" }}>
-          <label className="field-label">Telefone / WhatsApp (opcional)</label>
+          <label className="field-label" htmlFor="phone">Telefone / WhatsApp (opcional)</label>
           <div className="input-wrap">
-            <input type="text" name="phone" defaultValue={profile.phone ?? ""} placeholder="(00) 00000-0000" />
+            <input id="phone" type="text" name="phone" defaultValue={profile.phone ?? ""} placeholder="(00) 00000-0000" />
           </div>
         </div>
 
         <div className="field" style={{ maxWidth: "none" }}>
-          <label className="field-label">Biografia curta (opcional)</label>
-          <textarea className="ds-textarea" name="bio" defaultValue={profile.bio ?? ""} rows={3} />
+          <label className="field-label" htmlFor="bio">Biografia curta (opcional)</label>
+          <textarea id="bio" className="ds-textarea" name="bio" defaultValue={profile.bio ?? ""} rows={3} />
         </div>
       </div>
 
