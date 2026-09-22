@@ -10,6 +10,12 @@
     "module": "esnext",
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
+    // Precisa pra src/lib/google-drive.ts importar "./google-oauth.ts"
+    // com extensão explícita (exigido pelo Node nativo quando um script
+    // roda esse arquivo direto, ex.: scripts/test-drive-upload.mjs - o
+    // loader do Node não resolve import relativo sem extensão como o
+    // bundler do Next faz). Só é permitido com noEmit (já true acima).
+    "allowImportingTsExtensions": true,
     "isolatedModules": true,
     "jsx": "react-jsx",
     "incremental": true,

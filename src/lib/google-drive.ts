@@ -6,7 +6,12 @@
 //
 // Nunca importar isso em código que roda no navegador.
 
-import { getGoogleAccessToken } from "./google-oauth";
+// Extensão .ts explícita (moduleResolution "bundler" no tsconfig aceita,
+// Next.js ignora) - sem ela, o import falha com ERR_MODULE_NOT_FOUND
+// quando um script roda esse arquivo direto via Node (ex.:
+// scripts/test-drive-upload.mjs), já que o loader nativo do Node não
+// resolve import relativo sem extensão como o bundler do Next faz.
+import { getGoogleAccessToken } from "./google-oauth.ts";
 
 const DRIVE_API = "https://www.googleapis.com/drive/v3";
 const DRIVE_UPLOAD_API = "https://www.googleapis.com/upload/drive/v3/files";
