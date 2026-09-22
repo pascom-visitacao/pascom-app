@@ -4,8 +4,25 @@
 
 .kanban-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  /* 240px é o piso de legibilidade (card tem --space-5 de padding dos
+     dois lados = 32px, sobra ~208px de texto - abaixo disso, descrições
+     como "Folder missões" quebravam em linhas curtas demais mesmo tendo
+     espaço sobrando nas colunas vizinhas). Com minmax(0, 1fr) de antes,
+     a coluna nunca tinha um piso e só espremia; agora, entre o
+     breakpoint mobile (960px) e a largura em que o sidebar deixa de
+     comer espaço (~1400px de janela, já que ele soma com o padding da
+     página antes de chegar no grid), o grid prefere overflow com scroll
+     horizontal a espremer o texto. Testado: 260px cabia justo até
+     "espremer" de novo em 1440px de janela (o sidebar deixa só ~1073px
+     de largura útil pro grid nessa resolução) - 240px é o maior piso
+     que ainda sobra folga nas larguras "confortáveis" citadas no pedido. */
+  grid-template-columns: repeat(4, minmax(240px, 1fr));
   gap: var(--space-6);
+  overflow-x: auto;
+  /* Dá espaço pra barra de rolagem não colar nos cards quando aparece,
+     sem empurrar o conteúdo - só overflow-x:auto sozinho, em alguns
+     navegadores/SOs (scrollbar não-overlay), tira esse respiro. */
+  padding-bottom: var(--space-2);
 }
 
 .kanban-radio {
@@ -27,6 +44,11 @@
 @media (max-width: 960px) {
   .kanban-grid {
     grid-template-columns: 1fr;
+    /* Sem isso, um scrollLeft deixado pelo grid de desktop (ex.: usuário
+       encolhe a janela sem recarregar) continuava aplicado aqui - com 1
+       coluna só, isso cortava o início de cada linha do card em vez de
+       simplesmente não ter o que rolar. */
+    overflow-x: visible;
   }
   .kanban-column {
     display: none;
