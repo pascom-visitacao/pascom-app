@@ -65,7 +65,6 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     ...(isCoordenacao
       ? ([
           { label: "Administração", heading: true },
-          { label: "Equipe & Áreas", href: "/areas" },
           { label: "Configurações", href: "/configuracoes", trailing: <ApprovalsBadge /> },
         ] satisfies BounceSidebarItem[])
       : []),

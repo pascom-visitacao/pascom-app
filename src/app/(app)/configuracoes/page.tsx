@@ -5,6 +5,8 @@ import { createSocialMediaAccount } from "./actions";
 import { DeleteSocialMediaButton } from "./delete-social-media-button";
 import { DeletePrayerEntryButton } from "./delete-prayer-entry-button";
 import { EditPrayerEntryForm, NewPrayerEntryForm } from "./prayer-entry-forms";
+import { DeleteMinistryButton } from "./delete-ministry-button";
+import { EditMinistryForm, NewMinistryForm } from "./ministry-entry-forms";
 import { PendingApprovalRow } from "./pending-approval-row";
 
 export default async function ConfiguracoesPage() {
@@ -13,19 +15,21 @@ export default async function ConfiguracoesPage() {
 
   const supabase = await getSupabase();
 
-  const [profile, { data: prayerEntries }, { data: accounts }, { data: pendingUsers }] = await Promise.all([
-    getCurrentProfile(),
-    supabase.from("prayer_fixed_entries").select("id, name").order("name"),
-    supabase
-      .from("social_media_accounts")
-      .select("id, platform_name, reference_link, notes")
-      .order("platform_name"),
-    supabase
-      .from("users")
-      .select("id, name, email, avatar_url, created_at")
-      .eq("account_status", "pending")
-      .order("created_at"),
-  ]);
+  const [profile, { data: prayerEntries }, { data: ministries }, { data: accounts }, { data: pendingUsers }] =
+    await Promise.all([
+      getCurrentProfile(),
+      supabase.from("prayer_fixed_entries").select("id, name").order("name"),
+      supabase.from("parish_ministries").select("id, name").order("name"),
+      supabase
+        .from("social_media_accounts")
+        .select("id, platform_name, reference_link, notes")
+        .order("platform_name"),
+      supabase
+        .from("users")
+        .select("id, name, email, avatar_url, created_at")
+        .eq("account_status", "pending")
+        .order("created_at"),
+    ]);
 
   if (profile?.role !== "coordenacao_geral") {
     redirect("/inicio");
@@ -39,7 +43,7 @@ export default async function ConfiguracoesPage() {
         <h2 style={{ fontSize: "var(--text-md)", marginBottom: "var(--space-4)" }}>Aprovações pendentes</h2>
         <p style={{ color: "var(--color-text-muted)", fontSize: "var(--text-sm)", marginBottom: "var(--space-5)" }}>
           Quem faz login pela primeira vez fica aqui até ser aprovado — entra como Pasconeiro, sem área
-          definida (atribua depois em Equipe &amp; Áreas).
+          definida (atribua depois em Equipe).
         </p>
 
         <div className="flex flex-col" style={{ gap: "var(--space-3)" }}>
@@ -59,8 +63,8 @@ export default async function ConfiguracoesPage() {
         <p style={{ color: "var(--color-text-muted)", fontSize: "var(--text-sm)", marginBottom: "var(--space-4)" }}>
           Cadastro de áreas, categorias de pedido, e papel/área de cada pessoa da equipe.
         </p>
-        <Link href="/areas" className="btn btn-outline btn-md">
-          Ir para Equipe &amp; Áreas
+        <Link href="/equipe" className="btn btn-outline btn-md">
+          Ir para Equipe
         </Link>
       </section>
 
@@ -91,6 +95,33 @@ export default async function ConfiguracoesPage() {
         </div>
 
         <NewPrayerEntryForm />
+      </section>
+
+      <section style={{ marginBottom: "var(--space-10)" }}>
+        <h2 style={{ fontSize: "var(--text-md)", marginBottom: "var(--space-4)" }}>Ministérios e pastorais</h2>
+        <p style={{ color: "var(--color-text-muted)", fontSize: "var(--text-sm)", marginBottom: "var(--space-5)" }}>
+          Aparecem no campo &quot;Ministério / pastoral relacionado&quot; ao criar uma tarefa.
+        </p>
+
+        <div className="flex flex-col" style={{ gap: "var(--space-3)", marginBottom: "var(--space-6)" }}>
+          {(ministries ?? []).map((ministry) => (
+            <div
+              key={ministry.id}
+              className="card flex items-center justify-between flex-wrap"
+              style={{ padding: "var(--space-5)", gap: "var(--space-4)" }}
+            >
+              <EditMinistryForm id={ministry.id} name={ministry.name} />
+              <DeleteMinistryButton id={ministry.id} name={ministry.name} />
+            </div>
+          ))}
+          {(ministries ?? []).length === 0 && (
+            <span style={{ color: "var(--color-text-muted)", fontSize: "var(--text-sm)" }}>
+              Nenhum ministério/pastoral cadastrado ainda.
+            </span>
+          )}
+        </div>
+
+        <NewMinistryForm />
       </section>
 
       <section>

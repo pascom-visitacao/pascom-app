@@ -1,5 +1,7 @@
 "use client";
 
+// Movido de areas/user-assignment-row.tsx na unificação de /areas em /equipe.
+
 import { useTransition } from "react";
 import { updateUserRole } from "./actions";
 

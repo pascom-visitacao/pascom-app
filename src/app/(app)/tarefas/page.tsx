@@ -159,7 +159,7 @@ export default async function AtividadesPage({
         <div className="alert alert-info">
           <div>
             <div className="alert-title">Nenhuma área cadastrada</div>
-            Peça pra Coordenação geral criar uma área em Equipe &amp; Áreas antes de abrir cards.
+            Peça pra Coordenação geral criar uma área em Equipe antes de abrir cards.
           </div>
         </div>
       ) : (

@@ -161,7 +161,7 @@ export async function CoordenacaoBento({ supabase }: { supabase: SupabaseClient<
         )}
       </Link>
 
-      <Link href="/areas" className="bento-tile tile-equipe is-light">
+      <Link href="/equipe" className="bento-tile tile-equipe is-light">
         <div className="tile-arrow">→</div>
         <div className="tile-label">Equipe</div>
         <div className="tile-row">

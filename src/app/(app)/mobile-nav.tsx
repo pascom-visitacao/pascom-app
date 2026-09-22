@@ -57,7 +57,6 @@ const GRID_ITEMS_PASCONEIRO: NavItem[] = [
 
 const GRID_ITEMS_COORDENACAO: NavItem[] = [
   ...GRID_ITEMS_PASCONEIRO,
-  { href: "/areas", label: "Equipe & Áreas", icon: "users" },
   { href: "/configuracoes", label: "Configurações", icon: "gear" },
 ];
 

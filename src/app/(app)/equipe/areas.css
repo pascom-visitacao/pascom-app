@@ -1,4 +1,5 @@
-/* Card de membro (seção "Equipe"): o botão "Excluir pasconeiro" cortava
+/* Movido de areas/areas.css na unificação de /areas em /equipe.
+   Card de membro (seção "Equipe"): o botão "Excluir pasconeiro" cortava
    em telas estreitas porque tentava ficar ao lado das tags de área + do
    seletor de papel (que já tem largura fixa própria). Em mobile, ele
    quebra pra linha própria, ocupando a largura toda. */

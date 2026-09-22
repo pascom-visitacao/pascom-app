@@ -1,5 +1,7 @@
 "use client";
 
+// Movido de areas/delete-user-button.tsx na unificação de /areas em /equipe.
+
 import { useState, useTransition } from "react";
 import { Trash2 } from "lucide-react";
 import { Icon } from "@/components/icon";

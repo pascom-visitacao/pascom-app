@@ -1,5 +1,11 @@
 "use server";
 
+// Movido de areas/actions.ts na unificação de /areas em /equipe (visão
+// condicional por papel, mesmo padrão do bento de /inicio) - RLS de
+// areas/request_categories/users já restringe escrita à coordenação
+// geral independente de qual página chama isso, então a unificação de
+// rota não muda a superfície de segurança.
+
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 
@@ -11,7 +17,7 @@ export async function createArea(formData: FormData) {
   const { error } = await supabase.from("areas").insert({ name });
   if (error) throw new Error(error.message);
 
-  revalidatePath("/areas");
+  revalidatePath("/equipe");
 }
 
 export async function createCategory(formData: FormData) {
@@ -23,7 +29,7 @@ export async function createCategory(formData: FormData) {
   const { error } = await supabase.from("request_categories").insert({ name, area_id: areaId });
   if (error) throw new Error(error.message);
 
-  revalidatePath("/areas");
+  revalidatePath("/equipe");
 }
 
 // Área não é editável por coordenação (autonomia do próprio Pasconeiro,
@@ -33,7 +39,7 @@ export async function updateUserRole(userId: string, role: "coordenacao_geral" |
   const { error } = await supabase.from("users").update({ role }).eq("id", userId);
   if (error) throw new Error(error.message);
 
-  revalidatePath("/areas");
+  revalidatePath("/equipe");
 }
 
 // Contagem informativa pra confirmação antes de excluir - o soft-delete
@@ -60,5 +66,5 @@ export async function softDeleteUser(userId: string) {
   const { error } = await supabase.from("users").update({ account_status: "deleted" }).eq("id", userId);
   if (error) throw new Error(error.message);
 
-  revalidatePath("/areas");
+  revalidatePath("/equipe");
 }
