@@ -74,12 +74,23 @@ export function EnviarFotosForm({ events }: { events: { id: string; title: strin
     if (eventId) formData.append("event_id", eventId);
 
     updateItem(item.id, { status: "enviando" });
-    const result = await uploadMaterial(formData);
-
-    if ("error" in result) {
-      updateItem(item.id, { status: "erro", error: result.error });
-    } else {
-      updateItem(item.id, { status: "concluido", result });
+    try {
+      const result = await uploadMaterial(formData);
+      if ("error" in result) {
+        updateItem(item.id, { status: "erro", error: result.error });
+      } else {
+        updateItem(item.id, { status: "concluido", result });
+      }
+    } catch (uploadError) {
+      // uploadMaterial pode rejeitar em vez de devolver {error} (ex.:
+      // token do Drive expirado - erro de infra, não de validação). Sem
+      // o catch aqui, essa rejeição escapava sem tratamento e travava o
+      // item em "enviando" pra sempre. Mesmo padrão já aplicado em
+      // new-activity-form.tsx e activity-attachments.tsx.
+      updateItem(item.id, {
+        status: "erro",
+        error: uploadError instanceof Error ? uploadError.message : "Erro desconhecido ao enviar.",
+      });
     }
   }
 

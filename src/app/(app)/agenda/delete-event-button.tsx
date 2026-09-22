@@ -45,7 +45,7 @@ export function DeleteEventButton({ eventId, eventTitle }: { eventId: string; ev
         open={open}
         onClose={() => setOpen(false)}
         onConfirm={handleConfirm}
-        title={`Excluir "${eventTitle}"?`}
+        title={`Excluir “${eventTitle}”?`}
         body={impact ? <p>{impact}</p> : undefined}
         isPending={isPending}
       />

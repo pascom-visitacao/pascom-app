@@ -79,27 +79,47 @@ export function ProfileForm({ profile }: { profile: ProfileData }) {
               {initials(profile.name)}
             </span>
           )}
+          {/* Área de toque de 44px (recomendado pra mobile), mas o círculo
+              visível continua 32px como antes - só o <button> cresceu, o
+              <span> de dentro carrega a aparência antiga. deslocado -6px
+              (metade da diferença de 44-32) nos dois eixos pra manter o
+              centro exatamente onde estava, então o círculo visível não
+              se move nem muda de tamanho. */}
           <button
             type="button"
             aria-label="Alterar foto de perfil"
             onClick={() => fileInputRef.current?.click()}
             style={{
               position: "absolute",
-              bottom: 0,
-              right: 0,
-              width: 32,
-              height: 32,
-              borderRadius: "var(--radius-full)",
-              background: "var(--color-primary)",
-              color: "#fff",
-              border: "2px solid var(--color-surface)",
+              bottom: -6,
+              right: -6,
+              width: 44,
+              height: 44,
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
+              background: "none",
+              border: "none",
+              padding: 0,
               cursor: "pointer",
             }}
           >
-            <Icon icon={Camera} size={16} />
+            <span
+              aria-hidden="true"
+              style={{
+                width: 32,
+                height: 32,
+                borderRadius: "var(--radius-full)",
+                background: "var(--color-primary)",
+                color: "#fff",
+                border: "2px solid var(--color-surface)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Icon icon={Camera} size={16} />
+            </span>
           </button>
           <input
             ref={fileInputRef}
