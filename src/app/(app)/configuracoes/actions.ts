@@ -90,6 +90,76 @@ export async function deletePrayerEntry(id: string) {
   revalidatePath("/configuracoes");
 }
 
+// Ministérios/pastorais (parish_ministries): mesmo padrao de nome unico
+// das intencoes fixas de oracao acima, mas com um efeito colateral a
+// mais - activities.parish_ministry_id referencia essa tabela (on
+// delete set null), entao excluir um ministerio desvincula silenciosamente
+// qualquer tarefa que apontava pra ele. getMinistryDeletionImpact avisa
+// disso antes (mesmo padrao de getEventDeletionImpact em agenda/actions.ts).
+// RLS de parish_ministries ja restringe escrita a coordenacao geral
+// (20260822200000_fase4_atividades_calendario.sql) - sem checagem extra
+// aqui, ela e o backstop real.
+export type MinistryFormState = { error?: string; name?: string } | null;
+
+const MINISTRY_EMPTY_ERROR = "Informe o nome do ministério/pastoral.";
+const MINISTRY_DUPLICATE_ERROR = "Já existe um ministério/pastoral com esse nome.";
+
+export async function createParishMinistry(
+  _prevState: MinistryFormState,
+  formData: FormData,
+): Promise<MinistryFormState> {
+  const name = String(formData.get("name") ?? "").trim();
+  if (!name) return { error: MINISTRY_EMPTY_ERROR, name };
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("parish_ministries").insert({ name });
+  if (error) {
+    if (error.code === PG_UNIQUE_VIOLATION) return { error: MINISTRY_DUPLICATE_ERROR, name };
+    throw new Error(error.message);
+  }
+
+  revalidatePath("/configuracoes");
+  return { name: "" };
+}
+
+export async function updateParishMinistry(
+  _prevState: MinistryFormState,
+  formData: FormData,
+): Promise<MinistryFormState> {
+  const id = String(formData.get("id") ?? "");
+  const name = String(formData.get("name") ?? "").trim();
+  if (!id) return null;
+  if (!name) return { error: MINISTRY_EMPTY_ERROR, name };
+
+  const supabase = await createClient();
+  const { error } = await supabase.from("parish_ministries").update({ name }).eq("id", id);
+  if (error) {
+    if (error.code === PG_UNIQUE_VIOLATION) return { error: MINISTRY_DUPLICATE_ERROR, name };
+    throw new Error(error.message);
+  }
+
+  revalidatePath("/configuracoes");
+  return { name };
+}
+
+export async function getMinistryDeletionImpact(id: string) {
+  const supabase = await createClient();
+  const { count } = await supabase
+    .from("activities")
+    .select("id", { count: "exact", head: true })
+    .eq("parish_ministry_id", id);
+
+  return { activityCount: count ?? 0 };
+}
+
+export async function deleteParishMinistry(id: string) {
+  const supabase = await createClient();
+  const { error } = await supabase.from("parish_ministries").delete().eq("id", id);
+  if (error) throw new Error(error.message);
+
+  revalidatePath("/configuracoes");
+}
+
 // Aprovação de conta (primeiro login): pending -> active. RLS + o
 // trigger enforce_users_self_update já garantem que só coordenação
 // consegue - sem checagem extra aqui.
