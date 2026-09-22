@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Home, Columns3, Calendar, Image as ImageIcon, Users, Settings, LayoutGrid, X, Camera, User, ChevronRight, Download, Info, Archive } from "lucide-react";
 import { Icon } from "@/components/icon";
 import { ApprovalsBadge, useNavActive } from "./nav-state";
+import { FloatingNavIndicator } from "./mobile-nav-indicator";
 
 function initials(name: string) {
   return name
@@ -72,14 +73,25 @@ export function MobileNav({
   const [gridOpen, setGridOpen] = useState(false);
   const { isActive, startNav } = useNavActive();
   const gridItems = isCoordenacao ? GRID_ITEMS_COORDENACAO : GRID_ITEMS_PASCONEIRO;
+  const barItemRefs = useRef<(HTMLElement | null)[]>([]);
+
+  // Índice do item ativo na barra flutuante (as 3 rotas + "Mais"): "Mais"
+  // vence quando o grid está aberto (não é uma rota, é um estado local);
+  // senão é a rota atual entre as 3, ou -1 se não for nenhuma delas (o
+  // indicador some, mesma regra do BounceSidebar de desktop).
+  const activeBarIndex = gridOpen ? BAR_ITEMS.length : BAR_ITEMS.findIndex((item) => isActive(item.href));
 
   return (
     <>
       <div className="mobile-nav-bar">
         <div className="bar">
-          {BAR_ITEMS.map((item) => (
+          <FloatingNavIndicator activeIndex={activeBarIndex} itemRefs={barItemRefs} />
+          {BAR_ITEMS.map((item, index) => (
             <Link
               key={item.href}
+              ref={(el) => {
+                barItemRefs.current[index] = el;
+              }}
               href={item.href}
               className={`mobile-nav-item${isActive(item.href) ? " is-active" : ""}`}
               onClick={() => startNav(item.href)}
@@ -89,6 +101,9 @@ export function MobileNav({
             </Link>
           ))}
           <button
+            ref={(el) => {
+              barItemRefs.current[BAR_ITEMS.length] = el;
+            }}
             type="button"
             className={`mobile-nav-item${gridOpen ? " is-active" : ""}`}
             onClick={() => setGridOpen(true)}
