@@ -445,6 +445,11 @@ export function Assignees({
           "--pik-row-r": `${Math.max(0, r - 6)}px`,
         } as CSSProperties}
       >
+        {/* Pascom: era aria-haspopup="listbox" - a lista abaixo não tem mais
+            role nenhum (ver o comentário perto de .pik-card), então prometer
+            um widget específico não descreve nada de verdade. aria-expanded
+            sozinho já é o padrão ARIA APG de "disclosure" pra um botão que
+            mostra/esconde conteúdo. */}
         <button
           ref={pillRef}
           type="button"
@@ -456,7 +461,6 @@ export function Assignees({
             setOpen((v) => !v);
           }}
           aria-expanded={open}
-          aria-haspopup="listbox"
           aria-label={names ? `${label}: ${names}` : undefined}
         >
           {/* ── the faces ─────────────────────────────────────
@@ -481,9 +485,13 @@ export function Assignees({
             <motion.div
               className="pik-card"
               style={{ borderRadius: r }}
-              role="listbox"
               aria-label={label}
-              aria-multiselectable={multiple}
+              /* Pascom: era role="listbox" com role="option"/aria-selected nas
+                 linhas abaixo, prometendo a navegação por setas da ARIA APG
+                 pra listbox - o componente nunca implementou isso (achado
+                 confirmado com teclado real: ArrowDown não move nada, só
+                 Tab). Como os <button> de baixo já funcionam via Tab sozinhos,
+                 tirar o ARIA errado é melhor que consertá-lo. */
               /* ── it unfolds OUT OF the pill ──────────────────
                  The origin is the card's top-left, which is the
                  pill's own left edge, so it opens down and out
@@ -527,8 +535,6 @@ export function Assignees({
                     key={p.id}
                     type="button"
                     className="pik-row"
-                    role="option"
-                    aria-selected={on}
                     data-on={on || undefined}
                     onClick={() => toggle(p.id)}
                     initial={{ opacity: 0, y: -8 }}
@@ -540,7 +546,10 @@ export function Assignees({
                   >
                     <Portrait person={p} size={32} className="pik-av" />
                     <span className="pik-who">
-                      <span className="pik-name">{p.name}</span>
+                      {/* title nativo: o nome pode passar dos ~166px da linha
+                          (ellipsis em assignees.css) e não sobrava nenhuma
+                          forma de ver o valor inteiro. */}
+                      <span className="pik-name" title={p.name}>{p.name}</span>
                       {p.detail && <span className="pik-role">{p.detail}</span>}
                     </span>
                     <span className="pik-mark">
