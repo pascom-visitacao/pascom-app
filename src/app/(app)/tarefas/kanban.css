@@ -160,3 +160,34 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* Form do "+Nova tarefa" (new-activity-form.tsx): em desktop, grid de 2
+   colunas - Título/Descrição/Imagens ocupam a linha inteira
+   (.new-activity-field-full), os outros 6 campos emparelham 2 a 2 na
+   própria ordem em que já aparecem no DOM (Área+Responsável,
+   Prazo+Prioridade, Evento+Ministério), sem precisar reordenar nada.
+   Abaixo de 960px (mesmo breakpoint do resto do app, ver .kanban-grid
+   acima), volta a 1 coluna só - igual já era antes dessa mudança. */
+.new-activity-form {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-5);
+  max-width: 720px;
+}
+
+.new-activity-field-full {
+  grid-column: 1 / -1;
+  /* .field (ds-styles.css) tem max-width: 320px por padrão (pra não
+     esticar demais em telas largas nos outros formulários) - sem
+     sobrescrever aqui, o Título/Descrição/Imagens ficavam com a área da
+     grid correta (2 colunas) mas o conteúdo continuava travado em
+     320px, plantado no canto esquerdo em vez de esticar. */
+  max-width: none;
+}
+
+@media (max-width: 960px) {
+  .new-activity-form {
+    grid-template-columns: 1fr;
+    max-width: 480px;
+  }
+}

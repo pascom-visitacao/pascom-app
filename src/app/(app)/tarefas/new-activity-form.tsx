@@ -89,8 +89,7 @@ export function NewActivityForm({
   return (
     <form
       ref={formRef}
-      className="card"
-      style={{ maxWidth: 480, display: "flex", flexDirection: "column", gap: "var(--space-5)" }}
+      className="card new-activity-form"
       action={(formData) => {
         setError(null);
         setUploadWarning(null);
@@ -138,17 +137,17 @@ export function NewActivityForm({
       }}
     >
       {error && (
-        <div className="alert alert-danger" role="alert">
+        <div className="alert alert-danger new-activity-field-full" role="alert">
           <div>{error}</div>
         </div>
       )}
       {uploadWarning && (
-        <div className="alert alert-warning" role="alert">
+        <div className="alert alert-warning new-activity-field-full" role="alert">
           <div>{uploadWarning}</div>
         </div>
       )}
 
-      <div className="field">
+      <div className="field new-activity-field-full">
         <label className="field-label">
           Título <span className="req">*</span>
         </label>
@@ -157,7 +156,7 @@ export function NewActivityForm({
         </div>
       </div>
 
-      <div className="field">
+      <div className="field new-activity-field-full">
         <label className="field-label">Descrição</label>
         <textarea className="ds-textarea" name="description" placeholder="Detalhes da tarefa..." />
       </div>
@@ -235,7 +234,7 @@ export function NewActivityForm({
         </div>
       </div>
 
-      <div className="field">
+      <div className="field new-activity-field-full">
         <label className="field-label">Imagens de referência (opcional)</label>
         <input
           ref={fileInputRef}
@@ -273,7 +272,7 @@ export function NewActivityForm({
         )}
       </div>
 
-      <div className="flex" style={{ gap: "var(--space-3)" }}>
+      <div className="flex new-activity-field-full" style={{ gap: "var(--space-3)" }}>
         {uploadWarning ? (
           <button type="button" className="btn btn-primary btn-md" onClick={resetAndClose}>
             Fechar
