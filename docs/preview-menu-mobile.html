@@ -194,11 +194,45 @@ body { margin: 0; background: var(--color-bg-subtle); overflow-x: hidden; }
 .fake-card .lbl { font-size: var(--text-xs); text-transform: uppercase; letter-spacing: .05em; color: var(--color-text-subtle); margin-bottom: var(--space-2); }
 .fake-card .val { font-family: var(--font-display); font-size: var(--text-2xl); font-weight: 600; }
 .nav-float { display: none; position: fixed; left: 0; right: 0; bottom: 18px; justify-content: center; z-index: 400; }
-.nav-float .bar { display: flex; gap: var(--space-2); background: var(--color-dark-bg); padding: var(--space-2); border-radius: var(--radius-full); box-shadow: var(--shadow-xl); }
-.nav-float .item { display: flex; flex-direction: column; align-items: center; gap: 2px; width: 62px; padding: var(--space-2) 0; border-radius: var(--radius-full); color: rgba(255,255,255,0.55); }
+.nav-float .bar { display: flex; gap: var(--space-2); background: var(--color-dark-bg); padding: var(--space-2); border-radius: var(--radius-full); box-shadow: var(--shadow-xl); position: relative; }
+.nav-float .item { display: flex; flex-direction: column; align-items: center; gap: 2px; width: 62px; padding: var(--space-2) 0; border-radius: var(--radius-full); color: rgba(255,255,255,0.55); position: relative; z-index: 1; cursor: pointer; }
 .nav-float .item svg { width: 20px; height: 20px; }
 .nav-float .item span { font-size: 10px; font-weight: var(--weight-medium); }
-.nav-float .item.is-active { background: var(--color-primary); color: #fff; }
+.nav-float .item.is-active { color: #fff; }
+
+/* Indicador animado atrás do item ativo (mesma mecânica de cálculo de
+   posição/largura do marcador do BounceSidebar, ver
+   src/app/(app)/bounce-sidebar.tsx - aqui em JS puro, sem framework).
+   Só transform/width se movem (por isso top/bottom fixos = o padding do
+   .bar, pra ocupar exatamente a altura dos itens sem precisar medir).
+   Sem o efeito de vidro/frost do GlassIconBar original - só o
+   "estica e assenta" do indicador. */
+.gnav-ind {
+  position: absolute;
+  top: var(--space-2);
+  bottom: var(--space-2);
+  left: 0;
+  width: 0;
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+  transform: translateX(0);
+  pointer-events: none;
+  z-index: 0;
+}
+.gnav-ind[data-phase="stretch"] {
+  transition:
+    transform 222ms cubic-bezier(0.32, 0.72, 0.24, 1),
+    width 222ms cubic-bezier(0.32, 0.72, 0.24, 1);
+}
+.gnav-ind[data-phase="settle"] {
+  transition:
+    transform 491ms cubic-bezier(0.28, 1.358, 0.36, 1),
+    width 491ms cubic-bezier(0.24, 1.435, 0.38, 1);
+}
+.gnav-ind[data-phase="idle"] { transition: none; }
+@media (prefers-reduced-motion: reduce) {
+  .gnav-ind { transition: none !important; }
+}
 .nav-rail { display: none; position: fixed; left: 0; top: 0; bottom: 0; width: 60px; background: var(--color-dark-bg); flex-direction: column; align-items: center; padding-top: var(--space-8); gap: var(--space-3); z-index: 400; }
 .nav-rail .item { display: flex; flex-direction: column; align-items: center; gap: 3px; width: 44px; padding: var(--space-2) 0; border-radius: var(--radius-md); color: rgba(255,255,255,0.55); }
 .nav-rail .item svg { width: 19px; height: 19px; }
@@ -253,10 +287,11 @@ body[data-menu="grid"] .nav-grid-trigger { display: flex; }
 
 <div class="nav-float">
   <div class="bar">
-    <div class="item is-active"><svg><use href="#i-home"/></svg><span>Painel</span></div>
-    <div class="item"><svg><use href="#i-cols"/></svg><span>Atividades</span></div>
-    <div class="item"><svg><use href="#i-cal"/></svg><span>Calendário</span></div>
-    <div class="item"><svg><use href="#i-cam"/></svg><span>Equip.</span></div>
+    <span class="gnav-ind" aria-hidden="true" data-phase="idle"></span>
+    <div class="item is-active" onclick="selectFloatItem(0)"><svg><use href="#i-home"/></svg><span>Painel</span></div>
+    <div class="item" onclick="selectFloatItem(1)"><svg><use href="#i-cols"/></svg><span>Atividades</span></div>
+    <div class="item" onclick="selectFloatItem(2)"><svg><use href="#i-cal"/></svg><span>Calendário</span></div>
+    <div class="item" onclick="selectFloatItem(3)"><svg><use href="#i-cam"/></svg><span>Equip.</span></div>
   </div>
 </div>
 
@@ -285,7 +320,97 @@ function setMenu(name, btn) {
   document.querySelectorAll('.switcher button').forEach(b => b.classList.remove('is-active'));
   btn.classList.add('is-active');
   document.getElementById('gridOverlay').classList.remove('is-open');
+  if (name === 'float') snapFloatIndicator();
 }
+
+// Indicador animado da opção A (nav-float): ao trocar de item, o
+// indicador estica pra cobrir a posição de origem e a de destino (fase
+// "stretch"), depois contrai sobre o alvo com um leve exagero (fase
+// "settle"). A ideia de calcular a posição/largura pelo item ativo é a
+// mesma do marcador do BounceSidebar (desktop,
+// src/app/(app)/bounce-sidebar.tsx) - aqui em JS puro, sem framework,
+// porque este preview não carrega nenhum.
+const floatBar = document.querySelector('.nav-float .bar');
+const floatInd = floatBar.querySelector('.gnav-ind');
+const floatItems = Array.from(floatBar.querySelectorAll('.item'));
+let floatActive = Math.max(0, floatItems.findIndex((el) => el.classList.contains('is-active')));
+let floatStretchTimer = null;
+let floatSettleTimer = null;
+
+function prefersReducedMotion() {
+  return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+}
+
+// Posição/largura do item, relativas ao .bar (que é o offsetParent, por
+// ter position:relative) - nunca muda de pixel a não ser que o layout
+// mude, já que os itens têm largura fixa.
+function floatItemRect(item) {
+  return { left: item.offsetLeft, width: item.offsetWidth };
+}
+
+// Posição/largura ATUAIS do indicador (não do item), medidas do layout -
+// funciona mesmo no meio de uma transição, o que importa se um clique
+// novo interromper a animação anterior (a fase "stretch" parte de onde o
+// indicador está de verdade, não de onde ele "deveria" estar parado).
+function floatIndicatorRect() {
+  const barBox = floatBar.getBoundingClientRect();
+  const indBox = floatInd.getBoundingClientRect();
+  return { left: indBox.left - barBox.left, width: indBox.width };
+}
+
+function paintFloatIndicator(rect) {
+  floatInd.style.transform = `translateX(${rect.left}px)`;
+  floatInd.style.width = `${rect.width}px`;
+}
+
+// Força o navegador a computar o estilo atual antes da próxima mudança.
+// Sem isso, trocar data-phase (que troca a regra de transition) e pintar
+// o novo valor no mesmo tick vira uma atualização atômica sem transição
+// visível - o browser nunca chega a "commitar" o estado anterior como
+// ponto de partida.
+function forceReflow(el) {
+  void el.offsetWidth;
+}
+
+function snapFloatIndicator() {
+  floatInd.dataset.phase = 'idle';
+  paintFloatIndicator(floatItemRect(floatItems[floatActive]));
+}
+
+function selectFloatItem(index) {
+  if (index === floatActive) return;
+  clearTimeout(floatStretchTimer);
+  clearTimeout(floatSettleTimer);
+
+  const from = floatIndicatorRect();
+  floatItems[floatActive].classList.remove('is-active');
+  floatActive = index;
+  floatItems[floatActive].classList.add('is-active');
+  const to = floatItemRect(floatItems[floatActive]);
+
+  if (prefersReducedMotion()) {
+    snapFloatIndicator();
+    return;
+  }
+
+  const left = Math.min(from.left, to.left);
+  const right = Math.max(from.left + from.width, to.left + to.width);
+  floatInd.dataset.phase = 'stretch';
+  forceReflow(floatInd);
+  paintFloatIndicator({ left, width: right - left });
+
+  floatStretchTimer = setTimeout(() => {
+    floatInd.dataset.phase = 'settle';
+    forceReflow(floatInd);
+    paintFloatIndicator(to);
+    floatSettleTimer = setTimeout(() => {
+      floatInd.dataset.phase = 'idle';
+    }, 491);
+  }, 222);
+}
+
+snapFloatIndicator();
+window.addEventListener('resize', snapFloatIndicator);
 </script>
 </body>
 </html>
