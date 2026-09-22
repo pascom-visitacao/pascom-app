@@ -21,6 +21,19 @@ function normalizeOne<T>(raw: unknown): T | null {
   return (Array.isArray(raw) ? (raw[0] ?? null) : raw) as T | null;
 }
 
+// Monta a URL do filtro de área a partir do conjunto de ids marcados -
+// nenhum id = sem parâmetro nenhum (equivale a "Todos"), preservando
+// origem= se estiver presente. Centralizado aqui porque cada chip
+// (inclusive "Todos") precisa gerar seu próprio href a partir do MESMO
+// conjunto atual, só acrescentando/tirando o próprio id.
+function buildAreaHref(ids: string[], onlyExternal: boolean) {
+  const params = new URLSearchParams();
+  if (ids.length > 0) params.set("area", ids.join(","));
+  if (onlyExternal) params.set("origem", "pedido_externo");
+  const qs = params.toString();
+  return `/tarefas${qs ? `?${qs}` : ""}`;
+}
+
 export default async function AtividadesPage({
   searchParams,
 }: {
@@ -28,13 +41,12 @@ export default async function AtividadesPage({
 }) {
   const { area: areaParam, origem: origemParam } = await searchParams;
   const onlyExternal = origemParam === "pedido_externo";
-  const originQs = onlyExternal ? "&origem=pedido_externo" : "";
   const user = await getCurrentUser();
   if (!user) redirect("/login");
 
   const supabase = await getSupabase();
 
-  // 1ª rodada: só o que define a área selecionada.
+  // 1ª rodada: só o que define as áreas selecionadas.
   const [profile, { data: areas }] = await Promise.all([
     getCurrentProfile(),
     supabase.from("areas").select("id, name").order("name"),
@@ -43,8 +55,12 @@ export default async function AtividadesPage({
   const isCoordenacao = profile?.role === "coordenacao_geral";
   const myAreaIds = profile ? effectiveAreaIds(profile) : [];
 
-  const showAllAreas = areaParam === "todos";
-  const selectedAreaId = showAllAreas ? null : (areaParam ?? myAreaIds[0] ?? areas?.[0]?.id ?? null);
+  // Filtro por área agora é seleção múltipla (?area=id1,id2), não mais
+  // aba única - a página sempre abre em "Todos" (nenhum id marcado) e o
+  // usuário recorta por cima, opcionalmente. Nenhuma área marcada
+  // equivale a "Todos", nunca a uma tela vazia.
+  const selectedAreaIds = (areaParam ?? "").split(",").filter(Boolean);
+  const showAllAreas = selectedAreaIds.length === 0;
 
   const activitiesSelect =
     "id, title, description, status, due_date, source, priority, is_urgent, area_id, area:areas(id, name), assignee:users(id, name, avatar_url, account_status), request:external_requests(attachment_urls), event:events(id, title), parish_ministry:parish_ministries(id, name), comments:activity_comments(id, body, created_at, author:users(id, name, account_status)), materials:materials(id, name, drive_file_id)";
@@ -61,23 +77,18 @@ export default async function AtividadesPage({
     .order("created_at", { ascending: true });
   if (onlyExternal) activitiesQuery = activitiesQuery.eq("source", "pedido_externo");
 
-  // 2ª rodada: tudo independente entre si, em paralelo.
-  // members: sempre a lista completa (sem filtro), pra poder recalcular
-  // por área em cada card no modo "Todos" - no modo área única, filtra
-  // pra essa área só, igual antes.
+  // 2ª rodada: tudo independente entre si, em paralelo. members: sempre
+  // a lista completa (sem filtro) - com seleção múltipla, cada card
+  // pode precisar recalcular por uma área diferente das outras
+  // (Design + Fotografia marcadas ao mesmo tempo, por exemplo), então
+  // não faz mais sentido buscar só os membros de UMA área.
   const [{ data: rawActivities }, { data: rawAllMembers }, { data: events }, { data: ministries }] = await Promise.all([
-    showAllAreas
-      ? activitiesQuery
-      : selectedAreaId
-        ? activitiesQuery.eq("area_id", selectedAreaId)
-        : Promise.resolve({ data: [] }),
-    showAllAreas || selectedAreaId
-      ? supabase
-          .from("users")
-          .select("id, name, avatar_url, area_ids, pending_area_ids, areas_submitted_at")
-          .eq("account_status", "active")
-          .order("name")
-      : Promise.resolve({ data: [] }),
+    showAllAreas ? activitiesQuery : activitiesQuery.in("area_id", selectedAreaIds),
+    supabase
+      .from("users")
+      .select("id, name, avatar_url, area_ids, pending_area_ids, areas_submitted_at")
+      .eq("account_status", "active")
+      .order("name"),
     supabase.from("events").select("id, title, date").order("date"),
     supabase.from("parish_ministries").select("id, name").order("name"),
   ]);
@@ -92,7 +103,11 @@ export default async function AtividadesPage({
     priority: a.priority,
     is_urgent: a.is_urgent,
     area_id: a.area_id,
-    area: showAllAreas ? normalizeOne(a.area) : null,
+    // Sempre mostra o badge agora - com filtro de seleção múltipla (0,
+    // 1 ou várias áreas ao mesmo tempo), esconder o badge só quando
+    // exatamente 1 área estava marcada não faz mais sentido (ficaria
+    // aparecendo/sumindo conforme o usuário marca/desmarca chips).
+    area: normalizeOne(a.area),
     assignee: normalizeOne(a.assignee),
     attachments: normalizeOne<{ attachment_urls: string[] }>(a.request)?.attachment_urls ?? [],
     materials: (a.materials ?? []).map((m) => ({ id: m.id, name: m.name, driveFileId: m.drive_file_id })),
@@ -103,14 +118,12 @@ export default async function AtividadesPage({
       .sort((x, y) => x.created_at.localeCompare(y.created_at)),
   }));
 
-  const areaMembers = (rawAllMembers ?? []).filter((m) => effectiveAreaIds(m).includes(selectedAreaId ?? ""));
-
   // Criar não depende mais de estar numa aba de área específica (o
   // form ganhou um campo "Área" próprio) - só depende de ter pelo menos
   // 1 área possível pra usar como padrão. Edição por card usa
   // cardCanWrite calculado por atividade logo abaixo, não esse booleano.
   const canCreateActivity = isCoordenacao || myAreaIds.length > 0;
-  const defaultAreaId = selectedAreaId ?? myAreaIds[0] ?? areas?.[0]?.id ?? "";
+  const defaultAreaId = selectedAreaIds[0] ?? myAreaIds[0] ?? areas?.[0]?.id ?? "";
   const allMembersWithAreas = (rawAllMembers ?? []).map((m) => ({
     id: m.id,
     name: m.name,
@@ -127,21 +140,33 @@ export default async function AtividadesPage({
 
         {areas && areas.length > 0 && (
           <div className="flex flex-wrap" style={{ gap: "var(--space-2)" }}>
+            {/* "Todos" limpa o filtro inteiro (nenhum id marcado) - é o
+                estado inicial da página, não uma opção mutuamente
+                exclusiva com as áreas: fica em destaque só quando
+                nenhuma área está marcada. */}
             <Link
-              href={`/tarefas?area=todos${originQs}`}
+              href={buildAreaHref([], onlyExternal)}
+              aria-pressed={showAllAreas}
               className={`btn btn-sm ${showAllAreas ? "btn-primary" : "btn-outline"}`}
             >
               Todos
             </Link>
-            {areas.map((area) => (
-              <Link
-                key={area.id}
-                href={`/tarefas?area=${area.id}${originQs}`}
-                className={`btn btn-sm ${!showAllAreas && area.id === selectedAreaId ? "btn-primary" : "btn-outline"}`}
-              >
-                {area.name}
-              </Link>
-            ))}
+            {areas.map((area) => {
+              const isSelected = selectedAreaIds.includes(area.id);
+              const nextIds = isSelected
+                ? selectedAreaIds.filter((id) => id !== area.id)
+                : [...selectedAreaIds, area.id];
+              return (
+                <Link
+                  key={area.id}
+                  href={buildAreaHref(nextIds, onlyExternal)}
+                  aria-pressed={isSelected}
+                  className={`btn btn-sm ${isSelected ? "btn-primary" : "btn-outline"}`}
+                >
+                  {area.name}
+                </Link>
+              );
+            })}
           </div>
         )}
       </div>
@@ -149,13 +174,13 @@ export default async function AtividadesPage({
       {onlyExternal && (
         <div className="flex items-center" style={{ gap: "var(--space-3)", marginBottom: "var(--space-6)" }}>
           <span className="badge badge-primary">Só pedidos externos</span>
-          <Link href={areaParam ? `/tarefas?area=${areaParam}` : "/tarefas"} className="btn btn-ghost btn-sm">
+          <Link href={buildAreaHref(selectedAreaIds, false)} className="btn btn-ghost btn-sm">
             Limpar filtro
           </Link>
         </div>
       )}
 
-      {!selectedAreaId && !showAllAreas ? (
+      {(areas ?? []).length === 0 ? (
         <div className="alert alert-info">
           <div>
             <div className="alert-title">Nenhuma área cadastrada</div>
@@ -222,9 +247,12 @@ export default async function AtividadesPage({
                     ) : (
                       columnActivities.map((activity) => {
                         const cardCanWrite = isCoordenacao || myAreaIds.includes(activity.area_id);
-                        const cardMembers = showAllAreas
-                          ? (rawAllMembers ?? []).filter((m) => effectiveAreaIds(m).includes(activity.area_id))
-                          : (areaMembers ?? []);
+                        // Sempre pela área DESSA atividade, não da seleção do
+                        // filtro - com seleção múltipla, cards de áreas
+                        // diferentes podem estar lado a lado na mesma coluna.
+                        const cardMembers = (rawAllMembers ?? []).filter((m) =>
+                          effectiveAreaIds(m).includes(activity.area_id),
+                        );
                         return (
                           <ActivityCard
                             key={activity.id}
