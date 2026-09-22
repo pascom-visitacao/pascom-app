@@ -139,34 +139,43 @@ export default async function AtividadesPage({
         <h1 style={{ fontSize: "var(--text-xl)" }}>Tarefas</h1>
 
         {areas && areas.length > 0 && (
-          <div className="flex flex-wrap" style={{ gap: "var(--space-2)" }}>
-            {/* "Todos" limpa o filtro inteiro (nenhum id marcado) - é o
-                estado inicial da página, não uma opção mutuamente
-                exclusiva com as áreas: fica em destaque só quando
-                nenhuma área está marcada. */}
-            <Link
-              href={buildAreaHref([], onlyExternal)}
-              aria-pressed={showAllAreas}
-              className={`btn btn-sm ${showAllAreas ? "btn-primary" : "btn-outline"}`}
-            >
-              Todos
-            </Link>
-            {areas.map((area) => {
-              const isSelected = selectedAreaIds.includes(area.id);
-              const nextIds = isSelected
-                ? selectedAreaIds.filter((id) => id !== area.id)
-                : [...selectedAreaIds, area.id];
-              return (
-                <Link
-                  key={area.id}
-                  href={buildAreaHref(nextIds, onlyExternal)}
-                  aria-pressed={isSelected}
-                  className={`btn btn-sm ${isSelected ? "btn-primary" : "btn-outline"}`}
-                >
-                  {area.name}
-                </Link>
-              );
-            })}
+          <div className="flex flex-col" style={{ gap: "var(--space-2)", alignItems: "flex-start" }}>
+            {/* Mesmo estilo de rótulo pequeno já usado nos headers de coluna
+                do Kanban logo abaixo (.card-stat-label) - deixa claro que os
+                chips são um filtro aplicável por cima do panorama geral, não
+                uma categoria fixa da página (a página já abre em "Todos"). */}
+            <span id="area-filter-label" className="card-stat-label">
+              Filtrar por área
+            </span>
+            <div className="flex flex-wrap" role="group" aria-labelledby="area-filter-label" style={{ gap: "var(--space-2)" }}>
+              {/* "Todos" limpa o filtro inteiro (nenhum id marcado) - é o
+                  estado inicial da página, não uma opção mutuamente
+                  exclusiva com as áreas: fica em destaque só quando
+                  nenhuma área está marcada. */}
+              <Link
+                href={buildAreaHref([], onlyExternal)}
+                aria-pressed={showAllAreas}
+                className={`btn btn-sm ${showAllAreas ? "btn-primary" : "btn-outline"}`}
+              >
+                Todos
+              </Link>
+              {areas.map((area) => {
+                const isSelected = selectedAreaIds.includes(area.id);
+                const nextIds = isSelected
+                  ? selectedAreaIds.filter((id) => id !== area.id)
+                  : [...selectedAreaIds, area.id];
+                return (
+                  <Link
+                    key={area.id}
+                    href={buildAreaHref(nextIds, onlyExternal)}
+                    aria-pressed={isSelected}
+                    className={`btn btn-sm ${isSelected ? "btn-primary" : "btn-outline"}`}
+                  >
+                    {area.name}
+                  </Link>
+                );
+              })}
+            </div>
           </div>
         )}
       </div>
