@@ -5,6 +5,7 @@ import { ImagePlus } from "lucide-react";
 import { Icon } from "@/components/icon";
 import { submitExternalRequest } from "./actions";
 import { compressImage } from "@/lib/compress-image";
+import { AudioField, type AudioValue } from "./audio-field";
 import "./solicitar.css";
 
 type Category = { id: string; name: string };
@@ -16,6 +17,10 @@ type EventOption = { id: string; title: string };
 // abaixo do teto de 4,5MB da própria Vercel pro corpo da function
 // inteira (ver next.config.ts).
 const COMPRESSION_TARGET_PER_FILE = 0.7 * 1024 * 1024;
+// Com áudio no mesmo envio, as imagens dividem o corpo da requisição:
+// 1,5MB pras imagens + até 2,5MB de áudio = 4MB, sob o teto da Vercel
+// (ver MAX_TOTAL_SIZE em actions.ts).
+const IMAGES_BUDGET_WITH_AUDIO = 1.5 * 1024 * 1024;
 
 export function RequestForm({
   categories,
@@ -31,6 +36,9 @@ export function RequestForm({
   const [files, setFiles] = useState<File[]>([]);
   const [previews, setPreviews] = useState<{ name: string; url: string; size: number }[]>([]);
   const [isCompressing, setIsCompressing] = useState(false);
+  const [audio, setAudio] = useState<AudioValue | null>(null);
+  const [isRecording, setIsRecording] = useState(false);
+  const [sentWithAudio, setSentWithAudio] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // revoga as object URLs das miniaturas ao desmontar, pra não vazar
@@ -86,7 +94,7 @@ export function RequestForm({
           Pedido enviado
         </span>
         <h1 style={{ fontSize: "var(--text-lg)", marginBottom: "var(--space-4)" }}>
-          Recebemos seu pedido!
+          {sentWithAudio ? "Recebemos seu pedido e o seu áudio!" : "Recebemos seu pedido!"}
         </h1>
         <p style={{ color: "var(--color-text-muted)", marginBottom: "var(--space-6)" }}>
           Guarde este link para acompanhar o andamento — ele é único e não pede login.
@@ -123,16 +131,30 @@ export function RequestForm({
         startTransition(async () => {
           formData.delete("attachments");
           setIsCompressing(true);
+          const perFileTarget = audio
+            ? Math.floor(IMAGES_BUDGET_WITH_AUDIO / Math.max(files.length, 1))
+            : COMPRESSION_TARGET_PER_FILE;
           for (const file of files) {
-            const compressed = await compressImage(file, COMPRESSION_TARGET_PER_FILE);
+            const compressed = await compressImage(file, perFileTarget);
             formData.append("attachments", compressed);
           }
           setIsCompressing(false);
+
+          // O áudio vai no MESMO envio (não num upload prévio): evita
+          // arquivo órfão de quem grava e desiste. Em caso de erro, o
+          // estado `audio` continua na tela pra reenviar sem regravar.
+          if (audio) {
+            formData.set("audio", audio.file);
+            if (audio.durationSeconds !== null) {
+              formData.set("audio_duration_seconds", String(audio.durationSeconds));
+            }
+          }
 
           const result = await submitExternalRequest(formData);
           if (result.error) {
             setError(result.error);
           } else if (result.token) {
+            setSentWithAudio(Boolean(result.hasAudio));
             setToken(result.token);
           }
         });
@@ -173,16 +195,20 @@ export function RequestForm({
 
       <div className="field">
         <label className="field-label" htmlFor="description">
-          Descrição do pedido <span className="req">*</span>
+          Descrição do pedido {!audio && <span className="req">*</span>}
         </label>
+        {/* Com áudio, a descrição deixa de ser obrigatória: quem prefere
+            falar não precisa digitar. Sem áudio, a regra de sempre. */}
         <textarea
           id="description"
           className="ds-textarea"
           name="description"
           placeholder="Descreva o que você precisa..."
-          required
+          required={!audio}
         />
       </div>
+
+      <AudioField onChange={setAudio} onRecordingChange={setIsRecording} disabled={isPending} />
 
       <div className="field">
         <label className="field-label" htmlFor="attachments">Imagens de referência (opcional)</label>
@@ -264,7 +290,17 @@ export function RequestForm({
         </div>
       </div>
 
-      <button type="submit" className="btn btn-primary btn-md" disabled={isPending || !!fileError}>
+      {/* Honeypot: fora da tela e do teclado, escondido de leitor de
+          tela - pessoa nenhuma preenche, bot que preenche tudo sim (a
+          action rejeita, ver actions.ts). */}
+      <div aria-hidden="true" style={{ position: "absolute", left: "-9999px", width: 1, height: 1, overflow: "hidden" }}>
+        <label>
+          Não preencha este campo
+          <input type="text" name="website" tabIndex={-1} autoComplete="off" defaultValue="" />
+        </label>
+      </div>
+
+      <button type="submit" className="btn btn-primary btn-md" disabled={isPending || !!fileError || isRecording}>
         {isCompressing ? "Preparando imagens..." : isPending ? "Enviando..." : "Enviar pedido"}
       </button>
     </form>

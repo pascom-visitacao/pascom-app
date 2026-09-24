@@ -52,3 +52,77 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* Campo de áudio (audio-field.tsx). .field tem max-width: 320px por
+   padrão (ds-styles.css); o player nativo precisa da largura toda. */
+.new-request-field-full {
+  max-width: none;
+}
+
+.audio-box {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+}
+
+.audio-rec-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.audio-rec-status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: var(--weight-semibold);
+}
+
+.audio-rec-clock {
+  font-variant-numeric: tabular-nums;
+  font-size: var(--text-sm);
+  color: var(--color-text-muted);
+}
+
+.audio-rec-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--radius-full);
+  background: var(--color-danger);
+  animation: audio-rec-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes audio-rec-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+/* Sem animação, o ponto fica fixo - o texto "Gravando..." e o cronômetro
+   já dizem que está gravando, então nada depende do movimento. */
+@media (prefers-reduced-motion: reduce) {
+  .audio-rec-dot {
+    animation: none;
+  }
+}
+
+.audio-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+/* Mobile: botões empilhados em largura total (área de toque grande) -
+   a página pública é usada majoritariamente no celular. */
+@media (max-width: 640px) {
+  .audio-actions {
+    flex-direction: column;
+  }
+  .audio-actions .btn {
+    width: 100%;
+  }
+}

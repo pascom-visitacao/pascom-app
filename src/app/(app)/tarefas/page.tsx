@@ -63,7 +63,7 @@ export default async function AtividadesPage({
   const showAllAreas = selectedAreaIds.length === 0;
 
   const activitiesSelect =
-    "id, title, description, status, due_date, source, priority, is_urgent, area_id, area:areas(id, name), assignee:users(id, name, avatar_url, account_status), request:external_requests(attachment_urls), event:events(id, title), parish_ministry:parish_ministries(id, name), comments:activity_comments(id, body, created_at, author:users(id, name, account_status)), materials:materials(id, name, drive_file_id)";
+    "id, title, description, status, due_date, source, priority, is_urgent, area_id, area:areas(id, name), assignee:users(id, name, avatar_url, account_status), request:external_requests(attachment_urls), event:events(id, title), parish_ministry:parish_ministries(id, name), comments:activity_comments(id, body, created_at, author:users(id, name, account_status)), materials:materials(id, name, drive_file_id), audio_path, audio_mime, audio_duration_seconds";
 
   // Concluídas só dos últimos DONE_WINDOW_DAYS dias: a coluna só crescia
   // (todo o histórico, com comentários embutidos, a cada clique).
@@ -93,6 +93,19 @@ export default async function AtividadesPage({
     supabase.from("parish_ministries").select("id, name").order("name"),
   ]);
 
+  // URLs assinadas do áudio dos pedidos (bucket privado), em lote e com
+  // o client normal - a policy de SELECT do bucket é só pra authenticated.
+  // Validade de 1h pro player; o download gera a própria URL curta sob
+  // demanda (getAudioDownloadUrl). RevalidateOnFocus renova ao voltar pra aba.
+  const audioPaths = (rawActivities ?? []).map((a) => a.audio_path as string | null).filter((p): p is string => !!p);
+  const audioUrlByPath = new Map<string, string>();
+  if (audioPaths.length > 0) {
+    const { data: signed } = await supabase.storage.from("request-audios").createSignedUrls(audioPaths, 3600);
+    for (const item of signed ?? []) {
+      if (item.path && item.signedUrl) audioUrlByPath.set(item.path, item.signedUrl);
+    }
+  }
+
   const activities: ActivityCardData[] = (rawActivities ?? []).map((a) => ({
     id: a.id,
     title: a.title,
@@ -111,6 +124,14 @@ export default async function AtividadesPage({
     assignee: normalizeOne(a.assignee),
     attachments: normalizeOne<{ attachment_urls: string[] }>(a.request)?.attachment_urls ?? [],
     materials: (a.materials ?? []).map((m) => ({ id: m.id, name: m.name, driveFileId: m.drive_file_id })),
+    audio:
+      a.audio_path && audioUrlByPath.has(a.audio_path)
+        ? {
+            url: audioUrlByPath.get(a.audio_path)!,
+            mime: (a.audio_mime as string | null) ?? null,
+            durationSeconds: (a.audio_duration_seconds as number | null) ?? null,
+          }
+        : null,
     event: normalizeOne(a.event),
     ministry: normalizeOne(a.parish_ministry),
     comments: (a.comments ?? [])

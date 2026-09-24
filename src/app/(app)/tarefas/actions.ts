@@ -138,13 +138,75 @@ export async function reassignActivity(activityId: string, userId: string) {
   revalidatePath("/tarefas");
 }
 
-export async function deleteActivity(activityId: string) {
-  const supabase = await createClient();
-  const { error } = await supabase.from("activities").delete().eq("id", activityId);
+const AUDIO_BUCKET = "request-audios";
+const AUDIO_DELETE_ERROR = "Não foi possível apagar o áudio. Tente novamente.";
 
-  if (error) throw new Error(error.message);
+// ÚNICO caminho que exclui atividades no app (auditado: excluir evento,
+// recusar/excluir usuário e limpar pedido só desvinculam via "on delete
+// set null", nunca apagam a linha). Qualquer caminho novo que apague
+// atividade precisa passar por aqui, senão o áudio do pedido vira
+// arquivo órfão no Storage (spec-audio-pedidos.md, seção 7.2).
+//
+// Ordem obrigatória: ler audio_path -> remover o arquivo -> SÓ ENTÃO
+// apagar a linha. Se a remoção falhar, aborta com erro e a atividade
+// continua existindo apontando pro arquivo (o inverso deixaria o
+// arquivo sem referência nenhuma).
+export async function deleteActivity(activityId: string): Promise<{ error?: string }> {
+  const supabase = await createClient();
+
+  const { data: activity, error: readError } = await supabase
+    .from("activities")
+    .select("audio_path")
+    .eq("id", activityId)
+    .maybeSingle();
+  if (readError) return { error: readError.message };
+
+  const audioPath = activity?.audio_path as string | null | undefined;
+  if (audioPath) {
+    const { error: removeError } = await supabase.storage.from(AUDIO_BUCKET).remove([audioPath]);
+    if (removeError) return { error: AUDIO_DELETE_ERROR };
+
+    // remove() não falha quando a policy esconde o arquivo (devolve lista
+    // vazia sem erro): confere que ele sumiu de verdade. Já não existir
+    // (apagado à mão antes) também serve - só não pode ter sobrado.
+    // list() em vez de exists(): exists() devolve erro (não "false") pra
+    // objeto ausente com a policy de SELECT ativa, e isso abortava a
+    // exclusão mesmo com o arquivo já removido.
+    const { data: leftover, error: listError } = await supabase.storage
+      .from(AUDIO_BUCKET)
+      .list("", { search: audioPath, limit: 5 });
+    if (listError || leftover?.some((o) => o.name === audioPath)) return { error: AUDIO_DELETE_ERROR };
+  }
+
+  const { error } = await supabase.from("activities").delete().eq("id", activityId);
+  if (error) return { error: error.message };
 
   revalidatePath("/tarefas");
+  return {};
+}
+
+// URL assinada de download, gerada só quando a pessoa clica em "Baixar"
+// (validade curta: 5 min). Lê pelo client normal - a policy de SELECT do
+// bucket é só pra authenticated, então quem não está logado nunca chega
+// aqui nem no arquivo.
+export async function getAudioDownloadUrl(activityId: string): Promise<{ url?: string; error?: string }> {
+  const supabase = await createClient();
+  const { data: activity } = await supabase
+    .from("activities")
+    .select("audio_path")
+    .eq("id", activityId)
+    .maybeSingle();
+
+  const audioPath = activity?.audio_path as string | null | undefined;
+  if (!audioPath) return { error: "Essa tarefa não tem áudio." };
+
+  const ext = audioPath.split(".").pop() ?? "audio";
+  const { data, error } = await supabase.storage
+    .from(AUDIO_BUCKET)
+    .createSignedUrl(audioPath, 300, { download: `audio-do-solicitante.${ext}` });
+  if (error || !data) return { error: "Não foi possível gerar o download. Tente novamente." };
+
+  return { url: data.signedUrl };
 }
 
 export async function addComment(activityId: string, body: string) {

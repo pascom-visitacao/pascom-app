@@ -191,3 +191,35 @@
     max-width: 480px;
   }
 }
+
+/* Bloco "Áudio do solicitante" no modal (AudioBlock em activity-card.tsx):
+   player nativo + Baixar lado a lado; no mobile o Baixar desce pra baixo
+   do player, em largura total. */
+.activity-audio-box {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+}
+
+.activity-audio-box audio {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.activity-audio-download {
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .activity-audio-box {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .activity-audio-download {
+    width: 100%;
+  }
+}

@@ -3,13 +3,20 @@
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { Zap } from "lucide-react";
+import { Download, Mic, Zap } from "lucide-react";
 import { Icon } from "@/components/icon";
 import { Assignees, type AssigneePerson } from "@/components/assignees";
 import { ActivityAttachments, type ActivityMaterial } from "@/components/activity-attachments";
 import { StatusSelect } from "./status-select";
 import { DeleteActivityButton } from "./delete-activity-button";
-import { assumeActivity, reassignActivity, toggleUrgent, updateActivityArea, type ActivityStatus } from "./actions";
+import {
+  assumeActivity,
+  getAudioDownloadUrl,
+  reassignActivity,
+  toggleUrgent,
+  updateActivityArea,
+  type ActivityStatus,
+} from "./actions";
 import { CommentsSection, type CommentData } from "./comments-section";
 
 const PRIORITY_LABELS: Record<string, string> = { baixa: "Baixa", media: "Média", alta: "Alta" };
@@ -31,6 +38,9 @@ export type ActivityCardData = {
   assignee: { id: string; name: string; avatar_url: string | null; account_status: string } | null;
   attachments: string[];
   materials: ActivityMaterial[];
+  // Áudio do solicitante (pedido externo): URL assinada de vida curta,
+  // gerada em tarefas/page.tsx. null quando a tarefa não tem áudio.
+  audio: { url: string; mime: string | null; durationSeconds: number | null } | null;
   event: { id: string; title: string } | null;
   ministry: { id: string; name: string } | null;
   comments: CommentData[];
@@ -51,6 +61,68 @@ function initials(name: string) {
     .slice(0, 2)
     .join("")
     .toUpperCase();
+}
+
+function formatClock(totalSeconds: number) {
+  const s = Math.max(0, Math.floor(totalSeconds));
+  return `${String(Math.floor(s / 60)).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
+}
+
+// Sinal no card de que existe áudio pra ouvir no briefing - sem player
+// aqui, só o aviso (spec-audio-pedidos.md, seção 6.2).
+function AudioBadge() {
+  return (
+    <span className="badge badge-neutral">
+      <Icon icon={Mic} />
+      Áudio
+    </span>
+  );
+}
+
+// Bloco "Áudio do solicitante" do modal (seção 6.3): player nativo +
+// Baixar. O Baixar é o caminho garantido: webm gravado no Chrome pode não
+// tocar em iPhone mais antigo, e a barra de progresso pode não arrastar
+// (webm sem metadado) - limitações aceitas no spec.
+function AudioBlock({ activityId, audio }: { activityId: string; audio: NonNullable<ActivityCardData["audio"]> }) {
+  const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+
+  function handleDownload() {
+    setError(null);
+    startTransition(async () => {
+      const result = await getAudioDownloadUrl(activityId);
+      if (result.url) {
+        window.location.assign(result.url);
+      } else {
+        setError(result.error ?? "Não foi possível gerar o download. Tente novamente.");
+      }
+    });
+  }
+
+  return (
+    <div style={{ marginBottom: "var(--space-6)" }}>
+      <div className="flex items-center justify-between" style={{ marginBottom: "var(--space-2)", gap: "var(--space-3)" }}>
+        <strong>Áudio do solicitante</strong>
+        {audio.durationSeconds !== null && (
+          <span style={{ fontSize: "var(--text-sm)", color: "var(--color-text-muted)", fontVariantNumeric: "tabular-nums" }}>
+            {formatClock(audio.durationSeconds)}
+          </span>
+        )}
+      </div>
+      <div className="activity-audio-box">
+        <audio controls preload="metadata" src={audio.url} style={{ width: "100%" }} />
+        <button type="button" className="btn btn-outline btn-sm activity-audio-download" disabled={isPending} onClick={handleDownload}>
+          <Icon icon={Download} size={16} />
+          {isPending ? "Preparando..." : "Baixar"}
+        </button>
+      </div>
+      {error && (
+        <div className="alert alert-danger" role="alert" style={{ marginTop: "var(--space-2)" }}>
+          <div>{error}</div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 function UrgentBadge() {
@@ -218,6 +290,7 @@ export function ActivityCard({
           {activity.area && <span className="badge badge-neutral">{activity.area.name}</span>}
           {activity.is_urgent && <UrgentBadge />}
           {activity.source === "pedido_externo" && <span className="badge badge-accent">Pedido externo</span>}
+          {activity.audio && <AudioBadge />}
           <span className={`badge ${PRIORITY_BADGE[activity.priority] ?? "badge-neutral"}`}>
             {PRIORITY_LABELS[activity.priority] ?? activity.priority}
           </span>
@@ -288,6 +361,8 @@ export function ActivityCard({
             {activity.description && (
               <p style={{ marginBottom: "var(--space-6)" }}>{activity.description}</p>
             )}
+
+            {activity.audio && <AudioBlock activityId={activity.id} audio={activity.audio} />}
 
             <Attachments attachments={activity.attachments} size={80} />
 
