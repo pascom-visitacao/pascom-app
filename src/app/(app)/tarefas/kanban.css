@@ -41,9 +41,50 @@
   display: none;
 }
 
+/* Nada dentro de uma coluna pode ser mais largo que ela. Sem isso, um
+   título/descrição com URL longa e sem espaços (min-content enorme)
+   alargava a trilha da grid e a coluna inteira passava da tela, com
+   rolagem horizontal na página. min-width:0 nos itens (grid/flex têm
+   min-width:auto por padrão) + overflow-wrap:anywhere pra quebrar o
+   link dentro do card. */
+.kanban-column {
+  min-width: 0;
+}
+
+.kanban-column .card {
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-wrap: anywhere;
+}
+
+/* Rodapé do card (status + Excluir): quebra de linha em vez de o botão
+   vazar pra fora do card quando a coluna é estreita. */
+.activity-card-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+.activity-card-footer > * {
+  max-width: 100%;
+  min-width: 0;
+}
+
+/* Modal de detalhe: mesma regra pra título, descrição e comentários. */
+.activity-modal .modal-title,
+.activity-modal .modal-body {
+  overflow-wrap: anywhere;
+}
+
 @media (max-width: 960px) {
   .kanban-grid {
-    grid-template-columns: 1fr;
+    /* minmax(0, 1fr), não 1fr: 1fr tem mínimo "auto" e cresce até o
+       min-content do maior filho. */
+    grid-template-columns: minmax(0, 1fr);
     /* Sem isso, um scrollLeft deixado pelo grid de desktop (ex.: usuário
        encolhe a janela sem recarregar) continuava aplicado aqui - com 1
        coluna só, isso cortava o início de cada linha do card em vez de

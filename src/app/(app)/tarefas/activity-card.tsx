@@ -321,11 +321,7 @@ export function ActivityCard({
         </div>
 
         {canWrite && (
-          <div
-            className="flex items-center justify-between"
-            style={{ gap: "var(--space-3)" }}
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="activity-card-footer" onClick={(e) => e.stopPropagation()}>
             <StatusSelect activityId={activity.id} status={activity.status} />
             {isCoordenacao && <DeleteActivityButton activityId={activity.id} />}
           </div>
@@ -334,7 +330,7 @@ export function ActivityCard({
 
       <div className={`modal-overlay${open ? " is-open" : ""}`} onClick={() => setOpen(false)}>
         <div
-          className="modal"
+          className="modal activity-modal"
           role="dialog"
           aria-modal="true"
           aria-labelledby="activity-modal-title"

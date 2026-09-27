@@ -22,7 +22,7 @@ export function StatusSelect({
   const [isPending, startTransition] = useTransition();
 
   return (
-    <div className="input-wrap select-wrap" style={{ minWidth: 150, flexShrink: 0 }}>
+    <div className="input-wrap select-wrap" style={{ flex: "0 1 150px", minWidth: 0, maxWidth: "100%" }}>
       <select
         value={status}
         disabled={disabled || isPending}
